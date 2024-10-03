@@ -1,0 +1,46 @@
+<div class="min-h-screen bg-gray-100 flex items-center justify-center">
+  <div class="bg-white p-8 rounded-lg shadow-lg max-w-2xl w-full">
+    <h1 class="text-3xl font-bold text-center text-blue-600 mb-6">
+      Selamat telah menyelesaikan quiz!
+    </h1>
+    <div class="space-y-4 text-lg">
+      <p><strong>Nama:</strong> {{ name }}</p>
+      <p>
+        <strong>Nama Paket Soal:</strong> {{ selectedPaket?.nama_paket_soal }}
+      </p>
+      <p><strong>Kategori Soal:</strong> {{ selectedPaket?.kategori_soal }}</p>
+      <p><strong>Jumlah Soal Total:</strong> {{ totalQuestions }}</p>
+      <p><strong>Jumlah Soal Dijawab:</strong> {{ answeredQuestions }}</p>
+      <p>
+        <strong>Jumlah Soal Tidak Dijawab:</strong> {{ unansweredQuestions }}
+      </p>
+    </div>
+    <div class="mt-8 space-y-4">
+      <button
+        (click)="toggleScore()"
+        class="w-full py-2 px-4 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors duration-200"
+      >
+        {{ showScore ? "Sembunyikan Nilai" : "Lihat Nilai" }}
+      </button>
+      <div *ngIf="showScore" class="bg-gray-100 p-4 rounded-lg">
+        <p class="text-2xl font-bold">
+          Nilai Anda: <span class="text-blue-600">{{ points }} </span>
+        </p>
+        <p>
+          Jawaban Benar :
+          <span class="text-green-600">{{ correctAnswers }}</span>
+        </p>
+        <p>
+          Jawaban Salah :
+          <span class="text-red-600">{{ incorrectAnswers }}</span>
+        </p>
+      </div>
+      <button
+        (click)="reviewQuiz()"
+        class="w-full py-2 px-4 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors duration-200"
+      >
+        Review dengan Jawaban yang Benar
+      </button>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,15 @@
+<div class="container mx-auto px-4 py-8">
+    <h1 class="text-3xl font-bold mb-8 text-center">Daftar Paket Soal</h1>
+    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+      <div *ngFor="let paket of paketSoalList" class="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300">
+        <div class="p-6">
+          <h2 class="text-xl font-semibold mb-2">{{ paket.nama_paket_soal }}</h2>
+          <p class="text-2xl font-bold text-blue-600 mb-4">{{ paket.kategori_soal }}</p>
+          <p class="text-gray-600 mb-4">Jumlah Soal: {{ paket.jumlah_soal }}</p>
+          <button (click)="selectPaketSoal(paket)" class="w-full bg-blue-500 text-white py-2 px-4 rounded-lg hover:bg-blue-600 transition-colors duration-300">
+            Pilih Paket
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>

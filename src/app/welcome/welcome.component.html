@@ -1,0 +1,32 @@
+<div class="container-fluid mt-10 flex align-content-center justify-center">
+  <div class="bg-white p-8 border rounded-3xl border-slate-300 shadow-lg shadow-gray-500/50 sm:w-full mx-5 lg:w-5/6">
+    <h1 class="text-4xl font-extrabold text-left mb-6">Selamat Datang di Quiz App</h1>
+    
+    <form (ngSubmit)="startQuiz()" #quizForm="ngForm" class="space-y-4">
+      <div>
+        <label for="name" class="block text-sm font-medium text-gray-700">Nama</label>
+        <input id="name" name="name" [(ngModel)]="name" required
+               class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
+      </div>
+      
+      <div *ngIf="selectedPaket">
+        <p class="text-lg"><strong>Kategori:</strong> {{ selectedPaket.kategori_soal }}</p>
+        <p class="text-lg"><strong>Nama Paket:</strong> {{ selectedPaket.nama_paket_soal }}</p>
+        <p class="text-lg"><strong>Jumlah Soal:</strong> {{ selectedPaket.jumlah_soal }}</p>
+      </div>
+      
+      <div>
+        <label for="durasi" class="block text-sm font-medium text-gray-700">Waktu Ujian</label>
+        <select id="durasi" name="durasi" [(ngModel)]="selectedDurasi" required
+                class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
+          <option *ngFor="let durasi of durasiOptions" [value]="durasi">{{ durasi }} menit</option>
+        </select>
+      </div>
+      
+      <button type="submit" [disabled]="!quizForm.form.valid"
+              class="w-full py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+        Mulai Kuis
+      </button>
+    </form>
+  </div>
+</div>
