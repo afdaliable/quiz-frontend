@@ -5,6 +5,7 @@ import { WelcomeComponent } from './welcome/welcome.component';
 import { HomeComponent } from './home/home.component';
 import { ResultComponent } from './result/result.component';
 import { ReviewComponent } from './review/review.component';
+import { DaftarSoalComponent } from './daftar-soal/daftar-soal.component';
 
 const routes: Routes = [
   {
@@ -31,6 +32,10 @@ const routes: Routes = [
   {
     path: 'review',
     component: ReviewComponent,
+  },
+  {
+    path: 'daftar-soal',
+    component: DaftarSoalComponent,
   },
 ];
 

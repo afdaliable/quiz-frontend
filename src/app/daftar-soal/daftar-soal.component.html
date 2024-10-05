@@ -1,0 +1,56 @@
+<div class="container mx-auto px-4 py-8">
+  <h1 class="text-3xl font-bold mb-8 text-center">Daftar Soal</h1>
+  <div class="overflow-x-auto">
+    <table class="w-full border-collapse border border-gray-300">
+      <thead>
+        <tr class="bg-gray-100">
+          <th class="border border-gray-300 px-4 py-2">ID</th>
+          <th class="border border-gray-300 px-4 py-2">Soal</th>
+          <th class="border border-gray-300 px-4 py-2">Opsi 1</th>
+          <th class="border border-gray-300 px-4 py-2">Opsi 2</th>
+          <th class="border border-gray-300 px-4 py-2">Opsi 3</th>
+          <th class="border border-gray-300 px-4 py-2">Opsi 4</th>
+          <th class="border border-gray-300 px-4 py-2">Opsi 5</th>
+          <th class="border border-gray-300 px-4 py-2">Jawaban Benar</th>
+          <th class="border border-gray-300 px-4 py-2">Kategori</th>
+          <th class="border border-gray-300 px-4 py-2">Paket Soal</th>
+          <th class="border border-gray-300 px-4 py-2">ID Kategori</th>
+          <th class="border border-gray-300 px-4 py-2">ID Paket Soal</th>
+          <th class="border border-gray-300 px-4 py-2">Solusi</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngIf="soalList.length === 0">
+          <td colspan="13" class="text-center py-4">
+            Tidak ada data soal yang tersedia.
+          </td>
+        </tr>
+        <tr *ngFor="let soal of soalList" class="hover:bg-gray-50">
+          <td class="border border-gray-300 px-4 py-2">{{ soal.id }}</td>
+          <td class="border border-gray-300 px-4 py-2">{{ soal.soal }}</td>
+          <td class="border border-gray-300 px-4 py-2">{{ soal.opt1 }}</td>
+          <td class="border border-gray-300 px-4 py-2">{{ soal.opt2 }}</td>
+          <td class="border border-gray-300 px-4 py-2">{{ soal.opt3 }}</td>
+          <td class="border border-gray-300 px-4 py-2">{{ soal.opt4 }}</td>
+          <td class="border border-gray-300 px-4 py-2">{{ soal.opt5 }}</td>
+          <td class="border border-gray-300 px-4 py-2">
+            {{ soal.correct_answer }}
+          </td>
+          <td class="border border-gray-300 px-4 py-2">
+            {{ soal.deskripsi_kategori }}
+          </td>
+          <td class="border border-gray-300 px-4 py-2">
+            {{ soal.deskripsi_paket_soal }}
+          </td>
+          <td class="border border-gray-300 px-4 py-2">
+            {{ soal.id_kategori }}
+          </td>
+          <td class="border border-gray-300 px-4 py-2">
+            {{ soal.id_paket_soal }}
+          </td>
+          <td class="border border-gray-300 px-4 py-2">{{ soal.solution }}</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>

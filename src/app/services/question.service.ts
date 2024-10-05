@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { Observable, map } from 'rxjs';
+import { Observable, map, throwError, catchError } from 'rxjs';
 import { environment } from '../environments/environment';
 
 interface ApiResponse {
@@ -44,6 +44,7 @@ export class QuestionService {
     const headers = new HttpHeaders({
       'Content-Type': 'application/json',
       Accept: 'application/json',
+      Authorization: environment.apiKey,
     });
 
     return this.http.get<ApiResponse>(apiUrl, { headers }).pipe(
@@ -72,6 +73,22 @@ export class QuestionService {
   }
 
   getListPaketSoal(): Observable<any[]> {
-    return this.http.get<any[]>(`${environment.apiUrl}/listpaketsoal`);
+    const headers = new HttpHeaders({
+      'Content-Type': 'application/json',
+      Authorization: environment.apiKey,
+    });
+    return this.http
+      .get<any[]>(`${environment.apiUrl}/listpaketsoal`, {
+        headers,
+        withCredentials: true,
+      })
+      .pipe(
+        catchError((error) => {
+          console.error('Error fetching paket soal:', error);
+          return throwError(
+            () => new Error('Terjadi kesalahan saat mengambil data paket soal')
+          );
+        })
+      );
   }
 }
