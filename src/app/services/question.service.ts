@@ -1,7 +1,8 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable, map, throwError, catchError } from 'rxjs';
-import { environment } from '../environments/environment';
+import { environment } from '../../env';
+import { Router } from '@angular/router';
 
 interface ApiResponse {
   kategori_id: number;
@@ -35,22 +36,29 @@ export interface Question {
   providedIn: 'root',
 })
 export class QuestionService {
-  private baseApiUrl = `${environment.apiUrl}/paket-soal-response`;
+  private baseApiUrl = environment.apiUrl + '/paket-soal-response';
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient, private router: Router) {}
 
   getQuestions(kategori: string, paketSoal: string): Observable<Question[]> {
+    const token = localStorage.getItem('token');
+    const headers = new HttpHeaders()
+      .set('Authorization', `Bearer ${token}`)
+      .set('Content-Type', 'application/json');
+      
     const apiUrl = `${this.baseApiUrl}/${kategori}/${paketSoal}`;
-    const headers = new HttpHeaders({
-      'Content-Type': 'application/json',
-      Accept: 'application/json',
-      Authorization: environment.apiKey,
-    });
-
+    
     return this.http.get<ApiResponse>(apiUrl, { headers }).pipe(
       map((response) => {
         console.log('Response received:', response);
         return this.transformQuestions(response.kumpulan_soal);
+      }),
+      catchError((error) => {
+        if (error.status === 401) {
+          localStorage.clear();
+          this.router.navigate(['/login']);
+        }
+        return throwError(() => error);
       })
     );
   }
@@ -73,22 +81,22 @@ export class QuestionService {
   }
 
   getListPaketSoal(): Observable<any[]> {
-    const headers = new HttpHeaders({
-      'Content-Type': 'application/json',
-      Authorization: environment.apiKey,
-    });
-    return this.http
-      .get<any[]>(`${environment.apiUrl}/listpaketsoal`, {
-        headers,
-        withCredentials: true,
+    const token = localStorage.getItem('token');
+    const headers = new HttpHeaders()
+      .set('Authorization', `Bearer ${token}`)
+      .set('Content-Type', 'application/json');
+
+    return this.http.get<any[]>(`${environment.apiUrl}/listpaketsoal`, { headers }).pipe(
+      catchError((error) => {
+        console.error('Error fetching paket soal:', error);
+        if (error.status === 401) {
+          localStorage.clear();
+          this.router.navigate(['/login']);
+        }
+        return throwError(
+          () => new Error('Terjadi kesalahan saat mengambil data paket soal')
+        );
       })
-      .pipe(
-        catchError((error) => {
-          console.error('Error fetching paket soal:', error);
-          return throwError(
-            () => new Error('Terjadi kesalahan saat mengambil data paket soal')
-          );
-        })
-      );
+    );
   }
 }

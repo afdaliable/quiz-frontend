@@ -6,6 +6,8 @@ import { HomeComponent } from './home/home.component';
 import { ResultComponent } from './result/result.component';
 import { ReviewComponent } from './review/review.component';
 import { DaftarSoalComponent } from './daftar-soal/daftar-soal.component';
+import { LoginComponent } from './login/login.component';
+import { RegisterComponent } from './register/register.component';
 
 const routes: Routes = [
   {
@@ -37,6 +39,14 @@ const routes: Routes = [
     path: 'daftar-soal',
     component: DaftarSoalComponent,
   },
+  {
+    path: 'login',
+    component: LoginComponent,
+  },
+  {
+    path: 'register',
+    component: RegisterComponent,
+  },  
 ];
 
 @NgModule({

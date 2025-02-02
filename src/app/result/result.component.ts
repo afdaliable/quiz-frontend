@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
+import { UserService } from '../services/user.service';
 
 interface PaketSoal {
   id_nama_paket_soal: number;
@@ -24,8 +25,10 @@ export class ResultComponent implements OnInit {
   points: number = 0;
   correctAnswers: number = 0;
   incorrectAnswers: number = 0;
+  user: any;
 
-  constructor(private router: Router) {}
+
+  constructor(private router: Router, private userService: UserService) {}
 
   ngOnInit(): void {
     console.log('Initializing result component...');
@@ -34,18 +37,22 @@ export class ResultComponent implements OnInit {
     if (paketData) {
       this.selectedPaket = JSON.parse(paketData);
     }
+    this.user = this.userService.getUser();
+    if (!this.user) {
+      const userData = localStorage.getItem('user');
+      if (userData) {
+        this.user = JSON.parse(userData);
+        this.userService.setUser(this.user);
+      } else {
+        this.router.navigate(['/login']);
+      }
+    }
     this.totalQuestions = parseInt(localStorage.getItem('totalQuestions') || '0');
     this.answeredQuestions = parseInt(localStorage.getItem('answeredQuestions') || '0');
     this.unansweredQuestions = this.totalQuestions - this.answeredQuestions;
     this.points = parseInt(localStorage.getItem('points') || '0');
     this.correctAnswers = parseInt(localStorage.getItem('correctAnswers') || '0');
     this.incorrectAnswers = parseInt(localStorage.getItem('incorrectAnswers') || '0');
-    console.log('Result data loaded:', {
-      name: this.name,
-      totalQuestions: this.totalQuestions,
-      answeredQuestions: this.answeredQuestions,
-      points: this.points
-    });
   }
 
   toggleScore(): void {

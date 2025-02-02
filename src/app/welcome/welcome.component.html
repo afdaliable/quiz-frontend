@@ -3,10 +3,8 @@
     <h1 class="text-4xl font-extrabold text-left mb-6">Selamat Datang di Quiz App</h1>
     
     <form (ngSubmit)="startQuiz()" #quizForm="ngForm" class="space-y-4">
-      <div>
-        <label for="name" class="block text-sm font-medium text-gray-700">Nama</label>
-        <input id="name" name="name" [(ngModel)]="name" required
-               class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
+      <div *ngIf="user">
+        <p class="text-lg"><strong>Nama:</strong> {{ user.first_name }} {{ user.last_name }}</p>
       </div>
       
       <div *ngIf="selectedPaket">

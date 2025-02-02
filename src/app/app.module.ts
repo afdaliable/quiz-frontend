@@ -1,10 +1,7 @@
 import { NgModule } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
 import { RouterModule } from '@angular/router';
-import {
-  provideHttpClient,
-  withInterceptorsFromDi,
-} from '@angular/common/http';
+import { HttpClientModule, HTTP_INTERCEPTORS, HttpHeaders } from '@angular/common/http';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { AppRoutingModule } from './app-routing.module';
@@ -17,6 +14,12 @@ import { HomeComponent } from './home/home.component';
 import { ResultComponent } from './result/result.component';
 import { ReviewComponent } from './review/review.component';
 import { DaftarSoalComponent } from './daftar-soal/daftar-soal.component';
+import { LoginComponent } from './login/login.component';
+import { RegisterComponent } from './register/register.component';
+import { AuthInterceptor } from './interceptors/auth.interceptor';
+import { UserService } from './services/user.service';
+import { AuthService } from './services/auth.service';
+import { environment } from '../environments/environment';
 
 @NgModule({
   declarations: [
@@ -30,15 +33,30 @@ import { DaftarSoalComponent } from './daftar-soal/daftar-soal.component';
     ReviewComponent,
     HeaderComponent,
     DaftarSoalComponent,
+    LoginComponent,
+    RegisterComponent,
   ],
   imports: [
     BrowserModule,
+    HttpClientModule,
     AppRoutingModule,
     RouterModule.forRoot([]),
     FormsModule,
     CommonModule,
   ],
-  providers: [provideHttpClient(withInterceptorsFromDi())],
-  bootstrap: [AppComponent],
+  providers: [
+    {
+      provide: 'BASE_API_URL',
+      useValue: environment.apiUrl
+    },
+    {
+      provide: HTTP_INTERCEPTORS,
+      useClass: AuthInterceptor,
+      multi: true
+    },
+    UserService,
+    AuthService
+  ],
+  bootstrap: [AppComponent]
 })
-export class AppModule {}
+export class AppModule { }

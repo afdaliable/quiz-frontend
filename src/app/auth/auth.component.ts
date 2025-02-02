@@ -20,7 +20,7 @@ export class AuthComponent {
   authenticate(): void {
     if (this.password === 'password_yang_benar') {
       localStorage.setItem('isAuthenticated', 'true');
-      this.router.navigate(['/daftar-soal']);
+      this.router.navigate(['/home']);
     } else {
       alert('Password salah!');
     }

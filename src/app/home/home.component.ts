@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { QuestionService } from '../services/question.service';
 import { Router } from '@angular/router';
+import { UserService } from '../services/user.service';
 
 interface PaketSoal {
   id_nama_paket_soal: number;
@@ -17,18 +18,48 @@ interface PaketSoal {
 })
 export class HomeComponent implements OnInit {
   paketSoalList: PaketSoal[] = [];
+  isLoggedIn: boolean = false;
 
-  constructor(private questionService: QuestionService, private router: Router) {}
+  constructor(
+    private questionService: QuestionService,
+    private router: Router,
+    private userService: UserService
+  ) {}
 
   ngOnInit(): void {
-    this.questionService.getListPaketSoal().subscribe(
-      (data: PaketSoal[]) => {
-        this.paketSoalList = data;
-      },
-      (error) => {
-        console.error('Error fetching paket soal:', error);
+    this.checkLoginStatus();
+    this.loadPaketSoal();
+  }
+
+  checkLoginStatus(): void {
+    const token = localStorage.getItem('token');
+    this.isLoggedIn = !!token;
+    if (!this.isLoggedIn) {
+      this.router.navigate(['/login']);
+    } else {
+      const userData = localStorage.getItem('user');
+      if (userData) {
+        this.userService.setUser(JSON.parse(userData));
       }
-    );
+    }
+  }
+
+  loadPaketSoal(): void {
+    if (this.isLoggedIn) {
+      this.questionService.getListPaketSoal().subscribe({
+        next: (data: PaketSoal[]) => {
+          this.paketSoalList = data;
+        },
+        error: (error) => {
+          console.error('Error fetching paket soal:', error);
+          if (error.status === 401) {
+            this.isLoggedIn = false;
+            localStorage.clear();
+            this.router.navigate(['/login']);
+          }
+        }
+      });
+    }
   }
 
   selectPaketSoal(paketSoal: PaketSoal): void {
