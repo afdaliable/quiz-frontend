@@ -18,7 +18,12 @@ export class AuthInterceptor implements HttpInterceptor {
   intercept(request: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
     const token = localStorage.getItem('token');
     
-    let headers = request.headers
+    // Don't add headers for OPTIONS requests
+    if (request.method === 'OPTIONS') {
+      return next.handle(request);
+    }
+
+    let headers = new HttpHeaders()
       .set('Content-Type', 'application/json')
       .set('Accept', 'application/json');
 
@@ -27,7 +32,8 @@ export class AuthInterceptor implements HttpInterceptor {
     }
 
     const clonedRequest = request.clone({
-      headers: headers
+      headers: headers,
+      withCredentials: true // Important for CORS with credentials
     });
 
     return next.handle(clonedRequest).pipe(

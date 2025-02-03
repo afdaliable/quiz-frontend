@@ -1,4 +1,10 @@
 export const environment = {
-     //apiUrl: 'http://localhost:8787',
-     apiUrl: 'https://quiz-backend.afdaliable.dev', 
-};
+  production: false,
+  apiUrl: 'https://quiz-backend.afdaliable.dev',
+  corsConfig: {
+    allowedOrigins: ['http://localhost:4200'],
+    allowedMethods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
+    allowCredentials: true
+  }
+}; 
