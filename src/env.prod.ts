@@ -1,11 +1,10 @@
 export const environment = {
-  production: false,
-  apiUrl: 'http://localhost:8787',
+  production: true,
+  apiUrl: 'https://quiz-backend.afdaliable.dev',
   corsConfig: {
-    allowedOrigins: ['http://localhost:4200'],
+    allowedOrigins: ['https://kuis.canducation.com'],
     allowedMethods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization'],
     allowCredentials: true
-  },
-  withCredentials: true
+  }
 }; 

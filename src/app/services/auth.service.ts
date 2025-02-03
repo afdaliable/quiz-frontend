@@ -4,7 +4,13 @@ import { Router } from '@angular/router';
 
 import { Observable, throwError } from 'rxjs';
 import { tap, catchError } from 'rxjs/operators';
-import { environment } from '../../environments/environment';
+import { environment } from '../../env';
+
+interface AuthResponse {
+  access_token: string;
+  user?: any;
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -45,41 +51,42 @@ export class AuthService {
       );
   }
 
-  signIn(email: string, password: string): Observable<any> {
-    const headers = new HttpHeaders()
-      .set('Content-Type', 'application/json')
-      .set('Accept', 'application/json');
-
-    const body = {
-      email,
-      password,
-      grant_type: 'password'
-    };
-
-    return this.http.post(`${this.baseUrl}/auth/v1/token`, body, { headers })
-      .pipe(
-        catchError(error => {
-          console.error('Login error:', error);
-          if (error.status === 0) {
-            return throwError(() => new Error('Network error - please check your connection'));
-          }
-          return throwError(() => error);
-        }),
-        tap((response: any) => {
-          if (response?.access_token) {
-            localStorage.setItem('token', response.access_token);
+  login(credentials: any): Observable<AuthResponse> {
+    const headers = new HttpHeaders().set('Content-Type', 'application/json');
+    
+    return this.http.post<AuthResponse>(
+      `${this.baseUrl}/auth/v1/token`, 
+      credentials,
+      { 
+        headers,
+        withCredentials: true
+      }
+    ).pipe(
+      tap(response => {
+        if (response.access_token) {
+          localStorage.setItem('token', response.access_token);
+          if (response.user) {
             localStorage.setItem('user', JSON.stringify(response.user));
           }
-        })
-      );
+        }
+      }),
+      catchError(error => {
+        console.error('Login error:', error);
+        return throwError(() => error);
+      })
+    );
   }
 
-  logout() {
+  logout(): void {
     localStorage.clear();
     this.router.navigate(['/login']);
   }
 
-  isAuthenticated(): boolean {
-    return !!localStorage.getItem('token');
+  getToken(): string | null {
+    return localStorage.getItem('token');
+  }
+
+  isLoggedIn(): boolean {
+    return !!this.getToken();
   }
 }

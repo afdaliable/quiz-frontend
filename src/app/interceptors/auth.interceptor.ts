@@ -10,38 +10,35 @@ import {
 import { Observable, throwError } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 import { Router } from '@angular/router';
+import { AuthService } from '../services/auth.service';
 
 @Injectable()
 export class AuthInterceptor implements HttpInterceptor {
-  constructor(private router: Router) {}
+  constructor(private router: Router, private authService: AuthService) {}
 
   intercept(request: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
-    const token = localStorage.getItem('token');
-    
-    // Don't add headers for OPTIONS requests
-    if (request.method === 'OPTIONS') {
+    // Skip for auth endpoints
+    if (request.url.includes('/auth/v1/token')) {
       return next.handle(request);
     }
 
-    let headers = new HttpHeaders()
-      .set('Content-Type', 'application/json')
-      .set('Accept', 'application/json');
-
-    if (token && !request.url.includes('/signup') && !request.url.includes('/auth/v1/token')) {
-      headers = headers.set('Authorization', `Bearer ${token}`);
+    const token = this.authService.getToken();
+    
+    if (token) {
+      request = request.clone({
+        setHeaders: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        },
+        withCredentials: true
+      });
     }
 
-    const clonedRequest = request.clone({
-      headers: headers,
-      withCredentials: true // Important for CORS with credentials
-    });
-
-    return next.handle(clonedRequest).pipe(
+    return next.handle(request).pipe(
       catchError((error: HttpErrorResponse) => {
-        console.error('HTTP Error:', error);
         if (error.status === 401) {
-          localStorage.clear();
-          this.router.navigate(['/login']);
+          this.authService.logout();
         }
         return throwError(() => error);
       })

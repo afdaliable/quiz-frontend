@@ -1,7 +1,6 @@
-import { Component, Output, EventEmitter } from '@angular/core';
+import { Component } from '@angular/core';
 import { Router } from '@angular/router';
 import { AuthService } from '../services/auth.service';
-import { UserService } from '../services/user.service';
 
 @Component({
   selector: 'app-login',
@@ -9,40 +8,27 @@ import { UserService } from '../services/user.service';
   styleUrls: ['./login.component.scss'],
 })
 export class LoginComponent {
-  @Output() closePopup = new EventEmitter<void>();
-
   loginData = {
     email: '',
-    password: '',
+    password: ''
   };
-
   errorMessage: string = '';
 
   constructor(
-    private router: Router,
     private authService: AuthService,
-    private userService: UserService
+    private router: Router
   ) {}
 
-  onSubmit() {
-    this.authService.signIn(
-      this.loginData.email,
-      this.loginData.password
-    ).subscribe({
+  onSubmit(): void {
+    this.errorMessage = '';
+    this.authService.login(this.loginData).subscribe({
       next: (response) => {
-        if (response?.access_token) {
-          const userData = {
-            display_name: response.user.display_name,
-            email: response.user.email
-          };
-          this.userService.setUser(userData);
-          this.router.navigate(['/home']);
-          this.closePopup.emit();
-        }
+        console.log('Login successful');
+        this.router.navigate(['/home']);
       },
       error: (error) => {
-        console.error('Login failed', error);
-        this.errorMessage = error.message || 'Login failed. Please try again.';
+        console.error('Login failed:', error);
+        this.errorMessage = error.error?.message || 'Login failed. Please try again.';
       }
     });
   }
