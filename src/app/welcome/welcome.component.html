@@ -4,7 +4,7 @@
     
     <form (ngSubmit)="startQuiz()" #quizForm="ngForm" class="space-y-4">
       <div *ngIf="user">
-        <p class="text-lg"><strong>Nama:</strong> {{ user.first_name }} {{ user.last_name }}</p>
+        <p class="text-lg"><strong>Nama:</strong> {{ user.display_name }}</p>
       </div>
       
       <div *ngIf="selectedPaket">

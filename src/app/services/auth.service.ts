@@ -1,59 +1,31 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { Router } from '@angular/router';
-
-import { Observable, throwError } from 'rxjs';
+import { Observable, BehaviorSubject, throwError } from 'rxjs';
 import { tap, catchError } from 'rxjs/operators';
-import { environment } from '../../env';
+import { environment } from '../../environments/environment';
 
 interface AuthResponse {
   access_token: string;
-  user?: any;
+  user: {
+    id: string;
+    email: string;
+    display_name: string;
+  };
 }
 
 @Injectable({
   providedIn: 'root'
 })
 export class AuthService {
-  private baseUrl = environment.apiUrl;
+  private userSubject = new BehaviorSubject<any>(null);
+  user$ = this.userSubject.asObservable();
+  private baseUrl = environment.apiUrl; // Add this line
 
-  constructor(
-    private http: HttpClient,
-    private router: Router
-  ) {}
-
-  signUp(email: string, password: string, display_name: string): Observable<any> {
-    const headers = new HttpHeaders()
-      .set('Content-Type', 'application/json')
-      .set('Accept', 'application/json');
-
-    const body = {
-      email,
-      password,
-      display_name
-    };
-
-    return this.http.post(`${this.baseUrl}/signup`, body, { headers })
-      .pipe(
-        catchError(error => {
-          console.error('Signup error:', error);
-          if (error.status === 0) {
-            return throwError(() => new Error('Network error - please check your connection'));
-          }
-          return throwError(() => error);
-        }),
-        tap((response: any) => {
-          if (response?.access_token) {
-            localStorage.setItem('token', response.access_token);
-            localStorage.setItem('user', JSON.stringify(response.user));
-          }
-        })
-      );
-  }
+  constructor(private http: HttpClient) {}
 
   login(credentials: any): Observable<AuthResponse> {
     const headers = new HttpHeaders().set('Content-Type', 'application/json');
-    
+
     return this.http.post<AuthResponse>(
       `${this.baseUrl}/auth/v1/token`, 
       credentials,
@@ -65,9 +37,13 @@ export class AuthService {
       tap(response => {
         if (response.access_token) {
           localStorage.setItem('token', response.access_token);
-          if (response.user) {
-            localStorage.setItem('user', JSON.stringify(response.user));
-          }
+          const userData = {
+            id: response.user.id,
+            email: response.user.email,
+            display_name: response.user.display_name || response.user.email.split('@')[0]
+          };
+          localStorage.setItem('user', JSON.stringify(userData));
+          this.setUser(userData);
         }
       }),
       catchError(error => {
@@ -77,16 +53,49 @@ export class AuthService {
     );
   }
 
+  signUp(email: string, password: string, display_name: string): Observable<AuthResponse> {
+    return this.http.post<AuthResponse>(
+      `${this.baseUrl}/signup`,
+      { email, password, display_name },
+      { withCredentials: true }
+    ).pipe(
+      tap(response => {
+        if (response.access_token) {
+          localStorage.setItem('token', response.access_token);
+          const userData = {
+            id: response.user.id,
+            email: response.user.email,
+            display_name: response.user.display_name
+          };
+          localStorage.setItem('user', JSON.stringify(userData));
+          this.userSubject.next(userData);
+        }
+      }),
+      catchError(error => {
+        console.error('Registration error:', error);
+        return throwError(() => error);
+      })
+    );
+  }
   logout(): void {
-    localStorage.clear();
-    this.router.navigate(['/login']);
+    localStorage.removeItem('token');
+    this.userSubject.next(null);
   }
 
   getToken(): string | null {
     return localStorage.getItem('token');
   }
 
-  isLoggedIn(): boolean {
-    return !!this.getToken();
+  setUser(user: any): void {
+    this.userSubject.next(user);
+  }
+
+  initializeUserState(): void {
+    const token = this.getToken();
+    if (token) {
+      // You might want to validate the token or fetch user data from the server here
+      // For now, we'll just set a basic user object
+      this.setUser({ display_name: 'User' });
+    }
   }
 }

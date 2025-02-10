@@ -11,34 +11,43 @@ import { Observable, throwError } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 import { Router } from '@angular/router';
 import { AuthService } from '../services/auth.service';
+import { environment } from '../../environments/environment';
 
 @Injectable()
 export class AuthInterceptor implements HttpInterceptor {
   constructor(private router: Router, private authService: AuthService) {}
 
   intercept(request: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
+    console.log('Intercepting request:', request.url, request.method);
     // Skip for auth endpoints
-    if (request.url.includes('/auth/v1/token')) {
+    if (request.url.includes('/auth/v1/token') || request.url.includes('/signup')) {
+      console.log('Skipping auth endpoint');
       return next.handle(request);
     }
 
-    const token = this.authService.getToken();
-    
-    if (token) {
-      request = request.clone({
-        setHeaders: {
-          Authorization: `Bearer ${token}`,
-          'Content-Type': 'application/json',
-          'Accept': 'application/json'
-        },
-        withCredentials: true
-      });
+    const token = localStorage.getItem('token');
+    if (!token) {
+      this.router.navigate(['/login']);
+      return throwError(() => new Error('No token found'));
     }
+
+    // Clone the request and add headers
+    request = request.clone({
+      setHeaders: {
+        'Authorization': `Bearer ${token}`,
+        'Accept': 'application/json',
+        'Content-Type': 'application/json'
+      },
+      withCredentials: environment.withCredentials
+    });
 
     return next.handle(request).pipe(
       catchError((error: HttpErrorResponse) => {
+        console.error('Error in interceptor:', error);
         if (error.status === 401) {
-          this.authService.logout();
+          console.log('Unauthorized, logging out');
+          localStorage.clear();
+          this.router.navigate(['/login']);
         }
         return throwError(() => error);
       })

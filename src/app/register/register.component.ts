@@ -1,30 +1,29 @@
-import { Component, Output, EventEmitter } from '@angular/core';
-import { Router } from '@angular/router';
+import { Component } from '@angular/core';
 import { AuthService } from '../services/auth.service';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-register',
   templateUrl: './register.component.html',
-  styleUrls: ['./register.component.scss'],
+  styleUrls: ['./register.component.scss']
 })
 export class RegisterComponent {
-  @Output() closePopup = new EventEmitter<void>();
-
   registerData = {
     email: '',
     password: '',
-    display_name: '',
+    display_name: ''
   };
 
   errorMessage: string = '';
   showSuccessPopup: boolean = false;
 
   constructor(
-    private router: Router,
-    private authService: AuthService
+    private authService: AuthService,
+    private router: Router
   ) {}
 
-  onSubmit() {
+  onSubmit(): void {
+    this.errorMessage = '';
     this.authService.signUp(
       this.registerData.email,
       this.registerData.password,
@@ -35,9 +34,11 @@ export class RegisterComponent {
           this.showSuccessPopup = true;
           setTimeout(() => {
             this.showSuccessPopup = false;
-            this.router.navigate(['/home']);
-            this.closePopup.emit();
-          }, 3000);
+            this.router.navigate(['/home'])
+              .then(() => {
+                window.location.reload();
+              });
+          }, 2000);
         }
       },
       error: (error) => {

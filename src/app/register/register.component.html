@@ -1,27 +1,101 @@
-<div class="container mx-auto mt-10 p-4">
-  <h2 class="text-2xl font-bold mb-4">Register</h2>
-  <form (ngSubmit)="onSubmit()" #registerForm="ngForm" class="space-y-4">
-    <div>
-      <label for="display_name" class="block">Display Name</label>
-      <input type="text" id="display_name" name="display_name" [(ngModel)]="registerData.display_name" required class="w-full p-2 border rounded">
+<div class="flex min-h-screen">
+  <div class="flex flex-1 flex-col justify-center px-4 pb-16 sm:px-6 lg:flex-none lg:px-20 xl:px-24">
+    <div class="mx-auto w-full max-w-sm lg:w-96">
+      <div>
+        <img
+          class="h-10 w-auto"
+          src="https://img.icons8.com/?size=100&id=ZSsHTta66mDV&format=png&color=000000"
+          alt="Quiz App"
+        />
+        <h2 class="mt-8 text-2xl font-bold leading-9 tracking-tight text-gray-900">
+          Create your account
+        </h2>
+      </div>
+
+      <div class="mt-10">
+        <form (ngSubmit)="onSubmit()" #registerForm="ngForm" class="space-y-6">
+          <div>
+            <label for="email" class="block text-sm font-medium leading-6 text-gray-900">
+              Email address
+            </label>
+            <div class="mt-2">
+              <input
+                id="email"
+                name="email"
+                type="email"
+                required
+                [(ngModel)]="registerData.email"
+                autocomplete="email"
+                class="block w-full rounded-md border-0 py-1.5 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
+              />
+            </div>
+          </div>
+
+          <div>
+            <label for="display_name" class="block text-sm font-medium leading-6 text-gray-900">
+              Display Name
+            </label>
+            <div class="mt-2">
+              <input
+                id="display_name"
+                name="display_name"
+                type="text"
+                required
+                [(ngModel)]="registerData.display_name"
+                autocomplete="name"
+                class="block w-full rounded-md border-0 py-1.5 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
+              />
+            </div>
+          </div>
+
+          <div>
+            <label for="password" class="block text-sm font-medium leading-6 text-gray-900">
+              Password
+            </label>
+            <div class="mt-2">
+              <input
+                id="password"
+                name="password"
+                type="password"
+                required
+                [(ngModel)]="registerData.password"
+                autocomplete="new-password"
+                class="block w-full rounded-md border-0 py-1.5 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
+              />
+            </div>
+          </div>
+
+          <div *ngIf="errorMessage" class="text-red-600 text-sm mt-2">
+            {{ errorMessage }}
+          </div>
+
+          <div>
+            <button
+              type="submit"
+              class="flex w-full justify-center rounded-md bg-indigo-600 px-3 py-1.5 text-sm font-semibold leading-6 text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+            >
+              Sign up
+            </button>
+          </div>
+        </form>
+
+        <p class="mt-10 text-center text-sm text-gray-500">
+          Already have an account?
+          <a routerLink="/login" class="font-semibold leading-6 text-indigo-600 hover:text-indigo-500">Sign in</a>
+        </p>
+      </div>
     </div>
-    <div>
-      <label for="email" class="block">Email</label>
-      <input type="email" id="email" name="email" [(ngModel)]="registerData.email" required class="w-full p-2 border rounded">
-    </div>
-    <div>
-      <label for="password" class="block">Password</label>
-      <input type="password" id="password" name="password" [(ngModel)]="registerData.password" required class="w-full p-2 border rounded">
-    </div>
-    <button type="submit" class="bg-blue-500 text-white p-2 rounded">Register</button>
-  </form>
-  <div *ngIf="errorMessage" class="text-red-500 mt-4">
-    {{ errorMessage }}
   </div>
-  <div *ngIf="showSuccessPopup" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
-    <div class="bg-white p-8 rounded-lg shadow-lg">
-      <h2 class="text-2xl font-bold mb-4">Pendaftaran Berhasil!</h2>
-      <p>Anda akan dialihkan ke halaman utama.</p>
-    </div>
+  <div class="relative hidden w-0 flex-1 lg:block">
+    <img
+      class="absolute inset-0 h-full w-full object-cover"
+      src="https://images.unsplash.com/photo-1738707060349-c92b5b15bf80?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=1908&q=80"
+      alt=""
+    />
+  </div>
+</div>
+<div *ngIf="showSuccessPopup" class="fixed inset-0 flex items-center justify-center z-50">
+  <div class="bg-white p-6 rounded-lg shadow-xl">
+    <p class="text-green-600 font-semibold">Registration successful! Redirecting to home page...</p>
   </div>
 </div>

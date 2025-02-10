@@ -15,34 +15,34 @@
       </button>
     </div>
     <div class="hidden lg:flex lg:gap-x-12">
-      <a href="#" class="text-sm font-semibold leading-6 text-gray-900">Product</a>
-      <a href="#" class="text-sm font-semibold leading-6 text-gray-900">Features</a>
-      <a href="#" class="text-sm font-semibold leading-6 text-gray-900">Marketplace</a>
-      <a href="#" class="text-sm font-semibold leading-6 text-gray-900">Company</a>
+      <a href="#" class="text-sm font-semibold leading-6 text-gray-900">Home</a>
+      <a href="#" class="text-sm font-semibold leading-6 text-gray-900">Kumpulan Kuis</a>
+      <a href="#" class="text-sm font-semibold leading-6 text-gray-900">Materi</a>
+      <a href="#" class="text-sm font-semibold leading-6 text-gray-900">Hubungi Kami</a>
     </div>
     <div class="hidden lg:flex lg:flex-1 lg:justify-end">
-      <ng-container *ngIf="user$ | async as user; else loginSignup">
-        <span class="text-sm font-semibold leading-6 text-gray-900 mr-4">{{ user.first_name }} {{ user.last_name }}</span>
-        <button (click)="logout()" class="text-sm font-semibold leading-6 text-gray-900">Log out <span aria-hidden="true">&rarr;</span></button>
+      <ng-container *ngIf="user$ | async as user">
+        <span class="text-sm font-semibold leading-6 text-gray-900 mr-4">{{ user.display_name || user.email.split('@')[0] }}</span>
+        <button (click)="logout()" class="text-sm font-semibold leading-6 text-gray-900">Log out <span aria-hidden="true">→</span></button>
       </ng-container>
       <ng-template #loginSignup>
-        <a (click)="openLoginPopup()" class="text-sm font-semibold leading-6 text-gray-900 cursor-pointer mr-4">Log in</a>
-        <a (click)="openSignupPopup()" class="rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 cursor-pointer">Sign up</a>
+        <a routerLink="/login" class="text-sm font-semibold leading-6 text-gray-900 cursor-pointer mr-4">Log in</a>
+        <a routerLink="/register" class="rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 cursor-pointer">Sign up</a>
       </ng-template>
     </div>
   </nav>
 </header>
 
 <!-- Login Popup -->
-<div *ngIf="showLoginPopup" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full" (click)="closeLoginPopup()">
+<!-- <div *ngIf="showLoginPopup" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full" (click)="closeLoginPopup()">
   <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white" (click)="$event.stopPropagation()">
     <app-login (closePopup)="closeLoginPopup()"></app-login>
   </div>
-</div>
+</div> -->
 
 <!-- Signup Popup -->
-<div *ngIf="showSignupPopup" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full" (click)="closeSignupPopup()">
+<!-- <div *ngIf="showSignupPopup" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full" (click)="closeSignupPopup()">
   <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white" (click)="$event.stopPropagation()">
     <app-register (closePopup)="closeSignupPopup()"></app-register>
   </div>
-</div>
+</div> -->

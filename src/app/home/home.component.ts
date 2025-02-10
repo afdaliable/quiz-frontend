@@ -27,42 +27,41 @@ export class HomeComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    this.checkLoginStatus();
+    const token = localStorage.getItem('token');
+    const userData = localStorage.getItem('user');
+    
+    if (!token || !userData) {
+      this.router.navigate(['/login']);
+      return;
+    }
+    
+    this.userService.setUser(JSON.parse(userData));
+    this.isLoggedIn = true;
     this.loadPaketSoal();
   }
 
-  checkLoginStatus(): void {
-    const token = localStorage.getItem('token');
-    this.isLoggedIn = !!token;
-    if (!this.isLoggedIn) {
-      this.router.navigate(['/login']);
-    } else {
-      const userData = localStorage.getItem('user');
-      if (userData) {
-        this.userService.setUser(JSON.parse(userData));
-      }
-    }
-  }
-
   loadPaketSoal(): void {
-    if (this.isLoggedIn) {
-      this.questionService.getListPaketSoal().subscribe({
-        next: (data: PaketSoal[]) => {
-          this.paketSoalList = data;
-        },
-        error: (error) => {
-          console.error('Error fetching paket soal:', error);
-          if (error.status === 401) {
-            this.isLoggedIn = false;
-            localStorage.clear();
-            this.router.navigate(['/login']);
-          }
+    this.questionService.getListPaketSoal().subscribe({
+      next: (data: PaketSoal[]) => {
+        this.paketSoalList = data;
+      },
+      error: (error) => {
+        console.error('Error fetching paket soal:', error);
+        if (error.status === 401) {
+          localStorage.clear();
+          this.router.navigate(['/login']);
         }
-      });
-    }
+      }
+    });
   }
 
   selectPaketSoal(paketSoal: PaketSoal): void {
+    const token = localStorage.getItem('token');
+    if (!token) {
+      this.router.navigate(['/login']);
+      return;
+    }
+    
     localStorage.setItem('selectedPaket', JSON.stringify(paketSoal));
     this.router.navigate(['/welcome']);
   }
