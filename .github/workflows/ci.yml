@@ -83,6 +83,7 @@ jobs:
         run: |
           docker run -d --name quiz-frontend \
             -p 4200:4200 \
+            -e API_URL=https://quiz-backend.afdaliable.dev \
             --network=bridge \
             --restart unless-stopped \
             ghcr.io/afdaliable/quiz-frontend-prod:latest 
