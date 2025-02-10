@@ -82,7 +82,7 @@ jobs:
       - name: Jalankan Container Baru
         run: |
           docker run -d --name quiz-frontend \
-            -p 4200:4200 \
+            -p 4200:80 \
             -e API_URL=https://quiz-backend.afdaliable.dev \
             --restart unless-stopped \
             ghcr.io/afdaliable/quiz-frontend-prod:latest 
