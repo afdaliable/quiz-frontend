@@ -25,7 +25,7 @@ COPY --from=builder /app/dist/quiz-frontend /usr/share/nginx/html/
 COPY nginx.conf /etc/nginx/conf.d/default.conf
 
 # Copy environment script
-COPY src/assets/env.js /usr/share/nginx/html/assets/env.js
+#COPY src/assets/env.js /usr/share/nginx/html/assets/env.js
 
 # Copy and make the entrypoint script executable
 COPY docker-entrypoint.sh /
