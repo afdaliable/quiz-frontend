@@ -12,14 +12,8 @@ export class DaftarSoalService {
   constructor(private http: HttpClient, private router: Router) {}
 
   getSoalList(): Observable<any[]> {
-    const token = localStorage.getItem('token');
-    const headers = new HttpHeaders()
-      .set('Authorization', `Bearer ${token}`)
-      .set('Content-Type', 'application/json');
-
-    return this.http.get<any[]>(this.apiUrl, { 
-      headers, 
-      withCredentials: true 
+    return this.http.get<any[]>('/api/soalsoal', {
+      withCredentials: true
     }).pipe(
       catchError((error) => {
         console.error('Error fetching soal list:', error);

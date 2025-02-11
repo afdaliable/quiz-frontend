@@ -56,23 +56,15 @@ export class QuestionService {
   }
 
   getQuestions(kategori: string, paketSoal: string): Observable<Question[]> {
-    const token = localStorage.getItem('token');
-    const headers = new HttpHeaders()
-      .set('Authorization', `Bearer ${token}`)
-      .set('Accept', 'application/json')
-      .set('Content-Type', 'application/json');
-      
-    const apiUrl = `${this.baseApiUrl}/paket-soal-response/${kategori}/${paketSoal}`;
-    
-    return this.http.get<ApiResponse>(apiUrl, { 
-      headers,
-      withCredentials: true 
+    return this.http.get<ApiResponse>(`/api/paket-soal-response/${kategori}/${paketSoal}`, {
+      withCredentials: true
     }).pipe(
       map((response) => {
         console.log('Response received:', response);
         return this.transformQuestions(response.kumpulan_soal);
       }),
       catchError((error) => {
+        console.error('Error in getQuestions:', error);
         if (error.status === 401) {
           localStorage.clear();
           this.router.navigate(['/login']);
