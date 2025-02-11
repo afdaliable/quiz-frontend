@@ -38,7 +38,7 @@ export class AuthInterceptor implements HttpInterceptor {
         'Accept': 'application/json',
         'Content-Type': 'application/json'
       },
-      withCredentials: environment.withCredentials
+      withCredentials: true
     });
 
     return next.handle(request).pipe(

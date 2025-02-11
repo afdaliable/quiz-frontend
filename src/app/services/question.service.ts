@@ -49,7 +49,7 @@ export class QuestionService {
 
     return this.http.get(`${this.baseApiUrl}/listpaketsoal`, { 
       headers,
-      withCredentials: environment.production ? false : true 
+      withCredentials: true 
     }).pipe(
       catchError(error => {
         console.error('Error fetching paket soal:', error);
