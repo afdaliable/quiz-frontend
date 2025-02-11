@@ -2,11 +2,12 @@ import { Component, OnInit } from '@angular/core';
 import { QuestionService } from '../services/question.service';
 import { Router } from '@angular/router';
 import { Question } from '../services/question.service';
+import { UserService } from '../services/user.service';
 
 @Component({
   selector: 'app-review',
   templateUrl: './review.component.html',
-  styleUrls: ['./review.component.scss'],
+  styleUrls: ['./review.component.css']
 })
 export class ReviewComponent implements OnInit {
   public name: string = '';
@@ -15,13 +16,22 @@ export class ReviewComponent implements OnInit {
   public selectedAnswers: number[] = [];
   public selectedPaket: any = null;
   public showExplanation: boolean = false;
+  currentUser: any;
+  points: number = 0;
+  correctAnswers: number = 0;
+  incorrectAnswers: number = 0;
 
   constructor(
     private questionService: QuestionService,
-    private router: Router
+    private router: Router,
+    private userService: UserService
   ) {}
 
   ngOnInit(): void {
+    const userData = localStorage.getItem('user');
+    if (userData) {
+      this.currentUser = JSON.parse(userData);
+    }
     this.name = localStorage.getItem('name')!;
     const paketData = localStorage.getItem('selectedPaket');
     if (paketData) {

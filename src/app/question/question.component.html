@@ -10,7 +10,9 @@
         </span>
       </div>
       <div class="text-right">
-        <span class="text-sm">Nama: {{ name }}</span>
+        <div class="name">
+          <h5>Nama: {{ currentUser?.display_name || 'Unknown User' }}</h5>
+        </div>
       </div>
     </div>
   </div>

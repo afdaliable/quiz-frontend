@@ -4,6 +4,7 @@ import { QuestionService } from '../services/question.service';
 import { ActivatedRoute, Router } from '@angular/router';
 import { tap } from 'rxjs/operators';
 import { Question } from '../services/question.service';
+import { UserService } from '../services/user.service';
 
 interface PaketSoal {
   id_nama_paket_soal: number;
@@ -43,14 +44,20 @@ export class QuestionComponent implements OnInit {
   showScore: boolean = false;
 
   selectedPaket: PaketSoal | null = null;
+  currentUser: any;
 
   constructor(
     private questionService: QuestionService,
     private route: ActivatedRoute,
-    private router: Router
+    private router: Router,
+    private userService: UserService
   ) {}
 
   ngOnInit(): void {
+    const userData = localStorage.getItem('user');
+    if (userData) {
+      this.currentUser = JSON.parse(userData);
+    }
     this.name = localStorage.getItem('name')!;
     this.totalTime = parseInt(localStorage.getItem('durasi')!) * 60;
     this.remainingTime = this.totalTime;

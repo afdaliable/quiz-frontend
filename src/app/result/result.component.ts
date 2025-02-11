@@ -25,8 +25,7 @@ export class ResultComponent implements OnInit {
   points: number = 0;
   correctAnswers: number = 0;
   incorrectAnswers: number = 0;
-  user: any;
-
+  currentUser: any;
 
   constructor(private router: Router, private userService: UserService) {}
 
@@ -37,15 +36,9 @@ export class ResultComponent implements OnInit {
     if (paketData) {
       this.selectedPaket = JSON.parse(paketData);
     }
-    this.user = this.userService.getUser();
-    if (!this.user) {
-      const userData = localStorage.getItem('user');
-      if (userData) {
-        this.user = JSON.parse(userData);
-        this.userService.setUser(this.user);
-      } else {
-        this.router.navigate(['/login']);
-      }
+    const userData = localStorage.getItem('user');
+    if (userData) {
+      this.currentUser = JSON.parse(userData);
     }
     this.totalQuestions = parseInt(localStorage.getItem('totalQuestions') || '0');
     this.answeredQuestions = parseInt(localStorage.getItem('answeredQuestions') || '0');
