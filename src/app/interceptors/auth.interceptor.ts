@@ -18,7 +18,10 @@ export class AuthInterceptor implements HttpInterceptor {
   constructor(private router: Router, private authService: AuthService) {}
 
   intercept(request: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
-    if (request.method === 'OPTIONS') {
+    // Skip token check for login and signup endpoints
+    if (request.url.includes('/auth/v1/token') || 
+        request.url.includes('/signup') || 
+        request.method === 'OPTIONS') {
       return next.handle(request);
     }
 
