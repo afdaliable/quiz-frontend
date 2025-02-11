@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable, map, throwError, catchError } from 'rxjs';
-import { environment } from '../../env';
+import { environment } from '../../environments/environment';
 import { Router } from '@angular/router';
 
 interface ApiResponse {
