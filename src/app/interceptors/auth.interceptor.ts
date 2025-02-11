@@ -32,18 +32,24 @@ export class AuthInterceptor implements HttpInterceptor {
       return throwError(() => new Error('No token found'));
     }
 
+    // Clone the request with CORS headers
     request = request.clone({
       setHeaders: {
         'Authorization': `Bearer ${token}`,
         'Content-Type': 'application/json',
-        'Accept': 'application/json'
+        'Accept': 'application/json',
+        'Origin': 'https://kuis.canducation.com'
       },
       withCredentials: true
     });
 
     return next.handle(request).pipe(
       catchError((error: HttpErrorResponse) => {
-        console.error('Interceptor Error:', error);
+        if (error.status === 0) {
+          console.error('CORS or Network error:', error);
+          // Optionally refresh the page or retry the request
+          return throwError(() => new Error('Network error occurred'));
+        }
         if (error.status === 401) {
           localStorage.clear();
           this.router.navigate(['/login']);
