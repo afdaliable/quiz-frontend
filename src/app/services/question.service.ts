@@ -50,16 +50,7 @@ export class QuestionService {
     return this.http.get(`${this.baseApiUrl}/listpaketsoal`, { 
       headers,
       withCredentials: true 
-    }).pipe(
-      catchError(error => {
-        console.error('Error fetching paket soal:', error);
-        if (error.status === 401) {
-          localStorage.clear();
-          this.router.navigate(['/login']);
-        }
-        return throwError(() => error);
-      })
-    );
+    });
   }
 
   getQuestions(kategori: string, paketSoal: string): Observable<Question[]> {
