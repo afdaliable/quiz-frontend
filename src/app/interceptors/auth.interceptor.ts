@@ -24,6 +24,11 @@ export class AuthInterceptor implements HttpInterceptor {
       headers: request.headers.keys(),
       withCredentials: request.withCredentials
     });
+    // Skip for OPTIONS preflight requests
+    if (request.method === 'OPTIONS') {
+      return next.handle(request);
+    }
+
     // Skip for auth endpoints
     if (request.url.includes('/auth/v1/token') || request.url.includes('/signup')) {
       console.log('Skipping auth endpoint');
@@ -42,7 +47,8 @@ export class AuthInterceptor implements HttpInterceptor {
       setHeaders: {
         'Authorization': `Bearer ${token}`,
         'Accept': 'application/json',
-        'Content-Type': 'application/json'
+        'Content-Type': 'application/json',
+        'Origin': environment.production ? 'https://kuis.canducation.com' : 'http://localhost:4200'
       },
       withCredentials: true
     });
