@@ -18,13 +18,14 @@ export class AuthInterceptor implements HttpInterceptor {
   constructor(private router: Router, private authService: AuthService) {}
 
   intercept(request: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
-    // Skip for auth endpoints
-    if (request.url.includes('/auth/v1/token') || request.url.includes('/signup')) {
+    // Skip auth for preflight requests and login
+    if (request.method === 'OPTIONS' || request.url.includes('/auth/v1/token')) {
       return next.handle(request);
     }
 
     const token = localStorage.getItem('token');
     if (!token) {
+      console.log('No token found, redirecting to login');
       this.router.navigate(['/login']);
       return throwError(() => new Error('No token found'));
     }
@@ -32,12 +33,21 @@ export class AuthInterceptor implements HttpInterceptor {
     request = request.clone({
       setHeaders: {
         'Authorization': `Bearer ${token}`,
-        'Accept': 'application/json',
         'Content-Type': 'application/json'
       },
       withCredentials: true
     });
 
-    return next.handle(request);
+    return next.handle(request).pipe(
+      catchError((error: HttpErrorResponse) => {
+        console.error('Interceptor Error:', error);
+        if (error.status === 401) {
+          console.log('Token expired or invalid, clearing storage');
+          localStorage.clear();
+          this.router.navigate(['/login']);
+        }
+        return throwError(() => error);
+      })
+    );
   }
 }

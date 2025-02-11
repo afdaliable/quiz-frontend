@@ -4,8 +4,10 @@ export const environment = {
   withCredentials: true,
   corsConfig: {
     allowedOrigins: ['http://localhost:4200'],
-    allowedMethods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization'],
-    allowCredentials: true
+    allowedMethods: ['GET', 'POST', 'OPTIONS'],
+    allowedHeaders: ['*'],
+    exposedHeaders: ['Authorization'],
+    allowCredentials: true,
+    maxAge: 3600
   }
 }; 

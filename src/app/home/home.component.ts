@@ -30,7 +30,11 @@ export class HomeComponent implements OnInit {
     const token = localStorage.getItem('token');
     const userData = localStorage.getItem('user');
     
+    console.log('Home Init - Token exists:', !!token);
+    console.log('Home Init - User exists:', !!userData);
+    
     if (!token || !userData) {
+      console.log('Missing credentials, redirecting to login');
       this.router.navigate(['/login']);
       return;
     }
@@ -41,12 +45,14 @@ export class HomeComponent implements OnInit {
   }
 
   loadPaketSoal(): void {
+    console.log('Loading paket soal...');
     this.questionService.getListPaketSoal().subscribe({
       next: (data: PaketSoal[]) => {
+        console.log('Paket soal loaded:', data);
         this.paketSoalList = data;
       },
       error: (error) => {
-        console.error('Error fetching paket soal:', error);
+        console.error('Error in home component:', error);
         if (error.status === 401) {
           localStorage.clear();
           this.router.navigate(['/login']);

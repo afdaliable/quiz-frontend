@@ -41,16 +41,18 @@ export class QuestionService {
   constructor(private http: HttpClient, private router: Router) {}
 
   getListPaketSoal(): Observable<any> {
-    const token = localStorage.getItem('token');
-    const headers = new HttpHeaders()
-      .set('Authorization', `Bearer ${token}`)
-      .set('Accept', 'application/json')
-      .set('Content-Type', 'application/json');
-
-    return this.http.get(`${this.baseApiUrl}/listpaketsoal`, { 
-      headers,
-      withCredentials: true 
-    });
+    return this.http.get('/api/listpaketsoal', {
+      withCredentials: true
+    }).pipe(
+      catchError(error => {
+        console.error('QuestionService Error:', error);
+        if (error.status === 401) {
+          localStorage.clear();
+          this.router.navigate(['/login']);
+        }
+        return throwError(() => error);
+      })
+    );
   }
 
   getQuestions(kategori: string, paketSoal: string): Observable<Question[]> {
