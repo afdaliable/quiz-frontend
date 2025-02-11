@@ -1,31 +1,43 @@
 import { Injectable } from '@angular/core';
-import { BehaviorSubject } from 'rxjs';
+import { BehaviorSubject, Observable, catchError, throwError } from 'rxjs';
+import { HttpClient } from '@angular/common/http';
+import { environment } from '../../environments/environment';
 
 @Injectable({
   providedIn: 'root'
 })
 export class UserService {
-  private userSubject = new BehaviorSubject<any>(null);
-  user$ = this.userSubject.asObservable();
+  private baseApiUrl = environment.apiUrl;
+  private currentUser = new BehaviorSubject<any>(null);
 
-  constructor() {
-    const user = localStorage.getItem('user');
-    if (user) {
-      this.userSubject.next(JSON.parse(user));
-    }
+  constructor(private http: HttpClient) {}
+
+  getUserProfile(): Observable<any> {
+    const url = environment.production ? 
+      `${this.baseApiUrl}/user/profile` : 
+      '/api/user/profile';
+
+    return this.http.get(url, {
+      withCredentials: true
+    }).pipe(
+      catchError(error => {
+        console.error('Error fetching user profile:', error);
+        return throwError(() => error);
+      })
+    );
   }
 
   setUser(user: any) {
-    this.userSubject.next(user);
+    this.currentUser.next(user);
     localStorage.setItem('user', JSON.stringify(user));
   }
 
   getUser() {
-    return this.userSubject.value;
+    return this.currentUser.value;
   }
 
   clearUser() {
-    this.userSubject.next(null);
+    this.currentUser.next(null);
     localStorage.removeItem('user');
   }
 }

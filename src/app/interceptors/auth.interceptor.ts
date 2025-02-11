@@ -30,6 +30,7 @@ export class AuthInterceptor implements HttpInterceptor {
       return throwError(() => new Error('No token found'));
     }
 
+    // Don't modify URL in production, only add headers
     request = request.clone({
       setHeaders: {
         'Authorization': `Bearer ${token}`,

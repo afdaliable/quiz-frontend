@@ -41,7 +41,11 @@ export class QuestionService {
   constructor(private http: HttpClient, private router: Router) {}
 
   getListPaketSoal(): Observable<any> {
-    return this.http.get('/api/listpaketsoal', {
+    const url = environment.production ? 
+      `${this.baseApiUrl}/listpaketsoal` : 
+      '/api/listpaketsoal';
+    
+    return this.http.get(url, {
       withCredentials: true
     }).pipe(
       catchError(error => {
@@ -56,7 +60,11 @@ export class QuestionService {
   }
 
   getQuestions(kategori: string, paketSoal: string): Observable<Question[]> {
-    return this.http.get<ApiResponse>(`/api/paket-soal-response/${kategori}/${paketSoal}`, {
+    const url = environment.production ? 
+      `${this.baseApiUrl}/paket-soal-response/${kategori}/${paketSoal}` : 
+      `/api/paket-soal-response/${kategori}/${paketSoal}`;
+
+    return this.http.get<ApiResponse>(url, {
       withCredentials: true
     }).pipe(
       map((response) => {
