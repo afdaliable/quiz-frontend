@@ -14,4 +14,4 @@ export const environment = {
     allowCredentials: true,
     maxAge: 3600
   }
-};
+};   
