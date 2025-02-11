@@ -47,8 +47,7 @@ export class AuthInterceptor implements HttpInterceptor {
       setHeaders: {
         'Authorization': `Bearer ${token}`,
         'Accept': 'application/json',
-        'Content-Type': 'application/json',
-        'Origin': environment.production ? 'https://kuis.canducation.com' : 'http://localhost:4200'
+        'Content-Type': 'application/json'
       },
       withCredentials: true
     });

@@ -4,14 +4,11 @@ export const environment = {
   withCredentials: true,
   corsConfig: {
     allowedOrigins: ['https://kuis.canducation.com'],
-    allowedMethods: ['GET', 'POST', 'OPTIONS'],
+    allowedMethods: ['GET', 'POST'],  // Removed OPTIONS since backend doesn't list it
     allowedHeaders: [
       'Authorization',
-      'Content-Type',
       'Accept',
-      'Origin',
-      'Access-Control-Request-Method',
-      'Access-Control-Request-Headers'
+      'Content-Type'
     ],
     exposedHeaders: ['Authorization'],
     allowCredentials: true,

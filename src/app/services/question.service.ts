@@ -45,8 +45,7 @@ export class QuestionService {
     const headers = new HttpHeaders()
       .set('Authorization', `Bearer ${token}`)
       .set('Accept', 'application/json')
-      .set('Content-Type', 'application/json')
-      .set('Origin', environment.production ? 'https://kuis.canducation.com' : 'http://localhost:4200');
+      .set('Content-Type', 'application/json');
 
     return this.http.get(`${this.baseApiUrl}/listpaketsoal`, { 
       headers,
