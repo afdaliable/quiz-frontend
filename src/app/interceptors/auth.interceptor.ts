@@ -18,8 +18,7 @@ export class AuthInterceptor implements HttpInterceptor {
   constructor(private router: Router, private authService: AuthService) {}
 
   intercept(request: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
-    // Skip auth for preflight requests and login
-    if (request.method === 'OPTIONS' || request.url.includes('/auth/v1/token')) {
+    if (request.method === 'OPTIONS') {
       return next.handle(request);
     }
 
@@ -30,11 +29,11 @@ export class AuthInterceptor implements HttpInterceptor {
       return throwError(() => new Error('No token found'));
     }
 
-    // Don't modify URL in production, only add headers
     request = request.clone({
       setHeaders: {
         'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json'
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'
       },
       withCredentials: true
     });
@@ -43,7 +42,6 @@ export class AuthInterceptor implements HttpInterceptor {
       catchError((error: HttpErrorResponse) => {
         console.error('Interceptor Error:', error);
         if (error.status === 401) {
-          console.log('Token expired or invalid, clearing storage');
           localStorage.clear();
           this.router.navigate(['/login']);
         }
