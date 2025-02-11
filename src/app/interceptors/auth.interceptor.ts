@@ -18,7 +18,12 @@ export class AuthInterceptor implements HttpInterceptor {
   constructor(private router: Router, private authService: AuthService) {}
 
   intercept(request: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
-    console.log('Intercepting request:', request.url, request.method);
+    console.log('Full request details:', {
+      url: request.url,
+      method: request.method,
+      headers: request.headers.keys(),
+      withCredentials: request.withCredentials
+    });
     // Skip for auth endpoints
     if (request.url.includes('/auth/v1/token') || request.url.includes('/signup')) {
       console.log('Skipping auth endpoint');
@@ -26,6 +31,7 @@ export class AuthInterceptor implements HttpInterceptor {
     }
 
     const token = localStorage.getItem('token');
+    console.log('Token exists:', !!token);
     if (!token) {
       this.router.navigate(['/login']);
       return throwError(() => new Error('No token found'));
@@ -35,6 +41,7 @@ export class AuthInterceptor implements HttpInterceptor {
     request = request.clone({
       setHeaders: {
         'Authorization': `Bearer ${token}`,
+        'Accept': 'application/json',
         'Content-Type': 'application/json'
       },
       withCredentials: true
@@ -42,7 +49,12 @@ export class AuthInterceptor implements HttpInterceptor {
 
     return next.handle(request).pipe(
       catchError((error: HttpErrorResponse) => {
-        console.error('Error in interceptor:', error);
+        console.error('Detailed error in interceptor:', {
+          status: error.status,
+          message: error.message,
+          headers: error.headers,
+          error: error.error
+        });
         if (error.status === 401) {
           console.log('Unauthorized, logging out');
           localStorage.clear();

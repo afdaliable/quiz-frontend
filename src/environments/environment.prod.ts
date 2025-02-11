@@ -4,8 +4,14 @@ export const environment = {
   withCredentials: true,
   corsConfig: {
     allowedOrigins: ['https://kuis.canducation.com'],
-    allowedMethods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization'],
-    allowCredentials: true
+    allowedMethods: ['GET', 'POST'],
+    allowedHeaders: [
+      'Authorization',
+      'Accept',
+      'Content-Type'
+    ],
+    exposedHeaders: ['Authorization'],
+    allowCredentials: true,
+    maxAge: 3600
   }
 };

@@ -44,8 +44,8 @@ export class QuestionService {
     const token = localStorage.getItem('token');
     const headers = new HttpHeaders()
       .set('Authorization', `Bearer ${token}`)
-      .set('Content-Type', 'application/json')
-      .set('Accept', 'application/json');
+      .set('Accept', 'application/json')
+      .set('Content-Type', 'application/json');
 
     return this.http.get(`${this.baseApiUrl}/listpaketsoal`, { 
       headers,
@@ -66,8 +66,8 @@ export class QuestionService {
     const token = localStorage.getItem('token');
     const headers = new HttpHeaders()
       .set('Authorization', `Bearer ${token}`)
-      .set('Content-Type', 'application/json')
-      .set('Accept', 'application/json');
+      .set('Accept', 'application/json')
+      .set('Content-Type', 'application/json');
       
     const apiUrl = `${this.baseApiUrl}/paket-soal-response/${kategori}/${paketSoal}`;
     
