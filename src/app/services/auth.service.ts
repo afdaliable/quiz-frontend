@@ -27,7 +27,7 @@ export class AuthService {
     const headers = new HttpHeaders().set('Content-Type', 'application/json');
 
     return this.http.post<AuthResponse>(
-      `${this.baseUrl}/auth/v1/token`, 
+      '/api/auth/v1/token',
       credentials,
       { 
         headers,

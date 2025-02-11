@@ -12,9 +12,7 @@ export class DaftarSoalService {
   constructor(private http: HttpClient, private router: Router) {}
 
   getSoalList(): Observable<any[]> {
-    const url = environment.production ? 
-      `${environment.apiUrl}/soalsoal` : 
-      '/api/soalsoal';
+    const url = '/api/soalsoal';
 
     return this.http.get<any[]>(url, {
       withCredentials: true

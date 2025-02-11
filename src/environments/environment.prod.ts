@@ -1,5 +1,5 @@
 export const environment = {
   production: true,
-  apiUrl: 'https://quiz-backend.afdaliable.dev',
+  apiUrl: '/api',
   withCredentials: true
 };   
