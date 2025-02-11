@@ -9,6 +9,7 @@ import { environment } from '../../environments/environment';
 export class UserService {
   private baseApiUrl = environment.apiUrl;
   private currentUser = new BehaviorSubject<any>(null);
+  user$ = this.currentUser.asObservable();
 
   constructor(private http: HttpClient) {}
 
