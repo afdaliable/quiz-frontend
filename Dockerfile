@@ -8,7 +8,9 @@ COPY server.js .
 
 # Install only production dependencies
 RUN npm init -y && \
-    npm install express --production
+    npm install express --production && \
+    npm install http-proxy-middleware --production
+    
 
 EXPOSE 4200
 
