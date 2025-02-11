@@ -17,7 +17,10 @@ export class DaftarSoalService {
       .set('Authorization', `Bearer ${token}`)
       .set('Content-Type', 'application/json');
 
-    return this.http.get<any[]>(this.apiUrl, { headers }).pipe(
+    return this.http.get<any[]>(this.apiUrl, { 
+      headers, 
+      withCredentials: true 
+    }).pipe(
       catchError((error) => {
         console.error('Error fetching soal list:', error);
         if (error.status === 401) {
