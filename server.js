@@ -2,18 +2,15 @@ const express = require('express');
 const path = require('path');
 const app = express();
 
-app.use((req, res, next) => {
-  if (req.secure) {
-    next();
-  } else {
-    res.redirect('https://' + req.headers.host + req.url);
-  }
-});
-
-// Serve static files
+// Hapus redirect HTTPS karena ini sudah ditangani oleh Cloudflare
 app.use(express.static(path.join(__dirname, 'dist/quiz-frontend/browser')));
 
-// Handle all routes by serving index.html
+// Health check endpoint
+app.get('/health', (req, res) => {
+  res.send('OK');
+});
+
+// Send all requests to index.html
 app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, 'dist/quiz-frontend/browser/index.html'));
 });
