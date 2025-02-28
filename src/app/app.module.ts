@@ -20,6 +20,7 @@ import { AuthInterceptor } from './interceptors/auth.interceptor';
 import { UserService } from './services/user.service';
 import { AuthService } from './services/auth.service';
 import { environment } from '../environments/environment';
+import { CategoryComponent } from './category/category.component';
 
 @NgModule({
   declarations: [
@@ -35,6 +36,7 @@ import { environment } from '../environments/environment';
     DaftarSoalComponent,
     LoginComponent,
     RegisterComponent,
+    CategoryComponent
   ],
   imports: [
     BrowserModule,

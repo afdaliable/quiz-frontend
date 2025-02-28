@@ -1,42 +1,39 @@
-import { Component, OnInit } from '@angular/core';
+import { Component } from '@angular/core';
 import { Router } from '@angular/router';
-import { AuthService } from '../services/auth.service';
-import { Observable, map } from 'rxjs';
+import { UserService } from '../services/user.service';
 
 @Component({
   selector: 'app-header',
   templateUrl: './header.component.html',
   styleUrls: ['./header.component.scss']
 })
-export class HeaderComponent implements OnInit {
-  user$: Observable<any>;
-
+export class HeaderComponent {
+  isMenuOpen: boolean = false;
+  
   constructor(
     private router: Router,
-    private authService: AuthService
-  ) {
-    this.user$ = this.authService.user$.pipe(
-      map(user => {
-        if (!user) return null;
-        return {
-          ...user,
-          display_name: user.display_name || user.email.split('@')[0]
-        };
-      })
-    );
-  }
+    private userService: UserService
+  ) {}
 
-  ngOnInit(): void {
-    // Initialize user state from localStorage if available
-    const userData = localStorage.getItem('user');
-    if (userData) {
-      const user = JSON.parse(userData);
-      this.authService.setUser(user);
-    }
+  toggleMobileMenu(): void {
+    this.isMenuOpen = !this.isMenuOpen;
   }
 
   logout(): void {
-    this.authService.logout();
+    localStorage.clear();
     this.router.navigate(['/login']);
+  }
+
+  isLoggedIn(): boolean {
+    return !!localStorage.getItem('token');
+  }
+
+  getUserName(): string {
+    const userData = localStorage.getItem('user');
+    if (userData) {
+      const user = JSON.parse(userData);
+      return user.display_name || 'User';
+    }
+    return 'User';
   }
 }

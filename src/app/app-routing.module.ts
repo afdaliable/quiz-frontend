@@ -8,6 +8,7 @@ import { ReviewComponent } from './review/review.component';
 import { DaftarSoalComponent } from './daftar-soal/daftar-soal.component';
 import { LoginComponent } from './login/login.component';
 import { RegisterComponent } from './register/register.component';
+import { CategoryComponent } from './category/category.component';
 
 const routes: Routes = [
   {
@@ -46,7 +47,15 @@ const routes: Routes = [
   {
     path: 'register',
     component: RegisterComponent,
-  },  
+  },
+  {
+    path: 'categories',
+    component: CategoryComponent
+  },
+  {
+    path: 'paket-soal/:kategori',
+    component: DaftarSoalComponent
+  }
 ];
 
 @NgModule({

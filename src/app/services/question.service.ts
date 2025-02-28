@@ -96,4 +96,23 @@ export class QuestionService {
       solution: q.solution,
     }));
   }
+
+  getAllCategories(): Observable<any> {
+    const url = environment.production ? 
+      `${this.baseApiUrl}/semuaKategori` : 
+      '/api/semuaKategori';
+
+    return this.http.get(url, {
+      withCredentials: true
+    }).pipe(
+      catchError(error => {
+        console.error('Error fetching categories:', error);
+        if (error.status === 401) {
+          localStorage.clear();
+          this.router.navigate(['/login']);
+        }
+        return throwError(() => error);
+      })
+    );
+  }
 }

@@ -1,20 +1,37 @@
 import { Component, OnInit } from '@angular/core';
-import { QuestionService } from '../services/question.service';
 import { Router } from '@angular/router';
-import { Question } from '../services/question.service';
 import { UserService } from '../services/user.service';
+import { QuestionService } from '../services/question.service';
+
+interface Question {
+  id: number;
+  questionText: string;
+  options: {
+    text: string;
+    correct: boolean;
+  }[];
+  solution: string;
+}
+
+interface PaketSoal {
+  id_nama_paket_soal: number;
+  nama_paket_soal: string;
+  id_kategori_soal: number;
+  kategori_soal: string;
+  jumlah_soal: number;
+}
 
 @Component({
   selector: 'app-review',
   templateUrl: './review.component.html',
-  styleUrls: ['./review.component.css']
+  styleUrls: ['./review.component.scss']
 })
 export class ReviewComponent implements OnInit {
   public name: string = '';
   public questionList: Question[] = [];
   public currentQuestion: number = 0;
   public selectedAnswers: number[] = [];
-  public selectedPaket: any = null;
+  public selectedPaket: PaketSoal | null = null;
   public showExplanation: boolean = false;
   currentUser: any;
   points: number = 0;
@@ -28,57 +45,79 @@ export class ReviewComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
+    this.loadReviewData();
+  }
+
+  loadReviewData(): void {
+    // Load user data
     const userData = localStorage.getItem('user');
     if (userData) {
       this.currentUser = JSON.parse(userData);
     }
-    this.name = localStorage.getItem('name')!;
+
+    // Load selected paket
     const paketData = localStorage.getItem('selectedPaket');
     if (paketData) {
       this.selectedPaket = JSON.parse(paketData);
-      this.getQuestions();
+      this.loadQuestions();
     }
-    const savedAnswers = localStorage.getItem('selectedAnswers');
-    if (savedAnswers) {
-      this.selectedAnswers = JSON.parse(savedAnswers);
-      console.log('Loaded user answers:', this.selectedAnswers);
-    } else {
-      console.log('No saved answers found');
+
+    // Load answers
+    const answersData = localStorage.getItem('selectedAnswers');
+    if (answersData) {
+      this.selectedAnswers = JSON.parse(answersData);
     }
   }
 
-  getQuestions() {
-    this.questionService
-      .getQuestions(
-        this.selectedPaket.kategori_soal,
-        this.selectedPaket.nama_paket_soal
-      )
-      .subscribe((questions: Question[]) => {
-        this.questionList = questions;
-      });
+  loadQuestions(): void {
+    if (this.selectedPaket) {
+      this.questionService
+        .getQuestions(
+          this.selectedPaket.kategori_soal,
+          this.selectedPaket.nama_paket_soal
+        )
+        .subscribe({
+          next: (questions: Question[]) => {
+            this.questionList = questions;
+            console.log('Questions loaded:', questions);
+          },
+          error: (error) => {
+            console.error('Error loading questions:', error);
+          }
+        });
+    }
   }
 
-  nextQuestion() {
-    if (this.currentQuestion < this.questionList.length - 1) {
-      this.currentQuestion++;
+  goToQuestion(index: number): void {
+    if (index >= 0 && index < this.questionList.length) {
+      this.currentQuestion = index;
       this.showExplanation = false;
     }
   }
 
-  prevQuestion() {
+  prevQuestion(): void {
     if (this.currentQuestion > 0) {
       this.currentQuestion--;
       this.showExplanation = false;
     }
   }
 
-  goToQuestion(index: number) {
-    this.currentQuestion = index;
-    this.showExplanation = false;
+  nextQuestion(): void {
+    if (this.currentQuestion < this.questionList.length - 1) {
+      this.currentQuestion++;
+      this.showExplanation = false;
+    }
   }
 
-  toggleExplanation() {
+  toggleExplanation(): void {
     this.showExplanation = !this.showExplanation;
+  }
+
+  isUserAnswerCorrect(questionIndex: number): boolean {
+    if (!this.questionList[questionIndex]) return false;
+    const selectedAnswer = this.selectedAnswers[questionIndex];
+    if (selectedAnswer === undefined) return false;
+    return this.questionList[questionIndex].options[selectedAnswer]?.correct || false;
   }
 
   getUserAnswer(questionIndex: number): string {
@@ -87,14 +126,8 @@ export class ReviewComponent implements OnInit {
       ? ['A', 'B', 'C', 'D', 'E'][userAnswer]
       : 'Tidak dijawab';
   }
-  goToHome() {
-    this.router.navigate(['/']);
-  }
 
-  isUserAnswerCorrect(questionIndex: number): boolean {
-    const userAnswer = this.selectedAnswers[questionIndex];
-    return (
-      this.questionList[questionIndex].options[userAnswer]?.correct || false
-    );
+  goToHome(): void {
+    this.router.navigate(['/home']);
   }
 }

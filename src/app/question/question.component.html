@@ -1,57 +1,59 @@
-<div class="mx-auto max-w-7xl sm:px-6 lg:px-8 relative">
+<div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 relative">
+  <!-- Header section -->
   <div class="bg-blue-600 text-white p-4 rounded-t-lg">
-    <div class="flex justify-between items-center">
+    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center space-y-2 sm:space-y-0">
       <div>
-        <h4 class="text-xl font-bold">
+        <h4 class="text-lg sm:text-xl font-bold">
           {{ selectedPaket?.nama_paket_soal || "Paket Soal" }}
         </h4>
         <span class="text-sm">
           Kategori: {{ selectedPaket?.kategori_soal || "Tidak ada kategori" }}
         </span>
       </div>
-      <div class="text-right">
-        <div class="name">
-          <h5>Nama: {{ currentUser?.display_name || 'Unknown User' }}</h5>
-        </div>
+      <div class="text-sm sm:text-right">
+        <h5>Nama: {{ currentUser?.display_name || 'Unknown User' }}</h5>
       </div>
     </div>
   </div>
 
-  <div class="flex bg-gray-100">
-    <div class="w-3/4 pr-4 p-6">
+  <!-- Main content -->
+  <div class="flex flex-col lg:flex-row bg-gray-100">
+    <!-- Question section -->
+    <div class="w-full lg:w-3/4 p-4">
       <div *ngIf="!isQuizCompleted">
-        <div class="bg-white rounded-lg shadow-md p-4 mb-4 flex justify-between items-center">
-          <div class="text-lg font-semibold">
-            Pertanyaan {{ currentQuestion + 1 }} dari {{ questionList.length }}
+        <!-- Timer and progress -->
+        <div class="bg-white rounded-lg shadow-md p-4 mb-4">
+          <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center space-y-2 sm:space-y-0">
+            <div class="text-base sm:text-lg font-semibold">
+              Pertanyaan {{ currentQuestion + 1 }} dari {{ questionList.length }}
+            </div>
+            <div class="text-base sm:text-lg font-semibold">
+              Waktu: {{ formatTime(remainingTime) }}
+            </div>
+            <button
+              (click)="toggleMarkQuestion()"
+              class="w-full sm:w-auto px-4 py-2 text-white rounded-lg transition-colors duration-200"
+              [ngClass]="{
+                'bg-blue-500 hover:bg-blue-600': !markedQuestions[currentQuestion],
+                'bg-yellow-500 hover:bg-yellow-600': markedQuestions[currentQuestion]
+              }"
+            >
+              {{ markedQuestions[currentQuestion] ? "Hapus Tanda" : "Tandai Soal" }}
+            </button>
           </div>
-          <div class="text-lg font-semibold">
-            Waktu Tersisa: {{ formatTime(remainingTime) }}
-          </div>
-          <button
-            (click)="toggleMarkQuestion()"
-            class="px-4 py-2 text-white rounded-lg transition-colors duration-200"
-            [ngClass]="{
-              'bg-blue-500 hover:bg-blue-600': !markedQuestions[currentQuestion],
-              'bg-yellow-500 hover:bg-yellow-600': markedQuestions[currentQuestion]
-            }"
-          >
-            {{ markedQuestions[currentQuestion] ? "Hapus Tanda" : "Tandai Soal" }}
-          </button>
         </div>
-        <div class="w-full bg-gray-200 rounded-full h-2.5 mb-4">
-          <div
-            class="bg-blue-600 h-2.5 rounded-full"
-            [ngStyle]="{ width: progress + '%' }"
-          ></div>
-        </div>
-        <div class="question mt-6" *ngIf="questionList.length > 0">
-          <div class="bg-white p-6 rounded-lg shadow-md">
-            <h3 class="text-xl font-bold text-gray-800 mb-4">
+
+        <!-- Question text -->
+        <div class="question mt-4">
+          <div class="bg-white p-4 sm:p-6 rounded-lg shadow-md">
+            <h3 class="text-lg sm:text-xl font-bold text-gray-800">
               {{ currentQuestion + 1 }}. {{ questionList[currentQuestion]?.questionText }}
             </h3>
           </div>
         </div>
-        <div class="options mt-6 space-y-4">
+
+        <!-- Options -->
+        <div class="options mt-4 space-y-3">
           <div
             *ngFor="let option of questionList[currentQuestion]?.options; let i = index"
             (click)="answer(currentQuestion, i)"
@@ -59,28 +61,30 @@
               'bg-blue-500 text-white': selectedAnswers[currentQuestion] === i,
               'bg-white hover:bg-blue-100': selectedAnswers[currentQuestion] !== i
             }"
-            class="px-6 py-4 border rounded-lg border-gray-300 cursor-pointer text-lg font-medium flex items-center transition-all duration-200"
+            class="p-4 border rounded-lg border-gray-300 cursor-pointer text-base sm:text-lg font-medium flex items-center transition-all duration-200"
           >
-            <span class="mr-4 text-blue-600 font-bold">{{ ['A', 'B', 'C', 'D', 'E'][i] }}.</span>
+            <span class="mr-3 font-bold">{{ ['A', 'B', 'C', 'D', 'E'][i] }}.</span>
             <span>{{ option.text }}</span>
           </div>
         </div>
+
+        <!-- Navigation buttons -->
         <div class="flex justify-between mt-6">
           <button
-            class="w-12 h-12 flex items-center justify-center text-white bg-blue-600 rounded-full focus:outline-none hover:bg-blue-700 transition-colors duration-200"
+            class="w-12 h-12 flex items-center justify-center text-white bg-blue-600 rounded-full hover:bg-blue-700"
             (click)="prevQuestion()"
             [disabled]="currentQuestion === 0"
           >
-            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
             </svg>
           </button>
           <button
-            class="w-12 h-12 flex items-center justify-center text-white bg-blue-600 rounded-full focus:outline-none hover:bg-blue-700 transition-colors duration-200"
+            class="w-12 h-12 flex items-center justify-center text-white bg-blue-600 rounded-full hover:bg-blue-700"
             (click)="nextQuestion()"
             [disabled]="currentQuestion === questionList.length - 1"
           >
-            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
             </svg>
           </button>
@@ -121,34 +125,32 @@
       </div>
     </div>
 
-    <div class="w-1/4 bg-white border-l border-gray-200 p-4">
-      <h2 class="text-xl font-semibold mb-4 text-gray-800">
-        Question Navigator
+    <!-- Question navigator sidebar -->
+    <div class="w-full lg:w-1/4 bg-white border-t lg:border-l border-gray-200 p-4">
+      <h2 class="text-lg font-semibold mb-4 text-gray-800">
+        Navigasi Soal
       </h2>
-      <div class="grid grid-cols-3 gap-2 mb-6">
+      <div class="grid grid-cols-5 sm:grid-cols-6 lg:grid-cols-3 gap-2 mb-6">
         <button
           *ngFor="let q of questionList; let i = index"
           (click)="goToQuestion(i)"
-          class="w-full h-12 flex items-center justify-center text-lg font-semibold rounded-lg transition-colors duration-200"
+          class="aspect-square flex items-center justify-center text-base font-semibold rounded-lg transition-colors duration-200"
           [ngClass]="{
             'bg-blue-600 text-white': currentQuestion === i,
             'bg-green-500 text-white': answeredQuestions[i],
-            'bg-yellow-500 text-white':
-              markedQuestions[i] && !answeredQuestions[i],
-            'bg-gray-200 text-gray-700 hover:bg-gray-300':
-              !answeredQuestions[i] &&
-              !markedQuestions[i] &&
-              currentQuestion !== i
+            'bg-yellow-500 text-white': markedQuestions[i] && !answeredQuestions[i],
+            'bg-gray-200 text-gray-700': !answeredQuestions[i] && !markedQuestions[i] && currentQuestion !== i
           }"
         >
           {{ i + 1 }}
         </button>
       </div>
 
+      <!-- End quiz button -->
       <div class="mt-4">
         <button
           (click)="confirmEndQuiz()"
-          class="w-full py-2 px-4 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors duration-200"
+          class="w-full py-3 px-4 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors duration-200 text-base sm:text-lg font-medium"
         >
           Akhiri Ujian
         </button>
