@@ -1,27 +1,13 @@
-<div class="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
-  <div class="sm:mx-auto sm:w-full sm:max-w-md">
-    <img
-      class="mx-auto h-12 w-auto"
-      src="https://img.icons8.com/?size=100&id=ZSsHTta66mDV&format=png&color=000000"
-      alt="Quiz App"
-    />
-    <h2 class="mt-6 text-center text-3xl font-extrabold text-gray-900">
-      Create your account
-    </h2>
-    <p class="mt-2 text-center text-sm text-gray-600">
-      Already have an account?
-      <a routerLink="/login" class="font-medium text-indigo-600 hover:text-indigo-500">
-        Sign in here
-      </a>
-    </p>
-  </div>
-
-  <div class="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
-    <div class="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10">
-      <form (ngSubmit)="onSubmit()" #registerForm="ngForm" class="space-y-6">
-        <!-- Email Input -->
+<div class="min-h-screen flex items-center justify-center transition-colors duration-200" [ngClass]="isDarkMode ? 'bg-gray-900' : 'bg-gray-50'">
+  <div class="max-w-md w-full mx-4">
+    <div class="rounded-lg shadow-lg p-6 sm:p-8 transition-colors duration-200" [ngClass]="isDarkMode ? 'bg-gray-800' : 'bg-white'">
+      <h2 class="text-2xl font-bold mb-6 text-center" [ngClass]="isDarkMode ? 'text-white' : 'text-gray-900'">
+        Register
+      </h2>
+      
+      <form (ngSubmit)="onSubmit()" #registerForm="ngForm" class="space-y-4">
         <div>
-          <label for="email" class="block text-sm font-medium text-gray-700">
+          <label for="email" class="block text-sm font-medium" [ngClass]="isDarkMode ? 'text-gray-200' : 'text-gray-700'">
             Email address
           </label>
           <div class="mt-1">
@@ -31,14 +17,15 @@
               type="email"
               required
               [(ngModel)]="registerData.email"
-              class="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+              class="appearance-none block w-full px-3 py-2 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm transition-colors duration-200"
+              [ngClass]="isDarkMode ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300 text-gray-900'"
             />
           </div>
         </div>
 
         <!-- Display Name Input -->
         <div>
-          <label for="display_name" class="block text-sm font-medium text-gray-700">
+          <label for="display_name" class="block text-sm font-medium" [ngClass]="isDarkMode ? 'text-gray-200' : 'text-gray-700'">
             Display Name
           </label>
           <div class="mt-1">
@@ -48,14 +35,15 @@
               type="text"
               required
               [(ngModel)]="registerData.display_name"
-              class="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+              class="appearance-none block w-full px-3 py-2 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm transition-colors duration-200"
+              [ngClass]="isDarkMode ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300 text-gray-900'"
             />
           </div>
         </div>
 
         <!-- Password Input -->
         <div>
-          <label for="password" class="block text-sm font-medium text-gray-700">
+          <label for="password" class="block text-sm font-medium" [ngClass]="isDarkMode ? 'text-gray-200' : 'text-gray-700'">
             Password
           </label>
           <div class="mt-1">
@@ -65,7 +53,8 @@
               type="password"
               required
               [(ngModel)]="registerData.password"
-              class="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+              class="appearance-none block w-full px-3 py-2 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm transition-colors duration-200"
+              [ngClass]="isDarkMode ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300 text-gray-900'"
             />
           </div>
         </div>
@@ -85,6 +74,11 @@
           </button>
         </div>
       </form>
+
+      <div class="mt-4 text-center" [ngClass]="isDarkMode ? 'text-gray-300' : 'text-gray-600'">
+        Already have an account? 
+        <a routerLink="/login" class="text-indigo-600 hover:text-indigo-500">Login</a>
+      </div>
     </div>
   </div>
 

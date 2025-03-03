@@ -1,13 +1,16 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { AuthService } from '../services/auth.service';
+import { ThemeService } from '../services/theme.service';
 
 @Component({
   selector: 'app-login',
   templateUrl: './login.component.html',
   styleUrls: ['./login.component.scss']
 })
-export class LoginComponent {
+export class LoginComponent implements OnInit {
+  isDarkMode: boolean = false;
+
   loginData = {
     email: '',
     password: ''
@@ -19,8 +22,15 @@ export class LoginComponent {
 
   constructor(
     private router: Router,
+    private themeService: ThemeService,
     private authService: AuthService
   ) {}
+
+  ngOnInit(): void {
+    this.themeService.darkMode$.subscribe(
+      isDark => this.isDarkMode = isDark
+    );
+  }
 
   onSubmit(): void {
     this.errorMessage = '';
@@ -35,4 +45,7 @@ export class LoginComponent {
       }
     });
   }
+
 }
+
+

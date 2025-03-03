@@ -10,7 +10,7 @@
           <!-- User Info -->
           <div *ngIf="user" class="rounded-lg p-4 transition-colors duration-200" [ngClass]="isDarkMode ? 'bg-gray-700' : 'bg-gray-50'">
             <p class="text-base sm:text-lg transition-colors duration-200" [ngClass]="isDarkMode ? 'text-gray-200' : 'text-gray-700'">
-              <strong>Nama:</strong> 
+              <strong>Nama        : </strong> 
               <span>{{ user.display_name }}</span>
             </p>
           </div>
@@ -18,15 +18,15 @@
           <!-- Quiz Info -->
           <div *ngIf="selectedPaket" class="rounded-lg p-4 space-y-2 transition-colors duration-200" [ngClass]="isDarkMode ? 'bg-gray-700' : 'bg-gray-50'">
             <p class="text-base sm:text-lg" [ngClass]="isDarkMode ? 'text-gray-200' : 'text-gray-700'">
-              <strong>Kategori:</strong> 
+              <strong>Kategori    : </strong> 
               <span>{{ selectedPaket.kategori_soal }}</span>
             </p>
             <p class="text-base sm:text-lg" [ngClass]="isDarkMode ? 'text-gray-200' : 'text-gray-700'">
-              <strong>Paket Soal:</strong> 
+              <strong>Paket Soal  : </strong> 
               <span>{{ selectedPaket.nama_paket_soal }}</span>
             </p>
             <p class="text-base sm:text-lg" [ngClass]="isDarkMode ? 'text-gray-200' : 'text-gray-700'">
-              <strong>Jumlah Soal:</strong> 
+              <strong>Jumlah Soal : </strong> 
               <span>{{ selectedPaket.jumlah_soal }}</span>
             </p>
           </div>

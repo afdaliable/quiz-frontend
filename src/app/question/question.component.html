@@ -49,8 +49,11 @@
             <button
               (click)="prevQuestion()"
               [disabled]="currentQuestion === 0"
-              class="px-4 py-2 rounded-lg font-medium transition-colors duration-200"
-              [ngClass]="isDarkMode ? 'bg-gray-700 text-white hover:bg-gray-600' : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'"
+              class="px-4 py-2 rounded-lg font-medium text-white transition-colors duration-200"
+              [ngClass]="[
+                currentQuestion === 0 ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer',
+                'bg-blue-500 hover:bg-blue-600'
+              ]"
             >
               ← Sebelumnya
             </button>
@@ -58,8 +61,11 @@
             <button
               (click)="nextQuestion()"
               [disabled]="currentQuestion === questionList.length - 1"
-              class="px-4 py-2 rounded-lg font-medium transition-colors duration-200"
-              [ngClass]="isDarkMode ? 'bg-gray-700 text-white hover:bg-gray-600' : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'"
+              class="px-4 py-2 rounded-lg font-medium text-white transition-colors duration-200"
+              [ngClass]="[
+                currentQuestion === questionList.length - 1 ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer',
+                'bg-blue-500 hover:bg-blue-600'
+              ]"
             >
               Selanjutnya →
             </button>
