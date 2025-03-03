@@ -32,7 +32,6 @@ import { CategoryComponent } from './category/category.component';
     HomeComponent,
     ResultComponent,
     ReviewComponent,
-    HeaderComponent,
     DaftarSoalComponent,
     LoginComponent,
     RegisterComponent,

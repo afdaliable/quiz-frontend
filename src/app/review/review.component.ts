@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { UserService } from '../services/user.service';
 import { QuestionService } from '../services/question.service';
+import { ThemeService } from '../services/theme.service';
 
 interface Question {
   id: number;
@@ -37,15 +38,20 @@ export class ReviewComponent implements OnInit {
   points: number = 0;
   correctAnswers: number = 0;
   incorrectAnswers: number = 0;
+  isDarkMode: boolean = false;
 
   constructor(
     private questionService: QuestionService,
     private router: Router,
-    private userService: UserService
+    private userService: UserService,
+    private themeService: ThemeService
   ) {}
 
   ngOnInit(): void {
     this.loadReviewData();
+    this.themeService.darkMode$.subscribe(
+      isDark => this.isDarkMode = isDark
+    );
   }
 
   loadReviewData(): void {

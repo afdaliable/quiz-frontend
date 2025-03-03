@@ -1,78 +1,38 @@
-<header class="bg-white shadow-sm">
-  <nav class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8" aria-label="Global">
-    <div class="flex h-16 items-center justify-between">
-      <!-- Logo -->
-      <div class="flex lg:flex-1">
-        <a href="#" class="-m-1.5 p-1.5">
-          <span class="sr-only">Quiz App</span>
-          <img class="h-8 w-auto" src="https://tailwindui.com/img/logos/mark.svg?color=indigo&shade=600" alt="">
-        </a>
+<header class="transition-colors duration-200" [ngClass]="isDarkMode ? 'bg-gray-800' : 'bg-white'">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="flex justify-between items-center h-16">
+      <div class="flex items-center">
+        <h1 class="text-xl font-bold" [ngClass]="isDarkMode ? 'text-white' : 'text-gray-900'">
+          Quiz App
+        </h1>
       </div>
-
-      <!-- Mobile menu button -->
-      <div class="flex lg:hidden">
-        <button 
-          type="button" 
-          (click)="toggleMobileMenu()"
-          class="inline-flex items-center justify-center rounded-md p-2.5 text-gray-700"
+      
+      <div class="flex items-center space-x-4">
+        <button
+          (click)="toggleTheme()"
+          class="p-2 rounded-lg transition-colors duration-200"
+          [ngClass]="isDarkMode ? 'bg-gray-700 text-white' : 'bg-gray-100 text-gray-700'"
         >
-          <span class="sr-only">{{ isMenuOpen ? 'Close menu' : 'Open menu' }}</span>
-          <svg 
-            class="h-6 w-6" 
-            [class.hidden]="isMenuOpen"
-            fill="none" 
-            viewBox="0 0 24 24" 
-            stroke="currentColor"
-          >
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
-          </svg>
-          <svg 
-            class="h-6 w-6" 
-            [class.hidden]="!isMenuOpen"
-            fill="none" 
-            viewBox="0 0 24 24" 
-            stroke="currentColor"
-          >
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path *ngIf="!isDarkMode" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+              d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/>
+            <path *ngIf="isDarkMode" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707"/>
           </svg>
         </button>
-      </div>
 
-      <!-- Desktop menu -->
-      <div class="hidden lg:flex lg:gap-x-8">
-        <a routerLink="/home" class="text-sm font-semibold leading-6 text-gray-900">Home</a>
-        <a routerLink="/daftar-soal" class="text-sm font-semibold leading-6 text-gray-900">Kumpulan Kuis</a>
-        <a href="#" class="text-sm font-semibold leading-6 text-gray-900">Materi</a>
-        <a href="#" class="text-sm font-semibold leading-6 text-gray-900">Hubungi Kami</a>
+        <span class="text-sm" [ngClass]="isDarkMode ? 'text-gray-300' : 'text-gray-700'">
+          {{ currentUser?.display_name }}
+        </span>
+
+        <button
+          (click)="logout()"
+          class="px-4 py-2 rounded-lg text-sm font-medium transition-colors duration-200"
+          [ngClass]="isDarkMode ? 'bg-red-600 text-white hover:bg-red-700' : 'bg-red-600 text-white hover:bg-red-700'"
+        >
+          Logout
+        </button>
       </div>
     </div>
-
-    <!-- Mobile menu -->
-    <div 
-      class="lg:hidden" 
-      [class.hidden]="!isMenuOpen"
-      id="mobile-menu"
-    >
-      <div class="space-y-1 px-2 pb-3 pt-2">
-        <a routerLink="/home" class="block rounded-md px-3 py-2 text-base font-medium text-gray-900 hover:bg-gray-50">Home</a>
-        <a routerLink="/daftar-soal" class="block rounded-md px-3 py-2 text-base font-medium text-gray-900 hover:bg-gray-50">Kumpulan Kuis</a>
-        <a href="#" class="block rounded-md px-3 py-2 text-base font-medium text-gray-900 hover:bg-gray-50">Materi</a>
-        <a href="#" class="block rounded-md px-3 py-2 text-base font-medium text-gray-900 hover:bg-gray-50">Hubungi Kami</a>
-      </div>
-    </div>
-  </nav>
+  </div>
 </header>
-
-<!-- Login Popup -->
-<!-- <div *ngIf="showLoginPopup" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full" (click)="closeLoginPopup()">
-  <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white" (click)="$event.stopPropagation()">
-    <app-login (closePopup)="closeLoginPopup()"></app-login>
-  </div>
-</div> -->
-
-<!-- Signup Popup -->
-<!-- <div *ngIf="showSignupPopup" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full" (click)="closeSignupPopup()">
-  <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white" (click)="$event.stopPropagation()">
-    <app-register (closePopup)="closeSignupPopup()"></app-register>
-  </div>
-</div> -->

@@ -1,21 +1,8 @@
-<div class="min-h-screen bg-gray-50">
+<div class="min-h-screen transition-colors duration-200" [ngClass]="isDarkMode ? 'bg-gray-900' : 'bg-gray-50'">
   <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-    <!-- Header with Back Button -->
-    <div class="flex justify-between items-center mb-6">
-      <button 
-        (click)="goToHome()" 
-        class="flex items-center px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50"
-      >
-        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-        </svg>
-        Kembali ke Beranda
-      </button>
-    </div>
-
     <!-- Header -->
-    <div class="bg-white rounded-lg shadow-md mb-6">
-      <div class="bg-blue-600 text-white p-4 rounded-t-lg">
+    <div class="rounded-lg shadow-md mb-6" [ngClass]="isDarkMode ? 'bg-gray-800' : 'bg-white'">
+      <div class="bg-indigo-600 text-white p-4 rounded-t-lg">
         <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center space-y-2 sm:space-y-0">
           <div>
             <h4 class="text-xl font-bold">
@@ -37,11 +24,11 @@
       <!-- Question Section -->
       <div class="w-full lg:w-3/4">
         <div *ngIf="questionList.length > 0" class="space-y-6">
-          <div class="bg-white rounded-lg shadow-md p-6">
-            <div class="text-lg font-semibold mb-4">
+          <div class="rounded-lg shadow-md p-6" [ngClass]="isDarkMode ? 'bg-gray-800' : 'bg-white'">
+            <div class="text-lg font-semibold mb-4" [ngClass]="isDarkMode ? 'text-white' : 'text-gray-900'">
               Pertanyaan {{ currentQuestion + 1 }} dari {{ questionList.length }}
             </div>
-            <p class="text-lg mb-6">
+            <p class="text-lg mb-6" [ngClass]="isDarkMode ? 'text-gray-200' : 'text-gray-700'">
               {{ questionList[currentQuestion].questionText }}
             </p>
             
@@ -51,14 +38,25 @@
                 *ngFor="let option of questionList[currentQuestion].options; let i = index"
                 (click)="toggleExplanation()"
                 [ngClass]="{
-                  'bg-green-100 border-green-500': option.correct,
-                  'bg-red-100 border-red-500': selectedAnswers[currentQuestion] === i && !option.correct,
-                  'bg-white': selectedAnswers[currentQuestion] !== i && !option.correct
+                  'bg-green-800 border-green-600 text-white': isDarkMode && option.correct,
+                  'bg-green-100 border-green-500 text-green-900': !isDarkMode && option.correct,
+                  'bg-red-800 border-red-600 text-white': isDarkMode && selectedAnswers[currentQuestion] === i && !option.correct,
+                  'bg-red-100 border-red-500 text-red-900': !isDarkMode && selectedAnswers[currentQuestion] === i && !option.correct,
+                  'bg-gray-700 text-gray-200': isDarkMode && !option.correct && selectedAnswers[currentQuestion] !== i,
+                  'bg-white text-gray-900': !isDarkMode && !option.correct && selectedAnswers[currentQuestion] !== i
                 }"
-                class="p-4 border-2 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors duration-200"
+                class="p-4 border-2 rounded-lg cursor-pointer transition-colors duration-200"
               >
                 <div class="flex items-center">
-                  <span class="w-8 h-8 flex items-center justify-center rounded-full border-2 mr-3 font-bold">
+                  <span 
+                    class="w-8 h-8 flex items-center justify-center rounded-full mr-3 font-bold border-2 transition-colors duration-200"
+                    [ngClass]="{
+                      'border-white text-white': isDarkMode && (option.correct || selectedAnswers[currentQuestion] === i),
+                      'border-green-500 text-green-900': !isDarkMode && option.correct,
+                      'border-red-500 text-red-900': !isDarkMode && selectedAnswers[currentQuestion] === i && !option.correct,
+                      'border-gray-300': (!isDarkMode && !option.correct && selectedAnswers[currentQuestion] !== i) || (isDarkMode && !option.correct && selectedAnswers[currentQuestion] !== i)
+                    }"
+                  >
                     {{ ['A', 'B', 'C', 'D', 'E'][i] }}
                   </span>
                   <span class="text-base sm:text-lg">{{ option.text }}</span>
@@ -70,16 +68,25 @@
             <div class="mt-6">
               <button
                 (click)="toggleExplanation()"
-                class="w-full py-3 px-4 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors duration-200 text-base sm:text-lg font-medium"
+                class="w-full py-3 px-4 text-white rounded-lg transition-colors duration-200 text-base sm:text-lg font-medium"
+                [ngClass]="isDarkMode ? 'bg-blue-600 hover:bg-blue-700' : 'bg-blue-500 hover:bg-blue-600'"
               >
                 {{ showExplanation ? 'Sembunyikan Penjelasan' : 'Lihat Penjelasan' }}
               </button>
             </div>
 
             <!-- Solution -->
-            <div *ngIf="showExplanation" class="mt-6 p-4 bg-blue-50 rounded-lg">
-              <h4 class="font-semibold mb-2">Penjelasan:</h4>
-              <p>{{ questionList[currentQuestion].solution }}</p>
+            <div 
+              *ngIf="showExplanation" 
+              class="mt-6 p-4 rounded-lg transition-colors duration-200"
+              [ngClass]="isDarkMode ? 'bg-gray-700' : 'bg-blue-50'"
+            >
+              <h4 class="font-semibold mb-2" [ngClass]="isDarkMode ? 'text-white' : 'text-gray-900'">
+                Penjelasan:
+              </h4>
+              <p [ngClass]="isDarkMode ? 'text-gray-200' : 'text-gray-700'">
+                {{ questionList[currentQuestion].solution }}
+              </p>
             </div>
           </div>
 
@@ -104,7 +111,7 @@
       </div>
 
       <!-- Question Navigator -->
-      <div class="w-full lg:w-1/4 bg-white rounded-lg shadow-md p-4 h-fit">
+      <div class="w-full lg:w-1/4 rounded-lg shadow-md p-4 h-fit" [ngClass]="isDarkMode ? 'bg-gray-800' : 'bg-white'">
         <h3 class="text-lg font-semibold mb-4">Navigasi Soal</h3>
         <div class="grid grid-cols-5 gap-2">
           <button
@@ -121,6 +128,24 @@
           </button>
         </div>
       </div>
+    </div>
+
+    <!-- Back Button -->
+    <div class="mt-6">
+      <button 
+        (click)="goToHome()" 
+        class="w-full px-4 py-3 text-base font-medium rounded-lg transition-colors duration-200"
+        [ngClass]="isDarkMode ? 
+          'bg-gray-700 text-white hover:bg-gray-600' : 
+          'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'"
+      >
+        <span class="flex items-center justify-center">
+          <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+          </svg>
+          Kembali ke Beranda
+        </span>
+      </button>
     </div>
   </div>
 </div>

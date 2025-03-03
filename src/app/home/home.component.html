@@ -1,15 +1,121 @@
-<div class="container mx-auto px-4 py-8">
-    <h1 class="text-3xl font-bold mb-8 text-center">Daftar Paket Soal</h1>
-    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-      <div *ngFor="let paket of paketSoalList" class="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300">
-        <div class="p-6">
-          <h2 class="text-xl font-semibold mb-2">{{ paket.nama_paket_soal }}</h2>
-          <p class="text-2xl font-bold text-blue-600 mb-4">{{ paket.kategori_soal }}</p>
-          <p class="text-gray-600 mb-4">Jumlah Soal: {{ paket.jumlah_soal }}</p>
-          <button (click)="selectPaketSoal(paket)" class="w-full bg-blue-500 text-white py-2 px-4 rounded-lg hover:bg-blue-600 transition-colors duration-300">
-            Pilih Paket
-          </button>
+<div class="min-h-screen transition-colors duration-200" [ngClass]="isDarkMode ? 'bg-gray-900' : 'bg-gray-50'">
+  
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+    <div class="flex flex-col lg:flex-row gap-6">
+      <!-- Categories Section - Shown above on mobile -->
+      <div class="w-full lg:w-1/4 order-1 lg:order-2">
+        <div class="rounded-lg shadow-md p-4 mb-6 lg:mb-0" [ngClass]="isDarkMode ? 'bg-gray-800' : 'bg-white'">
+          <div class="flex justify-between items-center mb-4">
+            <div class="flex items-center gap-2">
+              <h3 class="text-lg font-semibold" [ngClass]="isDarkMode ? 'text-white' : 'text-gray-900'">
+                Kategori
+              </h3>
+              <span 
+                *ngIf="isCategoriesCollapsed"
+                class="text-sm px-2 py-1 rounded-md"
+                [ngClass]="isDarkMode ? 'bg-gray-700 text-gray-200' : 'bg-gray-100 text-gray-600'"
+              >
+                {{ selectedCategory || 'Semua Kategori' }}
+              </span>
+            </div>
+            <button 
+              (click)="toggleCategories()"
+              class="p-2 rounded-lg transition-colors duration-200"
+              [ngClass]="isDarkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-100'"
+            >
+              <svg 
+                class="w-5 h-5 transform transition-transform duration-200"
+                [ngClass]="[
+                  isDarkMode ? 'text-white' : 'text-gray-600',
+                  isCategoriesCollapsed ? '-rotate-90' : ''
+                ]"
+                fill="none" 
+                stroke="currentColor" 
+                viewBox="0 0 24 24"
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
+              </svg>
+            </button>
+          </div>
+          <div 
+            class="flex flex-wrap lg:flex-col gap-2 transition-all duration-200 overflow-hidden"
+            [ngStyle]="{'max-height': isCategoriesCollapsed ? '0' : '1000px'}"
+          >
+            <button
+              (click)="filterByCategory(null)"
+              class="w-auto lg:w-full text-left px-3 py-2 rounded-lg text-sm font-medium transition-colors duration-200"
+              [ngClass]="!selectedCategory ? 
+                'bg-indigo-600 text-white' : 
+                (isDarkMode ? 'bg-gray-700 text-gray-200 hover:bg-gray-600' : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50')"
+            >
+              Semua Kategori
+            </button>
+            <button
+              *ngFor="let category of categories"
+              (click)="filterAndScrollToList(category.nama_kategori)"
+              class="w-auto lg:w-full text-left px-3 py-2 rounded-lg text-sm font-medium transition-colors duration-200"
+              [ngClass]="selectedCategory === category.nama_kategori ? 
+                'bg-indigo-600 text-white' : 
+                (isDarkMode ? 'bg-gray-700 text-gray-200 hover:bg-gray-600' : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50')"
+            >
+              {{ category.nama_kategori }}
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Search and Quiz List Section -->
+      <div id="quiz-list" class="w-full lg:w-3/4 order-2 lg:order-1">
+        <!-- Search and Sort -->
+        <div class="flex gap-4 items-center mb-6">
+          <div class="flex-1">
+            <input
+              type="text"
+              [(ngModel)]="searchTerm"
+              (input)="searchPaketSoal()"
+              placeholder="Cari paket soal..."
+              class="w-full px-4 py-2 rounded-lg transition-colors duration-200"
+              [ngClass]="isDarkMode ? 'bg-gray-700 text-white placeholder-gray-400' : 'bg-white text-gray-900 border border-gray-300'"
+            />
+          </div>
+          
+          <!-- Sort buttons -->
+          <div class="flex gap-2">
+            <button
+              (click)="sortPaketSoal('nama_paket_soal')"
+              class="px-3 py-2 rounded-lg text-sm font-medium transition-colors duration-200"
+              [ngClass]="isDarkMode ? 'bg-gray-700 text-gray-200 hover:bg-gray-600' : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'"
+            >
+              Nama {{ sortField === 'nama_paket_soal' ? (sortDirection === 'asc' ? '↑' : '↓') : '' }}
+            </button>
+            <button
+              (click)="sortPaketSoal('jumlah_soal')"
+              class="px-3 py-2 rounded-lg text-sm font-medium transition-colors duration-200"
+              [ngClass]="isDarkMode ? 'bg-gray-700 text-gray-200 hover:bg-gray-600' : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'"
+            >
+              Jumlah {{ sortField === 'jumlah_soal' ? (sortDirection === 'asc' ? '↑' : '↓') : '' }}
+            </button>
+          </div>
+        </div>
+
+        <!-- Paket Soal Grid -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+          <div
+            *ngFor="let paket of filteredPaketSoalList"
+            (click)="selectPaketSoal(paket)"
+            class="rounded-lg shadow-md p-6 cursor-pointer transition-all duration-200"
+            [ngClass]="isDarkMode ? 'bg-gray-800 hover:bg-gray-700' : 'bg-white hover:shadow-lg'"
+          >
+            <h3 class="text-lg font-semibold mb-2" [ngClass]="isDarkMode ? 'text-white' : 'text-gray-900'">
+              {{ paket.nama_paket_soal }}
+            </h3>
+            <div class="space-y-1" [ngClass]="isDarkMode ? 'text-gray-300' : 'text-gray-500'">
+              <p>Kategori: {{ paket.kategori_soal }}</p>
+              <p>Jumlah Soal: {{ paket.jumlah_soal }}</p>
+            </div>
+          </div>
         </div>
       </div>
     </div>
   </div>
+</div>

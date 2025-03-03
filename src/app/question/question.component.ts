@@ -5,6 +5,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { tap } from 'rxjs/operators';
 import { Question } from '../services/question.service';
 import { UserService } from '../services/user.service';
+import { ThemeService } from '../services/theme.service';
 
 interface PaketSoal {
   id_nama_paket_soal: number;
@@ -45,12 +46,14 @@ export class QuestionComponent implements OnInit {
 
   selectedPaket: PaketSoal | null = null;
   currentUser: any;
+  isDarkMode: boolean = false;
 
   constructor(
     private questionService: QuestionService,
     private route: ActivatedRoute,
     private router: Router,
-    private userService: UserService
+    private userService: UserService,
+    private themeService: ThemeService
   ) {}
 
   ngOnInit(): void {
@@ -76,6 +79,9 @@ export class QuestionComponent implements OnInit {
       console.error('No selected paket found');
     }
     this.startTimer();
+    this.themeService.darkMode$.subscribe(
+      isDark => this.isDarkMode = isDark
+    );
   }
 
   getAllQuestions(kategori: string, paketSoal: string) {
@@ -297,6 +303,30 @@ export class QuestionComponent implements OnInit {
     } else {
       if (confirm('Apakah Anda yakin ingin mengakhiri ujian?')) {
         this.endQuiz();
+      }
+    }
+  }
+
+  getQuestionButtonClass(index: number): string {
+    if (this.isDarkMode) {
+      if (this.currentQuestion === index) {
+        return 'bg-blue-600 text-white';
+      } else if (this.answeredQuestions[index]) {
+        return 'bg-green-600 text-white';
+      } else if (this.markedQuestions[index]) {
+        return 'bg-yellow-500 text-white';
+      } else {
+        return 'bg-gray-700 text-gray-200';
+      }
+    } else {
+      if (this.currentQuestion === index) {
+        return 'bg-blue-500 text-white';
+      } else if (this.answeredQuestions[index]) {
+        return 'bg-green-500 text-white';
+      } else if (this.markedQuestions[index]) {
+        return 'bg-yellow-500 text-white';
+      } else {
+        return 'bg-white text-gray-700 border border-gray-300';
       }
     }
   }

@@ -1,22 +1,32 @@
-import { Component } from '@angular/core';
-import { Router } from '@angular/router';
+import { Component, OnInit } from '@angular/core';
+import { ThemeService } from '../services/theme.service';
 import { UserService } from '../services/user.service';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-header',
   templateUrl: './header.component.html',
   styleUrls: ['./header.component.scss']
 })
-export class HeaderComponent {
-  isMenuOpen: boolean = false;
-  
+export class HeaderComponent implements OnInit {
+  isDarkMode: boolean = false;
+  currentUser: any;
+
   constructor(
-    private router: Router,
-    private userService: UserService
+    private themeService: ThemeService,
+    private userService: UserService,
+    private router: Router
   ) {}
 
-  toggleMobileMenu(): void {
-    this.isMenuOpen = !this.isMenuOpen;
+  ngOnInit(): void {
+    this.themeService.darkMode$.subscribe(
+      (isDark: boolean) => this.isDarkMode = isDark
+    );
+    this.currentUser = this.userService.getUser();
+  }
+
+  toggleTheme(): void {
+    this.themeService.toggleTheme();
   }
 
   logout(): void {
