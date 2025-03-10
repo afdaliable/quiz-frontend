@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { ThemeService } from '../services/theme.service';
 import { UserService } from '../services/user.service';
 import { Router } from '@angular/router';
+import { throwIfEmpty } from 'rxjs';
 
 @Component({
   selector: 'app-header',
@@ -15,7 +16,7 @@ export class HeaderComponent implements OnInit {
   constructor(
     private themeService: ThemeService,
     private userService: UserService,
-    private router: Router
+    public router: Router
   ) {}
 
   ngOnInit(): void {
@@ -46,4 +47,28 @@ export class HeaderComponent implements OnInit {
     }
     return 'User';
   }
-}
+
+  getButtonText(): string {
+    const currentRoute = this.router.url;
+    if (currentRoute === '/login'){
+      return 'Register';
+    } else if (currentRoute === '/signup'){
+      return 'Login';
+    } else if (this.isLoggedIn()){
+      return 'Logout';
+    }
+    return 'Login';
+  }
+
+  getButtonRoute(): string {
+    const currentRoute = this.router.url;
+    if (currentRoute === '/login'){
+      return '/register';
+    } else if (currentRoute === '/register'){
+      return '/login';
+    } else if (this.isLoggedIn()){
+      return '/logout';
+    }
+    return '/logout';
+   }
+  }

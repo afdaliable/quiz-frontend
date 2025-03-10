@@ -21,7 +21,7 @@ export class HomeComponent implements OnInit {
   sortField: 'nama_paket_soal' | 'jumlah_soal' = 'nama_paket_soal';
   sortDirection: 'asc' | 'desc' = 'asc';
   isDarkMode: boolean = false;
-  isCategoriesCollapsed: boolean = false;
+  isCategoriesCollapsed: boolean = true;
 
   constructor(
     private questionService: QuestionService,
