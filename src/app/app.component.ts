@@ -1,7 +1,7 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { UserService } from './services/user.service';
 import { Router, NavigationEnd } from '@angular/router';
-import { Observable, filter } from 'rxjs';
+import { Observable, filter, Subscription } from 'rxjs';
 import { SupabaseService } from './services/supabase.service';
 
 @Component({
@@ -9,11 +9,12 @@ import { SupabaseService } from './services/supabase.service';
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.css']
 })
-export class AppComponent implements OnInit {
+export class AppComponent implements OnInit, OnDestroy {
   user$!: Observable<any>;
   title = 'quiz-frontend';
   private currentUrl: string = '';
   private isRedirecting = false;
+  private subscriptions: Subscription[] = [];
 
   constructor(
     private userService: UserService,
@@ -25,25 +26,35 @@ export class AppComponent implements OnInit {
     this.user$ = this.userService.user$;
 
     // Track current URL to prevent redirection loops
-    this.router.events.pipe(
+    const routerSub = this.router.events.pipe(
       filter(event => event instanceof NavigationEnd)
     ).subscribe((event: any) => {
       this.currentUrl = event.url;
       this.isRedirecting = false; // Reset redirection flag after navigation completes
       console.log('Navigation completed to:', this.currentUrl);
     });
+    this.subscriptions.push(routerSub);
 
-    // Handle auth redirect (for magic link authentication)
-    const hash = window.location.hash;
-    if (hash && hash.includes('access_token')) {
-      // This is a redirect from Supabase auth
-      // The hash will be automatically processed by Supabase
+    // Handle auth redirect (for OAuth authentication)
+    const isAuthCallback = 
+      window.location.hash && window.location.hash.includes('access_token') || 
+      window.location.pathname.includes('/auth/callback');
+    
+    if (isAuthCallback) {
       console.log('Detected auth callback');
+      // Don't do any redirects here, let the callback component handle it
+      return;
     }
 
     // Listen for auth state changes
-    this.supabaseService.session$.subscribe(session => {
+    const authSub = this.supabaseService.session$.subscribe(session => {
       console.log('Auth state changed:', session ? 'Logged in' : 'Logged out');
+      
+      // Skip redirection if we're on an auth callback page
+      if (this.currentUrl.includes('/auth/callback')) {
+        console.log('On auth callback page, skipping redirection');
+        return;
+      }
       
       // Prevent redirection loops
       if (this.isRedirecting) {
@@ -51,27 +62,39 @@ export class AppComponent implements OnInit {
         return;
       }
       
+      // Get authentication status
+      const isAuthenticated = this.supabaseService.isAuthenticated;
+      console.log('Authentication status:', isAuthenticated ? 'Authenticated' : 'Not authenticated');
+      
       // Only redirect if we're not already on the target page
-      if (session) {
+      if (isAuthenticated) {
         // If logged in and on login/register page, go to home
-        if (this.currentUrl === '/login' || this.currentUrl === '/register') {
+        if (this.currentUrl === '/login' || this.currentUrl === '/register' || this.currentUrl === '/verification') {
           console.log('Logged in on auth page, redirecting to home');
           this.isRedirecting = true;
           this.router.navigate(['/home']);
         }
       } else {
-        // If not logged in and not on login/register/callback page, go to login
-        const isAuthPage = this.currentUrl === '/login' || 
-                          this.currentUrl === '/register' || 
-                          this.currentUrl.includes('/auth/callback');
+        // If not logged in and not on login/register/verification page, go to login
+        const isPublicPage = 
+          this.currentUrl === '/login' || 
+          this.currentUrl === '/register' || 
+          this.currentUrl === '/verification' ||
+          this.currentUrl.includes('/auth/callback');
         
-        if (!isAuthPage) {
+        if (!isPublicPage) {
           console.log('Not logged in on protected page, redirecting to login');
           this.isRedirecting = true;
           this.router.navigate(['/login']);
         }
       }
     });
+    this.subscriptions.push(authSub);
+  }
+
+  ngOnDestroy() {
+    // Clean up subscriptions
+    this.subscriptions.forEach(sub => sub.unsubscribe());
   }
 
   logout() {
