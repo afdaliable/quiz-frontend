@@ -91,10 +91,9 @@ export class RegisterComponent implements OnInit, OnDestroy {
       this.showSuccessPopup = true;
       setTimeout(() => {
         this.showSuccessPopup = false;
-        // Redirect to login page with success message
-        this.router.navigate(['/login'], { 
+        // Redirect to verification page instead of login
+        this.router.navigate(['/verification'], { 
           queryParams: { 
-            registered: true,
             email: email
           } 
         });

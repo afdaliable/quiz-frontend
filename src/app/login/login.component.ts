@@ -65,7 +65,19 @@ export class LoginComponent implements OnInit, OnDestroy {
       const { email, password } = this.loginForm.value;
       const { data, error } = await this.supabaseService.signInWithPassword(email, password);
       
-      if (error) throw error;
+      if (error) {
+        // Check if the error is related to email verification
+        if (error.message.includes('Email not confirmed') || 
+            error.message.includes('Email not verified') ||
+            error.message.toLowerCase().includes('verify')) {
+          // Redirect to verification page
+          this.router.navigate(['/verification'], { 
+            queryParams: { email }
+          });
+          return;
+        }
+        throw error;
+      }
       
       // Check if we have a session
       if (data?.session) {

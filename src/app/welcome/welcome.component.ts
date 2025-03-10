@@ -1,7 +1,9 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { Router } from '@angular/router';
 import { UserService } from '../services/user.service';
 import { ThemeService } from '../services/theme.service';
+import { SupabaseService } from '../services/supabase.service';
+import { Subscription } from 'rxjs';
 
 interface PaketSoal {
   id_nama_paket_soal: number;
@@ -22,31 +24,42 @@ export class WelcomeComponent implements OnInit {
   selectedDurasi: number = 15;
   user: any;
   isDarkMode: boolean = false;
+  isAuthenticated: boolean = false;
+  private sessionSubscription: Subscription | null = null;
+
 
   constructor(
     private router: Router, 
     private userService: UserService,
-    private themeService: ThemeService
+    private themeService: ThemeService,
+    private supabaseService: SupabaseService
   ) {}
 
   ngOnInit(): void {
-    const token = localStorage.getItem('token');
-    if (!token) {
-      this.router.navigate(['/login']);
-      return;
+    const session = this.supabaseService.currentSession;
+    this.isAuthenticated = !!session;
+    if (session) {
+      this.user = session.user.user_metadata;
     }
+    
+    this.sessionSubscription = this.supabaseService.session$.subscribe(session => {
+      this.isAuthenticated = !!session;
+      if (session) {
+        this.user = session.user.user_metadata;
+      } else {
+        this.user = null;
+      }
+    });
+
+    this.userService.user$.subscribe(user => {
+      if (user && !this.user) {
+        this.user = user;
+      }
+    });
 
     const paketData = localStorage.getItem('selectedPaket');
     if (paketData) {
       this.selectedPaket = JSON.parse(paketData);
-    }
-    
-    const userData = localStorage.getItem('user');
-    if (userData) {
-      this.user = JSON.parse(userData);
-      this.userService.setUser(this.user);
-    } else {
-      this.router.navigate(['/login']);
     }
 
     this.themeService.darkMode$.subscribe(

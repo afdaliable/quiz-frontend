@@ -57,6 +57,10 @@ const routes: Routes = [
     component: RegisterComponent,
   },
   {
+    path: 'verification',
+    component: VerificationComponent,
+  },
+  {
     path: 'account',
     component: AccountComponent,
     canActivate: [AuthGuard]
@@ -72,8 +76,9 @@ const routes: Routes = [
     canActivate: [AuthGuard]
   },
   {
-    path: 'verification', 
-    component: VerificationComponent },
+    path: 'auth/callback',
+    component: HomeComponent,
+  },
   {
     path: '**',
     redirectTo: 'home'

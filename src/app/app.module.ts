@@ -23,9 +23,8 @@ import { SupabaseService } from './services/supabase.service';
 import { ThemeService } from './services/theme.service';
 import { environment } from '../environments/environment';
 import { CategoryComponent } from './category/category.component';
-import { VerificationComponent } from './verification/verification.component';
-
 import { AccountComponent } from './account/account.component';
+import { VerificationComponent } from './verification/verification.component';
 
 @NgModule({
   declarations: [
@@ -41,8 +40,8 @@ import { AccountComponent } from './account/account.component';
     LoginComponent,
     RegisterComponent,
     CategoryComponent,
-    VerificationComponent,
-    AccountComponent
+    AccountComponent,
+    VerificationComponent
   ],
   imports: [
     BrowserModule,
