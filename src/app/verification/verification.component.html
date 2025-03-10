@@ -1,0 +1,67 @@
+<!-- src/app/verification/verification.component.html -->
+<div class="min-h-screen flex items-center justify-center p-4 transition-colors duration-200" [ngClass]="isDarkMode ? 'bg-gray-900' : 'bg-gray-50'">
+  <div class="w-full max-w-md">
+    <div class="rounded-lg shadow-lg p-6 sm:p-8 transition-colors duration-200" [ngClass]="isDarkMode ? 'bg-gray-800' : 'bg-white'">
+      <div class="text-center mb-6">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 mx-auto mb-4" [ngClass]="isDarkMode ? 'text-indigo-400' : 'text-indigo-600'" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+        </svg>
+        <h2 class="text-2xl font-bold mb-2 transition-colors duration-200" [ngClass]="isDarkMode ? 'text-white' : 'text-gray-900'">
+          Verify Your Email
+        </h2>
+        <p class="text-sm transition-colors duration-200" [ngClass]="isDarkMode ? 'text-gray-300' : 'text-gray-600'">
+          We've sent a verification email to <span class="font-medium">{{ email }}</span>
+        </p>
+      </div>
+      
+      <div class="space-y-4">
+        <div class="p-4 rounded-md transition-colors duration-200" [ngClass]="isDarkMode ? 'bg-gray-700' : 'bg-gray-100'">
+          <h3 class="font-medium mb-2 transition-colors duration-200" [ngClass]="isDarkMode ? 'text-white' : 'text-gray-900'">
+            Next steps:
+          </h3>
+          <ol class="list-decimal list-inside space-y-2 text-sm transition-colors duration-200" [ngClass]="isDarkMode ? 'text-gray-300' : 'text-gray-600'">
+            <li>Check your email inbox for the verification link</li>
+            <li>Click the link to verify your email address</li>
+            <li>Once verified, you can log in to your account</li>
+          </ol>
+        </div>
+        
+        <div *ngIf="resendSuccess" class="p-3 rounded-md text-sm bg-green-100 text-green-700 dark:bg-green-900/50 dark:text-green-200">
+          Verification email has been resent successfully!
+        </div>
+        
+        <div *ngIf="resendError" class="p-3 rounded-md text-sm bg-red-100 text-red-700 dark:bg-red-900/50 dark:text-red-200">
+          {{ resendError }}
+        </div>
+        
+        <div class="flex flex-col sm:flex-row gap-3">
+          <button
+            (click)="resendVerificationEmail()"
+            [disabled]="resendLoading"
+            class="flex-1 py-2 px-4 rounded-md text-sm font-medium transition-colors duration-200"
+            [ngClass]="isDarkMode ? 
+              'bg-gray-700 text-white hover:bg-gray-600 disabled:bg-gray-800 disabled:text-gray-500' : 
+              'bg-gray-200 text-gray-700 hover:bg-gray-300 disabled:bg-gray-100 disabled:text-gray-400'"
+          >
+            <span *ngIf="!resendLoading">Resend Email</span>
+            <span *ngIf="resendLoading" class="flex items-center justify-center">
+              <svg class="animate-spin -ml-1 mr-2 h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              </svg>
+              Sending...
+            </span>
+          </button>
+          
+          <button
+            (click)="goToLogin()"
+            class="flex-1 py-2 px-4 rounded-md text-sm font-medium text-white transition-colors duration-200"
+            [ngClass]="isDarkMode ? 'bg-indigo-600 hover:bg-indigo-700' : 'bg-indigo-600 hover:bg-indigo-700'"
+          >
+            Go to Login
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,17 +1,19 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { Category } from '../models/category.model'; // Ensure this path is correct
 import { PaketSoal } from '../models/paket-soal.model' // Ensure this path is correct
 import { QuestionService } from '../services/question.service'; // Ensure this path is correct
 import { Router } from '@angular/router';
 import { UserService } from '../services/user.service'; // Ensure this path is correct
 import { ThemeService } from '../services/theme.service'; // Ensure this path is correct
+import { SupabaseService } from '../services/supabase.service';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-home',
   templateUrl: './home.component.html',
   styleUrls: ['./home.component.css']
 })
-export class HomeComponent implements OnInit {
+export class HomeComponent implements OnInit, OnDestroy {
   categories: Category[] = [];
   paketSoalList: PaketSoal[] = [];
   filteredPaketSoalList: PaketSoal[] = [];
@@ -22,34 +24,52 @@ export class HomeComponent implements OnInit {
   sortDirection: 'asc' | 'desc' = 'asc';
   isDarkMode: boolean = false;
   isCategoriesCollapsed: boolean = true;
+  private sessionSubscription: Subscription | null = null;
 
   constructor(
     private questionService: QuestionService,
     private router: Router,
     private userService: UserService,
-    private themeService: ThemeService
+    private themeService: ThemeService,
+    private supabaseService: SupabaseService
   ) {}
 
   ngOnInit(): void {
-    const token = localStorage.getItem('token');
-    const userData = localStorage.getItem('user');
+    // Check if we have a Supabase session
+    const session = this.supabaseService.currentSession;
     
-    console.log('Home Init - Token exists:', !!token);
-    console.log('Home Init - User exists:', !!userData);
+    console.log('Home Init - Supabase session exists:', !!session);
     
-    if (!token || !userData) {
-      console.log('Missing credentials, redirecting to login');
-      this.router.navigate(['/login']);
-      return;
+    if (session) {
+      this.isLoggedIn = true;
+      this.loadCategories();
+      this.loadPaketSoal();
+    } else {
+      // Don't redirect here, let the auth guard handle it
+      console.log('No Supabase session in home component');
     }
     
-    this.userService.setUser(JSON.parse(userData));
-    this.isLoggedIn = true;
-    this.loadCategories();
-    this.loadPaketSoal();
+    // Subscribe to theme changes
     this.themeService.darkMode$.subscribe(
       isDark => this.isDarkMode = isDark
     );
+    
+    // Subscribe to session changes
+    this.sessionSubscription = this.supabaseService.session$.subscribe(session => {
+      this.isLoggedIn = !!session;
+      
+      if (session) {
+        this.loadCategories();
+        this.loadPaketSoal();
+      }
+    });
+  }
+  
+  ngOnDestroy(): void {
+    // Clean up subscription
+    if (this.sessionSubscription) {
+      this.sessionSubscription.unsubscribe();
+    }
   }
 
   loadCategories(): void {
@@ -74,8 +94,8 @@ export class HomeComponent implements OnInit {
       error: (error) => {
         console.error('Error in home component:', error);
         if (error.status === 401) {
-          localStorage.clear();
-          this.router.navigate(['/login']);
+          // Let the interceptor handle 401 errors
+          console.error('Unauthorized error in home component');
         }
       }
     });
@@ -99,9 +119,10 @@ export class HomeComponent implements OnInit {
   }
 
   selectPaketSoal(paketSoal: PaketSoal): void {
-    const token = localStorage.getItem('token');
-    if (!token) {
-      this.router.navigate(['/login']);
+    // Check if we have a Supabase session
+    if (!this.supabaseService.currentSession) {
+      // Let the auth guard handle redirection
+      console.log('No Supabase session when selecting paket soal');
       return;
     }
     

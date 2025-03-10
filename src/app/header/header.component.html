@@ -2,18 +2,19 @@
   <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
     <div class="flex justify-between items-center h-16">
       <div class="flex items-center">
-        <h1 class="text-xl font-bold" [ngClass]="isDarkMode ? 'text-white' : 'text-gray-900'">
+        <a routerLink="/home" class="text-xl font-bold cursor-pointer transition-colors duration-200" [ngClass]="isDarkMode ? 'text-white' : 'text-gray-900'">
           Quiz App
-        </h1>
+        </a>
       </div>
       
       <div class="flex items-center space-x-4">
         <button
           (click)="toggleTheme()"
           class="p-2 rounded-lg transition-colors duration-200"
-          [ngClass]="isDarkMode ? 'bg-gray-700 text-white' : 'bg-gray-100 text-gray-700'"
+          [ngClass]="isDarkMode ? 'bg-gray-700 text-white hover:bg-gray-600' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'"
+          aria-label="Toggle theme"
         >
-          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path *ngIf="!isDarkMode" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
               d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/>
             <path *ngIf="isDarkMode" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -21,25 +22,28 @@
           </svg>
         </button>
 
-        <span class="text-sm" [ngClass]="isDarkMode ? 'text-gray-300' : 'text-gray-700'">
-          {{ currentUser?.display_name }}
-        </span>
+        
 
-        <button *ngIf="isLoggedIn()" (click)="router.navigate(['/profile'])" class="flex items-center px-3 py-2 rounded-lg text-sm font-medium transition-colors duration-200" [ngClass]="isDarkMode ? 'bg-gray-700 text-white' : 'bg-gray-100 text-gray-700'">
-          <svg width="24px" height="24px" stroke-width="1.5" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" color="currentColor">
+        <a *ngIf="isLoggedIn()" routerLink="/account" class="flex items-center px-3 py-2 rounded-lg text-sm font-medium transition-colors duration-200" [ngClass]="isDarkMode ? 'bg-gray-700 text-white hover:bg-gray-600' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'">
+          <svg width="20" height="20" stroke-width="1.5" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" color="currentColor">
             <path d="M5 20V19C5 15.134 8.13401 12 12 12V12C15.866 12 19 15.134 19 19V20" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path>
             <path d="M12 12C14.2091 12 16 10.2091 16 8C16 5.79086 14.2091 4 12 4C9.79086 4 8 5.79086 8 8C8 10.2091 9.79086 12 12 12Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path>
           </svg>
-        </button>
+          <span *ngIf="isLoggedIn()" class="text-sm px-2 font-medium transition-colors duration-200" [ngClass]="isDarkMode ? 'text-gray-300' : 'text-gray-700'">
+            {{ getUserName() }}
+          </span>
+        </a>
 
         <button
-          (click)="isLoggedIn()? logout(): router.navigate([getButtonRoute()])"
+          *ngIf="!isLoggedIn() || getButtonText() === 'Logout'"
+          (click)="isLoggedIn() ? logout() : router.navigate([getButtonRoute()])"
           class="px-4 py-2 rounded-lg text-sm font-medium transition-colors duration-200"
-          [ngClass]="isDarkMode ? 'bg-red-600 text-white hover:bg-red-700' : 'bg-red-600 text-white hover:bg-red-700'"
+          [ngClass]="getButtonText() === 'Logout' ? 
+            (isDarkMode ? 'bg-red-600 text-white hover:bg-red-700' : 'bg-red-600 text-white hover:bg-red-700') : 
+            (isDarkMode ? 'bg-indigo-600 text-white hover:bg-indigo-700' : 'bg-indigo-600 text-white hover:bg-indigo-700')"
         >
           {{ getButtonText() }}
         </button>
-
       </div>
     </div>
   </div>

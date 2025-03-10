@@ -1,29 +1,63 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Router } from '@angular/router';
 import { ThemeService } from '../services/theme.service';
 import { UserService } from '../services/user.service';
-import { Router } from '@angular/router';
-import { throwIfEmpty } from 'rxjs';
+import { SupabaseService } from '../services/supabase.service';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-header',
   templateUrl: './header.component.html',
   styleUrls: ['./header.component.scss']
 })
-export class HeaderComponent implements OnInit {
+export class HeaderComponent implements OnInit, OnDestroy {
   isDarkMode: boolean = false;
   currentUser: any;
+  isAuthenticated: boolean = false;
+  private sessionSubscription: Subscription | null = null;
 
   constructor(
     private themeService: ThemeService,
     private userService: UserService,
-    public router: Router
+    public router: Router,
+    private supabaseService: SupabaseService
   ) {}
 
   ngOnInit(): void {
+    // Subscribe to theme changes
     this.themeService.darkMode$.subscribe(
-      (isDark: boolean) => this.isDarkMode = isDark
+      isDark => this.isDarkMode = isDark
     );
-    this.currentUser = this.userService.getUser();
+    
+    // Check if already logged in
+    const session = this.supabaseService.currentSession;
+    this.isAuthenticated = !!session;
+    if (session) {
+      this.currentUser = session.user.user_metadata;
+    }
+    
+    // Subscribe to session changes
+    this.sessionSubscription = this.supabaseService.session$.subscribe(session => {
+      this.isAuthenticated = !!session;
+      if (session) {
+        this.currentUser = session.user.user_metadata;
+      } else {
+        this.currentUser = null;
+      }
+    });
+    
+    // Also subscribe to user service for backward compatibility
+    this.userService.user$.subscribe(user => {
+      if (user && !this.currentUser) {
+        this.currentUser = user;
+      }
+    });
+  }
+  
+  ngOnDestroy(): void {
+    if (this.sessionSubscription) {
+      this.sessionSubscription.unsubscribe();
+    }
   }
 
   toggleTheme(): void {
@@ -31,30 +65,32 @@ export class HeaderComponent implements OnInit {
   }
 
   logout(): void {
-    localStorage.clear();
-    this.router.navigate(['/login']);
+    this.supabaseService.signOut().then(() => {
+      this.router.navigate(['/login']);
+    });
   }
 
   isLoggedIn(): boolean {
-    return !!localStorage.getItem('token');
+    return this.isAuthenticated;
   }
 
   getUserName(): string {
-    const userData = localStorage.getItem('user');
-    if (userData) {
-      const user = JSON.parse(userData);
-      return user.display_name || 'User';
+    if (this.currentUser) {
+      return this.currentUser.display_name || 
+             this.currentUser.name || 
+             this.currentUser.email || 
+             'User';
     }
-    return 'User';
+    return 'Guest';
   }
 
   getButtonText(): string {
     const currentRoute = this.router.url;
-    if (currentRoute === '/login'){
+    if (currentRoute === '/login') {
       return 'Register';
-    } else if (currentRoute === '/signup'){
+    } else if (currentRoute === '/register') {
       return 'Login';
-    } else if (this.isLoggedIn()){
+    } else if (this.isLoggedIn()) {
       return 'Logout';
     }
     return 'Login';
@@ -62,13 +98,11 @@ export class HeaderComponent implements OnInit {
 
   getButtonRoute(): string {
     const currentRoute = this.router.url;
-    if (currentRoute === '/login'){
+    if (currentRoute === '/login') {
       return '/register';
-    } else if (currentRoute === '/register'){
+    } else if (currentRoute === '/register') {
       return '/login';
-    } else if (this.isLoggedIn()){
-      return '/logout';
     }
-    return '/logout';
-   }
+    return '/login';
   }
+}
