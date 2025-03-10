@@ -9,6 +9,9 @@ import { DaftarSoalComponent } from './daftar-soal/daftar-soal.component';
 import { LoginComponent } from './login/login.component';
 import { RegisterComponent } from './register/register.component';
 import { CategoryComponent } from './category/category.component';
+import { AccountComponent } from './account/account.component';
+import { AuthGuard } from './auth/auth.guard';
+import { VerificationComponent } from './verification/verification.component';
 
 const routes: Routes = [
   {
@@ -23,22 +26,27 @@ const routes: Routes = [
   {
     path: 'welcome',
     component: WelcomeComponent,
+    canActivate: [AuthGuard]
   },
   {
     path: 'question',
     component: QuestionComponent,
+    canActivate: [AuthGuard]
   },
   {
     path: 'result',
     component: ResultComponent,
+    canActivate: [AuthGuard]
   },
   {
     path: 'review',
     component: ReviewComponent,
+    canActivate: [AuthGuard]
   },
   {
     path: 'daftar-soal',
     component: DaftarSoalComponent,
+    canActivate: [AuthGuard]
   },
   {
     path: 'login',
@@ -49,12 +57,26 @@ const routes: Routes = [
     component: RegisterComponent,
   },
   {
+    path: 'account',
+    component: AccountComponent,
+    canActivate: [AuthGuard]
+  },
+  {
     path: 'categories',
-    component: CategoryComponent
+    component: CategoryComponent,
+    canActivate: [AuthGuard]
   },
   {
     path: 'paket-soal/:kategori',
-    component: DaftarSoalComponent
+    component: DaftarSoalComponent,
+    canActivate: [AuthGuard]
+  },
+  {
+    path: 'verification', 
+    component: VerificationComponent },
+  {
+    path: '**',
+    redirectTo: 'home'
   }
 ];
 

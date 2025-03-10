@@ -1,8 +1,8 @@
 import { NgModule } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
 import { RouterModule } from '@angular/router';
-import { HttpClientModule, HTTP_INTERCEPTORS, HttpHeaders } from '@angular/common/http';
-import { FormsModule } from '@angular/forms';
+import { HttpClientModule, HTTP_INTERCEPTORS } from '@angular/common/http';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
@@ -19,8 +19,13 @@ import { RegisterComponent } from './register/register.component';
 import { AuthInterceptor } from './interceptors/auth.interceptor';
 import { UserService } from './services/user.service';
 import { AuthService } from './services/auth.service';
+import { SupabaseService } from './services/supabase.service';
+import { ThemeService } from './services/theme.service';
 import { environment } from '../environments/environment';
 import { CategoryComponent } from './category/category.component';
+import { VerificationComponent } from './verification/verification.component';
+
+import { AccountComponent } from './account/account.component';
 
 @NgModule({
   declarations: [
@@ -35,7 +40,9 @@ import { CategoryComponent } from './category/category.component';
     DaftarSoalComponent,
     LoginComponent,
     RegisterComponent,
-    CategoryComponent
+    CategoryComponent,
+    VerificationComponent,
+    AccountComponent
   ],
   imports: [
     BrowserModule,
@@ -43,6 +50,7 @@ import { CategoryComponent } from './category/category.component';
     AppRoutingModule,
     RouterModule.forRoot([]),
     FormsModule,
+    ReactiveFormsModule,
     CommonModule,
   ],
   providers: [
@@ -56,7 +64,9 @@ import { CategoryComponent } from './category/category.component';
       multi: true
     },
     UserService,
-    AuthService
+    AuthService,
+    SupabaseService,
+    ThemeService
   ],
   bootstrap: [AppComponent]
 })
