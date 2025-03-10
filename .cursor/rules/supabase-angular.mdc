@@ -1,6 +1,7 @@
 ---
 description: example build supabase with angular
 globs: 
+alwaysApply: false
 ---
 Then let's install the only additional dependency: supabase-js
 

@@ -105,4 +105,23 @@ export class RegisterComponent implements OnInit, OnDestroy {
       this.loading = false;
     }
   }
+
+  async signInWithGoogle(): Promise<void> {
+    this.errorMessage = '';
+    this.loading = true;
+    
+    try {
+      const { data, error } = await this.supabaseService.signInWithGoogle();
+      
+      if (error) throw error;
+      
+      // The user will be redirected to Google's OAuth page
+      // After authentication, they'll be redirected back to our app
+      // No need to navigate manually here
+    } catch (error: any) {
+      console.error('Google sign-in failed:', error);
+      this.errorMessage = error.message || 'Failed to sign in with Google. Please try again.';
+      this.loading = false;
+    }
+  }
 }

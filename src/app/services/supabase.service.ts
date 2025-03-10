@@ -44,14 +44,29 @@ export class SupabaseService {
     });
   }
 
-  private async loadSession() {
+  private async loadSession(retryCount = 0) {
     try {
       const { data } = await this.supabase.auth.getSession();
       console.log('Initial session loaded:', data.session ? 'Session exists' : 'No session');
-      this._session.next(data.session);
-      this._user.next(data.session?.user || null);
+      
+      if (data.session) {
+        this._session.next(data.session);
+        this._user.next(data.session.user);
+      } else {
+        this._session.next(null);
+        this._user.next(null);
+        
+        // If we're on the callback page, we might need to retry
+        // as the session might not be immediately available
+        if (window.location.pathname.includes('/auth/callback') && retryCount < 3) {
+          console.log(`No session found on callback page, retrying (${retryCount + 1}/3)...`);
+          setTimeout(() => this.loadSession(retryCount + 1), 1000);
+        }
+      }
     } catch (error) {
       console.error('Error loading session:', error);
+      this._session.next(null);
+      this._user.next(null);
     }
   }
 
@@ -61,6 +76,11 @@ export class SupabaseService {
 
   get currentUser() {
     return this._user.value;
+  }
+
+  // Check if user is authenticated
+  get isAuthenticated(): boolean {
+    return !!this._session.value;
   }
 
   // Sign in with email and password
@@ -88,6 +108,36 @@ export class SupabaseService {
   // Sign in with magic link (passwordless)
   async signInWithOtp(email: string) {
     return this.supabase.auth.signInWithOtp({ email });
+  }
+
+  // Sign in with Google OAuth
+  async signInWithGoogle() {
+    try {
+      // Get the redirect URL from the environment configuration if available
+      const redirectTo = window.env?.googleOAuth?.redirectUri || 
+                        `${window.location.origin}/auth/callback`;
+      
+      console.log('Starting Google OAuth flow with redirect to:', redirectTo);
+      
+      // Use OAuth flow for Google authentication
+      return this.supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo,
+          queryParams: {
+            // Request offline access to get a refresh token
+            access_type: 'offline',
+            // Force consent screen to ensure refresh token is always provided
+            prompt: 'consent',
+            // Request profile and email scopes
+            scope: 'profile email'
+          }
+        }
+      });
+    } catch (error) {
+      console.error('Error initiating Google sign-in:', error);
+      throw error;
+    }
   }
 
   // Sign up with email and password
@@ -135,6 +185,39 @@ export class SupabaseService {
       console.error('Unexpected error during sign out:', error);
       throw error;
     }
+  }
+
+  // Handle auth callback (for OAuth providers like Google)
+  async handleAuthCallback(code: string) {
+    if (code) {
+      try {
+        console.log('Exchanging code for session...');
+        
+        // Add a small delay to avoid race conditions with browser locks
+        await new Promise(resolve => setTimeout(resolve, 500));
+        
+        const { data, error } = await this.supabase.auth.exchangeCodeForSession(code);
+        
+        if (error) {
+          console.error('Error exchanging code for session:', error);
+          return { data: null, error };
+        }
+        
+        console.log('Session exchange successful');
+        
+        // Update session state
+        if (data?.session) {
+          this._session.next(data.session);
+          this._user.next(data.session.user);
+        }
+        
+        return { data, error: null };
+      } catch (error) {
+        console.error('Unexpected error during auth callback:', error);
+        return { data: null, error };
+      }
+    }
+    return { data: null, error: new Error('No code provided') };
   }
 
   // Get user profile

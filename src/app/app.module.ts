@@ -25,6 +25,7 @@ import { environment } from '../environments/environment';
 import { CategoryComponent } from './category/category.component';
 import { AccountComponent } from './account/account.component';
 import { VerificationComponent } from './verification/verification.component';
+import { AuthCallbackComponent } from './auth-callback/auth-callback.component';
 
 @NgModule({
   declarations: [
@@ -41,7 +42,8 @@ import { VerificationComponent } from './verification/verification.component';
     RegisterComponent,
     CategoryComponent,
     AccountComponent,
-    VerificationComponent
+    VerificationComponent,
+    AuthCallbackComponent
   ],
   imports: [
     BrowserModule,

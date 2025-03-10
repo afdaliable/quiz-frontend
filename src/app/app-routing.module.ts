@@ -12,6 +12,7 @@ import { CategoryComponent } from './category/category.component';
 import { AccountComponent } from './account/account.component';
 import { AuthGuard } from './auth/auth.guard';
 import { VerificationComponent } from './verification/verification.component';
+import { AuthCallbackComponent } from './auth-callback/auth-callback.component';
 
 const routes: Routes = [
   {
@@ -77,7 +78,7 @@ const routes: Routes = [
   },
   {
     path: 'auth/callback',
-    component: HomeComponent,
+    component: AuthCallbackComponent,
   },
   {
     path: '**',

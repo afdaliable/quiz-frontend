@@ -1,5 +1,5 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
-import { Router } from '@angular/router';
+import { Router, ActivatedRoute } from '@angular/router';
 import { ThemeService } from '../services/theme.service';
 import { SupabaseService } from '../services/supabase.service';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
@@ -22,7 +22,8 @@ export class LoginComponent implements OnInit, OnDestroy {
     private router: Router,
     private themeService: ThemeService,
     private supabaseService: SupabaseService,
-    private formBuilder: FormBuilder
+    private formBuilder: FormBuilder,
+    private route: ActivatedRoute
   ) {
     this.loginForm = this.formBuilder.group({
       email: ['', [Validators.required, Validators.email]],
@@ -35,6 +36,13 @@ export class LoginComponent implements OnInit, OnDestroy {
     this.themeService.darkMode$.subscribe(
       isDark => this.isDarkMode = isDark
     );
+    
+    // Check for error query parameter (from auth callback)
+    this.route.queryParams.subscribe(params => {
+      if (params['error']) {
+        this.errorMessage = params['error'];
+      }
+    });
     
     // Check if already logged in, but don't redirect (let app component handle it)
     if (this.supabaseService.currentSession) {
@@ -114,6 +122,25 @@ export class LoginComponent implements OnInit, OnDestroy {
       console.error('Magic link failed:', error);
       this.errorMessage = error.message || 'Failed to send magic link. Please try again.';
     } finally {
+      this.loading = false;
+    }
+  }
+
+  async signInWithGoogle(): Promise<void> {
+    this.errorMessage = '';
+    this.loading = true;
+    
+    try {
+      const { data, error } = await this.supabaseService.signInWithGoogle();
+      
+      if (error) throw error;
+      
+      // The user will be redirected to Google's OAuth page
+      // After authentication, they'll be redirected back to our app
+      // No need to navigate manually here
+    } catch (error: any) {
+      console.error('Google sign-in failed:', error);
+      this.errorMessage = error.message || 'Failed to sign in with Google. Please try again.';
       this.loading = false;
     }
   }
