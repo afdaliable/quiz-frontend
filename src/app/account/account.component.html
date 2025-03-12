@@ -17,31 +17,15 @@
       <div class="flex flex-col sm:flex-row gap-8 mb-6">
         <div class="flex flex-col items-center">
           <div class="w-24 h-24 rounded-full overflow-hidden bg-gray-200 mb-3">
-            <ng-container *ngIf="avatarUrl; else avatarPlaceholder">
-              <img [src]="avatarUrl" alt="Avatar" class="w-full h-full object-cover">
+            <ng-container *ngIf="profile?.picture; else avatarPlaceholder">
+              <img [src]="profile?.picture" alt="Avatar" class="w-full h-full object-cover">
             </ng-container>
             <ng-template #avatarPlaceholder>
               <div class="w-full h-full flex items-center justify-center bg-indigo-600 text-white text-3xl font-semibold">
-                {{ profile?.username ? profile?.username!.charAt(0).toUpperCase() : 'U' }}
+                {{ profile?.display_name ? profile?.display_name!.charAt(0).toUpperCase() : 'U' }}
               </div>
             </ng-template>
           </div>
-          
-          <label 
-            for="avatar" 
-            class="px-3 py-1.5 text-sm font-medium rounded-md cursor-pointer transition-colors duration-200"
-            [ngClass]="isDarkMode ? 'bg-gray-700 text-gray-200 hover:bg-gray-600' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'"
-          >
-            {{ uploadingAvatar ? 'Uploading...' : 'Change Avatar' }}
-          </label>
-          <input 
-            type="file" 
-            id="avatar" 
-            (change)="uploadAvatar($event)" 
-            accept="image/*" 
-            [disabled]="uploadingAvatar"
-            class="hidden"
-          >
         </div>
         
         <div class="flex-1">
@@ -53,79 +37,37 @@
             {{ successMessage }}
           </div>
           
-          <form [formGroup]="profileForm" (ngSubmit)="updateProfile()" class="space-y-4">
+          <div class="space-y-4">
             <div>
-              <label for="email" class="block text-sm font-medium mb-1 transition-colors duration-200" [ngClass]="isDarkMode ? 'text-gray-200' : 'text-gray-700'">
+              <label class="block text-sm font-medium mb-1 transition-colors duration-200" [ngClass]="isDarkMode ? 'text-gray-200' : 'text-gray-700'">
                 Email
               </label>
-              <input
-                type="email"
-                id="email"
-                [value]="profile?.email || ''"
-                disabled
-                class="w-full px-3 py-2 rounded-md shadow-sm text-sm transition-colors duration-200"
-                [ngClass]="isDarkMode ? 'bg-gray-700 border-gray-600 text-gray-400' : 'bg-gray-100 border-gray-300 text-gray-500'"
-              />
-            </div>
-            
-            <div>
-              <label for="username" class="block text-sm font-medium mb-1 transition-colors duration-200" [ngClass]="isDarkMode ? 'text-gray-200' : 'text-gray-700'">
-                Username
-              </label>
-              <input
-                type="text"
-                id="username"
-                formControlName="username"
-                class="w-full px-3 py-2 rounded-md shadow-sm text-sm transition-colors duration-200"
-                [ngClass]="isDarkMode ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400' : 'bg-white border-gray-300 text-gray-900 placeholder-gray-500'"
-              />
-              <div *ngIf="profileForm.get('username')?.invalid && profileForm.get('username')?.touched" class="mt-1 text-sm text-red-600">
-                <span *ngIf="profileForm.get('username')?.errors?.['required']">Username is required</span>
+              <div class="w-full px-3 py-2 rounded-md shadow-sm text-sm transition-colors duration-200"
+                [ngClass]="isDarkMode ? 'bg-gray-700 border-gray-600 text-white' : 'bg-gray-100 border-gray-300 text-gray-900'">
+                {{ profile?.email || 'Not available' }}
               </div>
             </div>
             
             <div>
-              <label for="display_name" class="block text-sm font-medium mb-1 transition-colors duration-200" [ngClass]="isDarkMode ? 'text-gray-200' : 'text-gray-700'">
+              <label class="block text-sm font-medium mb-1 transition-colors duration-200" [ngClass]="isDarkMode ? 'text-gray-200' : 'text-gray-700'">
                 Display Name
               </label>
-              <input
-                type="text"
-                id="display_name"
-                formControlName="display_name"
-                class="w-full px-3 py-2 rounded-md shadow-sm text-sm transition-colors duration-200"
-                [ngClass]="isDarkMode ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400' : 'bg-white border-gray-300 text-gray-900 placeholder-gray-500'"
-              />
+              <div class="w-full px-3 py-2 rounded-md shadow-sm text-sm transition-colors duration-200"
+                [ngClass]="isDarkMode ? 'bg-gray-700 border-gray-600 text-white' : 'bg-gray-100 border-gray-300 text-gray-900'">
+                {{ profile?.display_name || 'Not set' }}
+              </div>
             </div>
             
             <div>
-              <label for="website" class="block text-sm font-medium mb-1 transition-colors duration-200" [ngClass]="isDarkMode ? 'text-gray-200' : 'text-gray-700'">
-                Website
+              <label class="block text-sm font-medium mb-1 transition-colors duration-200" [ngClass]="isDarkMode ? 'text-gray-200' : 'text-gray-700'">
+                User ID
               </label>
-              <input
-                type="url"
-                id="website"
-                formControlName="website"
-                placeholder="https://example.com"
-                class="w-full px-3 py-2 rounded-md shadow-sm text-sm transition-colors duration-200"
-                [ngClass]="isDarkMode ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400' : 'bg-white border-gray-300 text-gray-900 placeholder-gray-500'"
-              />
+              <div class="w-full px-3 py-2 rounded-md shadow-sm text-sm transition-colors duration-200"
+                [ngClass]="isDarkMode ? 'bg-gray-700 border-gray-600 text-white' : 'bg-gray-100 border-gray-300 text-gray-900'">
+                {{ profile?.id || 'Not available' }}
+              </div>
             </div>
-            
-            <div class="pt-2">
-              <button
-                type="submit"
-                [disabled]="loading || profileForm.invalid"
-                class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
-                [ngClass]="isDarkMode ? 'focus:ring-offset-gray-800' : ''"
-              >
-                <svg *ngIf="loading" class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                  <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                  <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                </svg>
-                {{ loading ? 'Saving...' : 'Save Profile' }}
-              </button>
-            </div>
-          </form>
+          </div>
         </div>
       </div>
     </div>

@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { SupabaseService } from '../services/supabase.service';
 import { ThemeService } from '../services/theme.service';
+import { AuthService } from '../services/auth.service';
 
 @Component({
   selector: 'app-auth-callback',
@@ -30,7 +30,7 @@ export class AuthCallbackComponent implements OnInit {
   constructor(
     private route: ActivatedRoute,
     private router: Router,
-    private supabaseService: SupabaseService,
+    private authService: AuthService,
     private themeService: ThemeService
   ) {}
 
@@ -45,7 +45,7 @@ export class AuthCallbackComponent implements OnInit {
       return;
     }
     
-    // Check for error parameter (user might have canceled the auth)
+    // Check for error parameter
     this.route.queryParams.subscribe(params => {
       if (params['error']) {
         console.log('Auth error detected:', params['error']);
@@ -55,29 +55,34 @@ export class AuthCallbackComponent implements OnInit {
         }, 2000);
         return;
       }
-    });
-    
-    // First check for hash fragment (implicit flow)
-    const hash = window.location.hash;
-    if (hash && hash.includes('access_token')) {
-      console.log('Detected hash fragment, letting Supabase handle it automatically');
-      // Supabase will automatically handle this case
-      // Just wait a moment and then redirect
-      setTimeout(() => {
-        this.router.navigate(['/home']);
-      }, 1500);
-      return;
-    }
-    
-    // Then check for code parameter (PKCE flow)
-    this.route.queryParams.subscribe(params => {
+      
+      // Get the authorization code from the URL
       const code = params['code'];
-      if (code && !this.processingCallback) {
+      const state = params['state'];
+      
+      if (code && state) {
         this.processingCallback = true;
-        console.log('Detected code parameter, handling callback');
-        this.handleAuthCallback(code);
-      } else if (!code) {
-        console.log('No code parameter found');
+        
+        // Verify the state parameter to prevent CSRF attacks
+        const storedState = localStorage.getItem('googleOAuthState');
+        
+        if (state !== storedState) {
+          console.error('State mismatch, possible CSRF attack');
+          this.errorMessage = 'Security verification failed. Please try again.';
+          setTimeout(() => {
+            this.router.navigate(['/login']);
+          }, 2000);
+          return;
+        }
+        
+        // Clear the stored state
+        localStorage.removeItem('googleOAuthState');
+        
+        // Handle the authorization code
+        this.handleAuthCode(code);
+      } else {
+        // No code - redirect to login
+        console.log('No authorization code found');
         this.errorMessage = 'No authentication code found. Please try again.';
         setTimeout(() => {
           this.router.navigate(['/login']);
@@ -86,40 +91,24 @@ export class AuthCallbackComponent implements OnInit {
     });
   }
 
-  private async handleAuthCallback(code: string): Promise<void> {
-    try {
-      console.log('Processing authentication callback...');
-      const { data, error } = await this.supabaseService.handleAuthCallback(code);
-      
-      if (error) {
-        console.error('Error in callback:', error);
+  private handleAuthCode(code: string): void {
+    // Exchange the code for tokens with the backend
+    this.authService.exchangeCodeForToken(code).subscribe({
+      next: () => {
+        console.log('Authentication successful, redirecting to home');
+        setTimeout(() => {
+          this.router.navigate(['/home']);
+        }, 1000);
+      },
+      error: (error) => {
+        console.error('Error exchanging code for token:', error);
         this.errorMessage = 'Authentication failed. Please try again.';
         setTimeout(() => {
           this.router.navigate(['/login'], { 
             queryParams: { error: this.errorMessage } 
           });
         }, 2000);
-        return;
       }
-      
-      if (data?.session) {
-        console.log('Authentication successful, redirecting to home');
-        setTimeout(() => {
-          this.router.navigate(['/home']);
-        }, 1000);
-      } else {
-        console.warn('No session returned from callback');
-        this.errorMessage = 'Authentication completed but no session was created. Please try again.';
-        setTimeout(() => {
-          this.router.navigate(['/login']);
-        }, 2000);
-      }
-    } catch (error) {
-      console.error('Unexpected error in callback handler:', error);
-      this.errorMessage = 'An unexpected error occurred. Please try again.';
-      setTimeout(() => {
-        this.router.navigate(['/login']);
-      }, 2000);
-    }
+    });
   }
 } 

@@ -5,7 +5,7 @@ import { QuestionService } from '../services/question.service'; // Ensure this p
 import { Router } from '@angular/router';
 import { UserService } from '../services/user.service'; // Ensure this path is correct
 import { ThemeService } from '../services/theme.service'; // Ensure this path is correct
-import { SupabaseService } from '../services/supabase.service';
+import { AuthService } from '../services/auth.service';
 import { Subscription } from 'rxjs';
 
 @Component({
@@ -24,29 +24,29 @@ export class HomeComponent implements OnInit, OnDestroy {
   sortDirection: 'asc' | 'desc' = 'asc';
   isDarkMode: boolean = false;
   isCategoriesCollapsed: boolean = true;
-  private sessionSubscription: Subscription | null = null;
+  private userSubscription: Subscription | null = null;
 
   constructor(
     private questionService: QuestionService,
     private router: Router,
     private userService: UserService,
     private themeService: ThemeService,
-    private supabaseService: SupabaseService
+    private authService: AuthService
   ) {}
 
   ngOnInit(): void {
-    // Check if we have a Supabase session
-    const session = this.supabaseService.currentSession;
+    // Check if we have an auth token
+    const token = this.authService.getToken();
     
-    console.log('Home Init - Supabase session exists:', !!session);
+    console.log('Home Init - Auth token exists:', !!token);
     
-    if (session) {
+    if (token) {
       this.isLoggedIn = true;
       this.loadCategories();
       this.loadPaketSoal();
     } else {
       // Don't redirect here, let the auth guard handle it
-      console.log('No Supabase session in home component');
+      console.log('No auth token in home component');
     }
     
     // Subscribe to theme changes
@@ -54,11 +54,11 @@ export class HomeComponent implements OnInit, OnDestroy {
       isDark => this.isDarkMode = isDark
     );
     
-    // Subscribe to session changes
-    this.sessionSubscription = this.supabaseService.session$.subscribe(session => {
-      this.isLoggedIn = !!session;
+    // Subscribe to user changes
+    this.userSubscription = this.authService.user$.subscribe(user => {
+      this.isLoggedIn = !!user;
       
-      if (session) {
+      if (user) {
         this.loadCategories();
         this.loadPaketSoal();
       }
@@ -67,8 +67,8 @@ export class HomeComponent implements OnInit, OnDestroy {
   
   ngOnDestroy(): void {
     // Clean up subscription
-    if (this.sessionSubscription) {
-      this.sessionSubscription.unsubscribe();
+    if (this.userSubscription) {
+      this.userSubscription.unsubscribe();
     }
   }
 
@@ -119,10 +119,10 @@ export class HomeComponent implements OnInit, OnDestroy {
   }
 
   selectPaketSoal(paketSoal: PaketSoal): void {
-    // Check if we have a Supabase session
-    if (!this.supabaseService.currentSession) {
+    // Check if we have an auth token
+    if (!this.authService.getToken()) {
       // Let the auth guard handle redirection
-      console.log('No Supabase session when selecting paket soal');
+      console.log('No auth token when selecting paket soal');
       return;
     }
     

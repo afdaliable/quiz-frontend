@@ -2,7 +2,7 @@ import { Component, OnInit, OnDestroy } from '@angular/core';
 import { Router } from '@angular/router';
 import { ThemeService } from '../services/theme.service';
 import { UserService } from '../services/user.service';
-import { SupabaseService } from '../services/supabase.service';
+import { AuthService } from '../services/auth.service';
 import { Subscription } from 'rxjs';
 
 @Component({
@@ -14,13 +14,13 @@ export class HeaderComponent implements OnInit, OnDestroy {
   isDarkMode: boolean = false;
   currentUser: any;
   isAuthenticated: boolean = false;
-  private sessionSubscription: Subscription | null = null;
+  private userSubscription: Subscription | null = null;
 
   constructor(
     private themeService: ThemeService,
     private userService: UserService,
     public router: Router,
-    private supabaseService: SupabaseService
+    private authService: AuthService
   ) {}
 
   ngOnInit(): void {
@@ -30,33 +30,19 @@ export class HeaderComponent implements OnInit, OnDestroy {
     );
     
     // Check if already logged in
-    const session = this.supabaseService.currentSession;
-    this.isAuthenticated = !!session;
-    if (session) {
-      this.currentUser = session.user.user_metadata;
-    }
+    const token = this.authService.getToken();
+    this.isAuthenticated = !!token;
     
-    // Subscribe to session changes
-    this.sessionSubscription = this.supabaseService.session$.subscribe(session => {
-      this.isAuthenticated = !!session;
-      if (session) {
-        this.currentUser = session.user.user_metadata;
-      } else {
-        this.currentUser = null;
-      }
-    });
-    
-    // Also subscribe to user service for backward compatibility
-    this.userService.user$.subscribe(user => {
-      if (user && !this.currentUser) {
-        this.currentUser = user;
-      }
+    // Subscribe to user changes
+    this.userSubscription = this.authService.user$.subscribe(user => {
+      this.isAuthenticated = !!user;
+      this.currentUser = user;
     });
   }
   
   ngOnDestroy(): void {
-    if (this.sessionSubscription) {
-      this.sessionSubscription.unsubscribe();
+    if (this.userSubscription) {
+      this.userSubscription.unsubscribe();
     }
   }
 
@@ -65,9 +51,8 @@ export class HeaderComponent implements OnInit, OnDestroy {
   }
 
   logout(): void {
-    this.supabaseService.signOut().then(() => {
-      this.router.navigate(['/login']);
-    });
+    this.authService.logout();
+    this.router.navigate(['/login']);
   }
 
   isLoggedIn(): boolean {
@@ -87,9 +72,7 @@ export class HeaderComponent implements OnInit, OnDestroy {
   getButtonText(): string {
     const currentRoute = this.router.url;
     if (currentRoute === '/login') {
-      return 'Register';
-    } else if (currentRoute === '/register') {
-      return 'Login';
+      return 'Home';
     } else if (this.isLoggedIn()) {
       return 'Logout';
     }
@@ -99,9 +82,7 @@ export class HeaderComponent implements OnInit, OnDestroy {
   getButtonRoute(): string {
     const currentRoute = this.router.url;
     if (currentRoute === '/login') {
-      return '/register';
-    } else if (currentRoute === '/register') {
-      return '/login';
+      return '/home';
     }
     return '/login';
   }

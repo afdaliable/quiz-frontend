@@ -2,7 +2,6 @@
 import { Component } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
-import { SupabaseService } from '../services/supabase.service';
 import { CommonModule } from '@angular/common';
 
 @Component({
@@ -129,7 +128,6 @@ export class AuthComponent {
   error = false;
 
   constructor(
-    private readonly supabase: SupabaseService,
     private readonly formBuilder: FormBuilder,
     private readonly router: Router
   ) {
@@ -153,11 +151,7 @@ export class AuthComponent {
       this.error = false;
       
       const email = this.signInForm.value.email;
-      const { error } = await this.supabase.signInWithOtp(email);
       
-      if (error) {
-        throw error;
-      }
       
       this.message = 'Check your email for the login link!';
     } catch (error: any) {

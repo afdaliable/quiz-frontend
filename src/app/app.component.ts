@@ -2,7 +2,7 @@ import { Component, OnInit, OnDestroy } from '@angular/core';
 import { UserService } from './services/user.service';
 import { Router, NavigationEnd } from '@angular/router';
 import { Observable, filter, Subscription } from 'rxjs';
-import { SupabaseService } from './services/supabase.service';
+import { AuthService } from './services/auth.service';
 
 @Component({
   selector: 'app-root',
@@ -19,11 +19,11 @@ export class AppComponent implements OnInit, OnDestroy {
   constructor(
     private userService: UserService,
     private router: Router,
-    private supabaseService: SupabaseService
+    private authService: AuthService
   ) {}
 
   ngOnInit() {
-    this.user$ = this.userService.user$;
+    this.user$ = this.authService.user$;
 
     // Track current URL to prevent redirection loops
     const routerSub = this.router.events.pipe(
@@ -36,9 +36,7 @@ export class AppComponent implements OnInit, OnDestroy {
     this.subscriptions.push(routerSub);
 
     // Handle auth redirect (for OAuth authentication)
-    const isAuthCallback = 
-      window.location.hash && window.location.hash.includes('access_token') || 
-      window.location.pathname.includes('/auth/callback');
+    const isAuthCallback = window.location.pathname.includes('/auth/callback');
     
     if (isAuthCallback) {
       console.log('Detected auth callback');
@@ -47,8 +45,8 @@ export class AppComponent implements OnInit, OnDestroy {
     }
 
     // Listen for auth state changes
-    const authSub = this.supabaseService.session$.subscribe(session => {
-      console.log('Auth state changed:', session ? 'Logged in' : 'Logged out');
+    const authSub = this.authService.user$.subscribe(user => {
+      console.log('Auth state changed:', user ? 'Logged in' : 'Logged out');
       
       // Skip redirection if we're on an auth callback page
       if (this.currentUrl.includes('/auth/callback')) {
@@ -63,23 +61,21 @@ export class AppComponent implements OnInit, OnDestroy {
       }
       
       // Get authentication status
-      const isAuthenticated = this.supabaseService.isAuthenticated;
+      const isAuthenticated = !!this.authService.getToken();
       console.log('Authentication status:', isAuthenticated ? 'Authenticated' : 'Not authenticated');
       
       // Only redirect if we're not already on the target page
       if (isAuthenticated) {
-        // If logged in and on login/register page, go to home
-        if (this.currentUrl === '/login' || this.currentUrl === '/register' || this.currentUrl === '/verification') {
+        // If logged in and on login page, go to home
+        if (this.currentUrl === '/login') {
           console.log('Logged in on auth page, redirecting to home');
           this.isRedirecting = true;
           this.router.navigate(['/home']);
         }
       } else {
-        // If not logged in and not on login/register/verification page, go to login
+        // If not logged in and not on login page, go to login
         const isPublicPage = 
           this.currentUrl === '/login' || 
-          this.currentUrl === '/register' || 
-          this.currentUrl === '/verification' ||
           this.currentUrl.includes('/auth/callback');
         
         if (!isPublicPage) {
@@ -98,6 +94,7 @@ export class AppComponent implements OnInit, OnDestroy {
   }
 
   logout() {
-    this.supabaseService.signOut();
+    this.authService.logout();
+    this.router.navigate(['/login']);
   }
 }

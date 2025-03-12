@@ -15,16 +15,13 @@ import { ResultComponent } from './result/result.component';
 import { ReviewComponent } from './review/review.component';
 import { DaftarSoalComponent } from './daftar-soal/daftar-soal.component';
 import { LoginComponent } from './login/login.component';
-import { RegisterComponent } from './register/register.component';
 import { AuthInterceptor } from './interceptors/auth.interceptor';
 import { UserService } from './services/user.service';
 import { AuthService } from './services/auth.service';
-import { SupabaseService } from './services/supabase.service';
 import { ThemeService } from './services/theme.service';
 import { environment } from '../environments/environment';
 import { CategoryComponent } from './category/category.component';
 import { AccountComponent } from './account/account.component';
-import { VerificationComponent } from './verification/verification.component';
 import { AuthCallbackComponent } from './auth-callback/auth-callback.component';
 
 @NgModule({
@@ -39,10 +36,8 @@ import { AuthCallbackComponent } from './auth-callback/auth-callback.component';
     ReviewComponent,
     DaftarSoalComponent,
     LoginComponent,
-    RegisterComponent,
     CategoryComponent,
     AccountComponent,
-    VerificationComponent,
     AuthCallbackComponent
   ],
   imports: [
@@ -66,7 +61,6 @@ import { AuthCallbackComponent } from './auth-callback/auth-callback.component';
     },
     UserService,
     AuthService,
-    SupabaseService,
     ThemeService
   ],
   bootstrap: [AppComponent]

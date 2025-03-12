@@ -41,7 +41,9 @@ export class QuestionService {
   constructor(private http: HttpClient, private router: Router) {}
 
   getListPaketSoal(): Observable<any> {
-    const url = '/api/listpaketsoal';
+    const url = environment.production ? 
+    `${this.baseApiUrl}/listpaketsoal` : 
+    '/api/listpaketsoal';
     
     return this.http.get(url, {
       withCredentials: true
