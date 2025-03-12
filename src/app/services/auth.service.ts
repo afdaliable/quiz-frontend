@@ -6,10 +6,14 @@ import { environment } from '../../environments/environment';
 
 interface AuthResponse {
   access_token: string;
+  token_type: string;
+  expires_in: number;
+  refresh_token: string;
   user: {
     id: string;
     email: string;
     display_name: string;
+    picture?: string;
   };
 }
 
@@ -19,19 +23,27 @@ interface AuthResponse {
 export class AuthService {
   private userSubject = new BehaviorSubject<any>(null);
   user$ = this.userSubject.asObservable();
-  private baseUrl = environment.apiUrl; // Add this line
+  private baseUrl = environment.apiUrl;
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient) {
+    this.initializeUserState();
+  }
 
-  login(credentials: any): Observable<AuthResponse> {
-    const headers = new HttpHeaders().set('Content-Type', 'application/json');
-
+  /**
+   * Exchanges the authorization code for access token with the backend
+   */
+  exchangeCodeForToken(code: string): Observable<AuthResponse> {
     return this.http.post<AuthResponse>(
-      '/api/auth/v1/token',
-      credentials,
+      environment.production ? 
+        `${this.baseUrl}/auth/google/callback` :
+        `/api/auth/google/callback`,
+      { code },
       { 
-        headers,
-        withCredentials: true
+        withCredentials: true,
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        }
       }
     ).pipe(
       tap(response => {
@@ -40,45 +52,23 @@ export class AuthService {
           const userData = {
             id: response.user.id,
             email: response.user.email,
-            display_name: response.user.display_name || response.user.email.split('@')[0]
+            display_name: response.user.display_name,
+            picture: response.user.picture
           };
           localStorage.setItem('user', JSON.stringify(userData));
           this.setUser(userData);
         }
       }),
       catchError(error => {
-        console.error('Login error:', error);
+        console.error('Token exchange error:', error);
         return throwError(() => error);
       })
     );
   }
 
-  signUp(email: string, password: string, display_name: string): Observable<AuthResponse> {
-    return this.http.post<AuthResponse>(
-      `${this.baseUrl}/signup`,
-      { email, password, display_name },
-      { withCredentials: true }
-    ).pipe(
-      tap(response => {
-        if (response.access_token) {
-          localStorage.setItem('token', response.access_token);
-          const userData = {
-            id: response.user.id,
-            email: response.user.email,
-            display_name: response.user.display_name
-          };
-          localStorage.setItem('user', JSON.stringify(userData));
-          this.userSubject.next(userData);
-        }
-      }),
-      catchError(error => {
-        console.error('Registration error:', error);
-        return throwError(() => error);
-      })
-    );
-  }
   logout(): void {
     localStorage.removeItem('token');
+    localStorage.removeItem('user');
     this.userSubject.next(null);
   }
 
@@ -93,9 +83,16 @@ export class AuthService {
   initializeUserState(): void {
     const token = this.getToken();
     if (token) {
-      // You might want to validate the token or fetch user data from the server here
-      // For now, we'll just set a basic user object
-      this.setUser({ display_name: 'User' });
+      const userStr = localStorage.getItem('user');
+      if (userStr) {
+        try {
+          const user = JSON.parse(userStr);
+          this.setUser(user);
+        } catch (e) {
+          console.error('Error parsing user data', e);
+          this.logout(); // Clear invalid data
+        }
+      }
     }
   }
 }

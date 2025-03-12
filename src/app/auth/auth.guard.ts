@@ -2,29 +2,29 @@
 import { Injectable } from '@angular/core';
 import { CanActivate, Router, UrlTree } from '@angular/router';
 import { Observable, map, take, of } from 'rxjs';
-import { SupabaseService } from '../services/supabase.service';
+import { AuthService } from '../services/auth.service';
 
 @Injectable({
   providedIn: 'root',
 })
 export class AuthGuard implements CanActivate {
-  constructor(private router: Router, private supabaseService: SupabaseService) {}
+  constructor(private router: Router, private authService: AuthService) {}
 
   canActivate(): Observable<boolean | UrlTree> {
-    // First check if we already have a session in memory
-    const currentSession = this.supabaseService.currentSession;
-    if (currentSession) {
+    // Check if we have a token
+    const token = this.authService.getToken();
+    if (token) {
       return of(true);
     }
 
-    // Otherwise, wait for the session$ observable
-    return this.supabaseService.session$.pipe(
+    // Otherwise, wait for the user$ observable
+    return this.authService.user$.pipe(
       take(1),
-      map(session => {
-        if (session) {
+      map(user => {
+        if (user) {
           return true;
         } else {
-          console.log('AuthGuard: No session found, redirecting to login');
+          console.log('AuthGuard: No authenticated user found, redirecting to login');
           return this.router.createUrlTree(['/login']);
         }
       })

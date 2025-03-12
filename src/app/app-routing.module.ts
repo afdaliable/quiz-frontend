@@ -7,11 +7,9 @@ import { ResultComponent } from './result/result.component';
 import { ReviewComponent } from './review/review.component';
 import { DaftarSoalComponent } from './daftar-soal/daftar-soal.component';
 import { LoginComponent } from './login/login.component';
-import { RegisterComponent } from './register/register.component';
 import { CategoryComponent } from './category/category.component';
 import { AccountComponent } from './account/account.component';
 import { AuthGuard } from './auth/auth.guard';
-import { VerificationComponent } from './verification/verification.component';
 import { AuthCallbackComponent } from './auth-callback/auth-callback.component';
 
 const routes: Routes = [
@@ -52,14 +50,6 @@ const routes: Routes = [
   {
     path: 'login',
     component: LoginComponent,
-  },
-  {
-    path: 'register',
-    component: RegisterComponent,
-  },
-  {
-    path: 'verification',
-    component: VerificationComponent,
   },
   {
     path: 'account',

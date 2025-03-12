@@ -1,7 +1,6 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
-import { SupabaseService } from '../services/supabase.service';
 import { ThemeService } from '../services/theme.service';
 import { Subscription } from 'rxjs';
 
@@ -22,7 +21,6 @@ export class RegisterComponent implements OnInit, OnDestroy {
   constructor(
     private router: Router,
     private themeService: ThemeService,
-    private supabaseService: SupabaseService,
     private formBuilder: FormBuilder
   ) {
     this.registerForm = this.formBuilder.group({
@@ -41,9 +39,7 @@ export class RegisterComponent implements OnInit, OnDestroy {
     );
     
     // Check if already logged in, but don't redirect (let app component handle it)
-    if (this.supabaseService.currentSession) {
-      console.log('Already logged in in register component');
-    }
+   
   }
   
   ngOnDestroy(): void {
@@ -84,9 +80,8 @@ export class RegisterComponent implements OnInit, OnDestroy {
     
     try {
       const { email, password, displayName } = this.registerForm.value;
-      const { error } = await this.supabaseService.signUp(email, password, { display_name: displayName });
       
-      if (error) throw error;
+      
       
       this.showSuccessPopup = true;
       setTimeout(() => {
@@ -111,10 +106,7 @@ export class RegisterComponent implements OnInit, OnDestroy {
     this.loading = true;
     
     try {
-      const { data, error } = await this.supabaseService.signInWithGoogle();
-      
-      if (error) throw error;
-      
+  
       // The user will be redirected to Google's OAuth page
       // After authentication, they'll be redirected back to our app
       // No need to navigate manually here

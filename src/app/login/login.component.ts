@@ -1,9 +1,9 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
 import { ThemeService } from '../services/theme.service';
-import { SupabaseService } from '../services/supabase.service';
-import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { AuthService } from '../services/auth.service';
 import { Subscription } from 'rxjs';
+import { environment } from '../../environments/environment';
 
 @Component({
   selector: 'app-login',
@@ -11,26 +11,16 @@ import { Subscription } from 'rxjs';
 })
 export class LoginComponent implements OnInit, OnDestroy {
   isDarkMode: boolean = false;
-  loginForm: FormGroup;
   loading = false;
   errorMessage: string = '';
-  showPassword = false;
-  private sessionSubscription: Subscription | null = null;
-  private isRedirecting = false;
+  private userSubscription: Subscription | null = null;
 
   constructor(
     private router: Router,
     private themeService: ThemeService,
-    private supabaseService: SupabaseService,
-    private formBuilder: FormBuilder,
+    private authService: AuthService,
     private route: ActivatedRoute
-  ) {
-    this.loginForm = this.formBuilder.group({
-      email: ['', [Validators.required, Validators.email]],
-      password: ['', [Validators.required, Validators.minLength(6)]],
-      rememberMe: [false]
-    });
-  }
+  ) {}
 
   ngOnInit(): void {
     this.themeService.darkMode$.subscribe(
@@ -44,105 +34,78 @@ export class LoginComponent implements OnInit, OnDestroy {
       }
     });
     
-    // Check if already logged in, but don't redirect (let app component handle it)
-    if (this.supabaseService.currentSession) {
-      console.log('Already logged in in login component');
-    }
-  }
-  
-  ngOnDestroy(): void {
-    // Clean up subscription
-    if (this.sessionSubscription) {
-      this.sessionSubscription.unsubscribe();
-    }
-  }
-
-  togglePasswordVisibility(): void {
-    this.showPassword = !this.showPassword;
-  }
-
-  async onSubmit(): Promise<void> {
-    if (this.loginForm.invalid) {
-      return;
-    }
-    
-    this.errorMessage = '';
-    this.loading = true;
-    
-    try {
-      const { email, password } = this.loginForm.value;
-      const { data, error } = await this.supabaseService.signInWithPassword(email, password);
-      
-      if (error) {
-        // Check if the error is related to email verification
-        if (error.message.includes('Email not confirmed') || 
-            error.message.includes('Email not verified') ||
-            error.message.toLowerCase().includes('verify')) {
-          // Redirect to verification page
-          this.router.navigate(['/verification'], { 
-            queryParams: { email }
-          });
-          return;
-        }
-        throw error;
-      }
-      
-      // Check if we have a session
-      if (data?.session) {
-        console.log('Login successful, navigating to home');
+    // Subscribe to user changes
+    this.userSubscription = this.authService.user$.subscribe(user => {
+      if (user) {
+        // User is logged in, redirect to home
         this.router.navigate(['/home']);
-      } else {
-        throw new Error('No session returned from Supabase');
       }
-    } catch (error: any) {
-      console.error('Login failed:', error);
-      this.errorMessage = error.message || 'Login failed. Please try again.';
-    } finally {
-      this.loading = false;
+    });
+  }
+
+  ngOnDestroy(): void {
+    if (this.userSubscription) {
+      this.userSubscription.unsubscribe();
     }
   }
 
-  async signInWithMagicLink(): Promise<void> {
-    if (!this.loginForm.get('email')?.valid) {
-      this.errorMessage = 'Please enter a valid email address';
-      return;
-    }
-    
+  signInWithGoogle(): void {
     this.errorMessage = '';
     this.loading = true;
     
     try {
-      const email = this.loginForm.value.email;
-      const { error } = await this.supabaseService.signInWithOtp(email);
-      
-      if (error) throw error;
-      
-      alert('Check your email for the login link!');
-    } catch (error: any) {
-      console.error('Magic link failed:', error);
-      this.errorMessage = error.message || 'Failed to send magic link. Please try again.';
-    } finally {
-      this.loading = false;
-    }
-  }
+      // Generate a random state value to prevent CSRF attacks
+      const state = this.generateRandomString(32);
+      // Store state in localStorage to verify when Google redirects back
+      localStorage.setItem('googleOAuthState', state);
 
-  async signInWithGoogle(): Promise<void> {
-    this.errorMessage = '';
-    this.loading = true;
-    
-    try {
-      const { data, error } = await this.supabaseService.signInWithGoogle();
+      // Google OAuth parameters
+      const googleAuthUrl = 'https://accounts.google.com/o/oauth2/v2/auth';
+      const redirectUri = `${window.location.origin}/auth/callback`;
       
-      if (error) throw error;
+      // OAuth 2.0 parameters
+      const params = {
+        client_id: environment.googleClientId,
+        redirect_uri: redirectUri,
+        response_type: 'code',
+        scope: 'email profile',
+        state: state,
+        prompt: 'select_account'
+      };
+
+      // Build the authorization URL
+      const authUrl = `${googleAuthUrl}?${this.buildQueryString(params)}`;
       
-      // The user will be redirected to Google's OAuth page
-      // After authentication, they'll be redirected back to our app
-      // No need to navigate manually here
+      // Redirect to Google authorization page in the same tab
+      window.location.href = authUrl;
     } catch (error: any) {
       console.error('Google sign-in failed:', error);
       this.errorMessage = error.message || 'Failed to sign in with Google. Please try again.';
       this.loading = false;
     }
+  }
+
+  /**
+   * Helper method to build query string from parameters
+   */
+  private buildQueryString(params: Record<string, string>): string {
+    return Object.entries(params)
+      .map(([key, value]) => `${encodeURIComponent(key)}=${encodeURIComponent(value)}`)
+      .join('&');
+  }
+
+  /**
+   * Generates a random string for state parameter
+   */
+  private generateRandomString(length: number): string {
+    const charset = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+    let result = '';
+    const values = new Uint8Array(length);
+    window.crypto.getRandomValues(values);
+    for (let i = 0; i < length; i++) {
+      result += charset[values[i] % charset.length];
+    }
+    return result;
   }
 }
 

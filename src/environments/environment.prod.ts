@@ -1,8 +1,15 @@
 export const environment = {
   production: true,
-  apiUrl: '/api',
+  apiUrl: 'http://localhost:8787/api',
   withCredentials: true,
-  supabaseUrl: 'https://bdsqeiopylntrzneohgr.supabase.co',
-  supabaseKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJkc3FlaW9weWxudHJ6bmVvaGdyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDE0OTgxODMsImV4cCI6MjA1NzA3NDE4M30.ZdXNXGbGCsohm1aSrozn3R77KKMzEIRF_oszhlMisUk',
-  resendapikey:'re_6Q1e5r9q_DHAXq1wruvH2tqVLzSpX9JBv'
+  corsConfig: {
+    allowedOrigins: ['https://your-production-domain.com', 'http://localhost:4200'],
+    allowedMethods: ['GET', 'POST', 'OPTIONS'],
+    allowedHeaders: ['*'],
+    exposedHeaders: ['Authorization'],
+    allowCredentials: true,
+    maxAge: 3600
+  },
+  // Replace this with your actual Google Client ID
+  googleClientId: '122895789472-5ppmksj8nnha9nhlktuikl4tggdal0pf.apps.googleusercontent.com'
 };   
