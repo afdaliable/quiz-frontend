@@ -1,0 +1,26 @@
+---
+description: session management backend
+globs: 
+alwaysApply: false
+---
+Here's a summary of the endpoints we've implemented:
+
+1. `POST /auth/google/callback` - Google OAuth callback that creates a session
+this already implemented at login
+2. `POST /auth/logout` - Logout endpoint to invalidate a session
+payload  token
+3. `GET /auth/sessions/{user_id}` - Get all active sessions for a user
+
+The session management system should now work correctly:
+When users log in with Google OAuth, a session will be created
+The session token will be returned in the response as the refresh_token field
+The frontend can use this token to authenticate and to log out
+The /auth/logout endpoint can be used to invalidate the session
+The /auth/sessions/{user_id} endpoint can be used to get all active sessions for a user
+
+session Validation Endpoint:
+Added a /auth/validate-session (payload token) endpoint that the frontend can use to check if a session is valid 
+Returns user ID if the session is valid, making it easy to identify the user
+Provides a clear message that can be displayed to the user
+
+Use The /auth/sessions/{user_id} endpoint can be used to get all active sessions for a user, right now when the session already and the user login and another device and make new session its make all the session before got deleted and invalid, please make notification and confirmation or warning about this at frontend too

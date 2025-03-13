@@ -11,6 +11,7 @@ import { CategoryComponent } from './category/category.component';
 import { AccountComponent } from './account/account.component';
 import { AuthGuard } from './auth/auth.guard';
 import { AuthCallbackComponent } from './auth-callback/auth-callback.component';
+import { InvalidSessionComponent } from './invalid-session/invalid-session.component';
 
 const routes: Routes = [
   {
@@ -65,6 +66,10 @@ const routes: Routes = [
     path: 'paket-soal/:kategori',
     component: DaftarSoalComponent,
     canActivate: [AuthGuard]
+  },
+  {
+    path: 'invalid-session',
+    component: InvalidSessionComponent,
   },
   {
     path: 'auth/callback',

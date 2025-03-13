@@ -15,6 +15,7 @@ export class AppComponent implements OnInit, OnDestroy {
   private currentUrl: string = '';
   private isRedirecting = false;
   private subscriptions: Subscription[] = [];
+  showSessionInvalidModal = false;
 
   constructor(
     private userService: UserService,
@@ -86,6 +87,14 @@ export class AppComponent implements OnInit, OnDestroy {
       }
     });
     this.subscriptions.push(authSub);
+
+    // Listen for session invalidation events
+    const sessionInvalidSub = this.authService.sessionInvalid$.subscribe(isInvalid => {
+      if (isInvalid) {
+        this.showSessionInvalidModal = true;
+      }
+    });
+    this.subscriptions.push(sessionInvalidSub);
   }
 
   ngOnDestroy() {
@@ -94,7 +103,13 @@ export class AppComponent implements OnInit, OnDestroy {
   }
 
   logout() {
-    this.authService.logout();
+    this.authService.logout().subscribe(() => {
+      this.router.navigate(['/login']);
+    });
+  }
+
+  closeSessionInvalidModal(): void {
+    this.showSessionInvalidModal = false;
     this.router.navigate(['/login']);
   }
 }

@@ -23,6 +23,8 @@ import { environment } from '../environments/environment';
 import { CategoryComponent } from './category/category.component';
 import { AccountComponent } from './account/account.component';
 import { AuthCallbackComponent } from './auth-callback/auth-callback.component';
+import { SessionManagementComponent } from './session-management/session-management.component';
+import { InvalidSessionComponent } from './invalid-session/invalid-session.component';
 
 @NgModule({
   declarations: [
@@ -38,7 +40,9 @@ import { AuthCallbackComponent } from './auth-callback/auth-callback.component';
     LoginComponent,
     CategoryComponent,
     AccountComponent,
-    AuthCallbackComponent
+    AuthCallbackComponent,
+    SessionManagementComponent,
+    InvalidSessionComponent
   ],
   imports: [
     BrowserModule,

@@ -51,8 +51,16 @@ export class HeaderComponent implements OnInit, OnDestroy {
   }
 
   logout(): void {
-    this.authService.logout();
-    this.router.navigate(['/login']);
+    this.authService.logout().subscribe({
+      next: () => {
+        this.router.navigate(['/login']);
+      },
+      error: (err) => {
+        console.error('Error during logout:', err);
+        // Even if there's an error, navigate to login
+        this.router.navigate(['/login']);
+      }
+    });
   }
 
   isLoggedIn(): boolean {
