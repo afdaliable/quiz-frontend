@@ -52,7 +52,11 @@ export class HomeComponent implements OnInit, OnDestroy {
       this.isLoggedIn = true;
       this.loadCategories();
       this.loadPaketSoal();
-      this.checkPremiumStatus();
+      
+      // Add a longer delay before checking premium status to ensure session is fully established
+      setTimeout(() => {
+        this.checkPremiumStatus();
+      }, 2000); // 2 second delay
     } else {
       // Don't redirect here, let the auth guard handle it
       console.log('No auth token in home component');
@@ -70,7 +74,11 @@ export class HomeComponent implements OnInit, OnDestroy {
       if (this.isLoggedIn) {
         this.loadCategories();
         this.loadPaketSoal();
-        this.checkPremiumStatus();
+        
+        // Add a longer delay before checking premium status to ensure session is fully established
+        setTimeout(() => {
+          this.checkPremiumStatus();
+        }, 2000); // 2 second delay
       }
     });
   }
@@ -235,29 +243,56 @@ export class HomeComponent implements OnInit, OnDestroy {
   // Check if user has premium access
   checkPremiumStatus(): void {
     console.log('Checking premium status...');
-    this.premiumService.checkPremiumStatus().subscribe({
-      next: (response) => {
-        console.log('Premium status response:', response);
-        
-        if (response.success) {
-          this.hasPremiumAccess = response.is_premium;
-          console.log('User has premium access:', this.hasPremiumAccess);
+    
+    // First validate the session to ensure we have a valid token
+    this.authService.validateSession().subscribe({
+      next: (validationResponse) => {
+        if (validationResponse.valid) {
+          console.log('Session is valid, proceeding with premium status check');
           
-          // If available plans are in the response, update them
-          if (!this.hasPremiumAccess && response.available_plans) {
-            this.availablePlans = response.available_plans;
-            console.log('Available premium plans from status check:', this.availablePlans);
-          }
+          // Now check premium status
+          this.premiumService.checkPremiumStatus().subscribe({
+            next: (response) => {
+              console.log('Premium status response:', response);
+              
+              if (response.success) {
+                this.hasPremiumAccess = response.is_premium;
+                console.log('User has premium access:', this.hasPremiumAccess);
+                
+                // If available plans are in the response, update them
+                if (!this.hasPremiumAccess && response.available_plans) {
+                  this.availablePlans = response.available_plans;
+                  console.log('Available premium plans from status check:', this.availablePlans);
+                }
+              } else {
+                console.error('Premium status check failed:', response);
+                this.hasPremiumAccess = false;
+                
+                // Still try to load available plans
+                this.loadAvailablePlans();
+              }
+            },
+            error: (error) => {
+              console.error('Error checking premium status:', error);
+              this.hasPremiumAccess = false;
+              
+              // Still try to load available plans if status check fails
+              this.loadAvailablePlans();
+            }
+          });
         } else {
-          console.error('Premium status check failed:', response);
+          console.error('Session is invalid, cannot check premium status');
           this.hasPremiumAccess = false;
+          
+          // Still try to load available plans
+          this.loadAvailablePlans();
         }
       },
       error: (error) => {
-        console.error('Error checking premium status:', error);
+        console.error('Error validating session before premium check:', error);
         this.hasPremiumAccess = false;
         
-        // Still try to load available plans if status check fails
+        // Still try to load available plans
         this.loadAvailablePlans();
       }
     });
@@ -265,6 +300,7 @@ export class HomeComponent implements OnInit, OnDestroy {
   
   // Load available premium plans
   loadAvailablePlans(): void {
+    console.log('Loading available premium plans...');
     this.premiumService.getPremiumPlans().subscribe({
       next: (plans) => {
         this.availablePlans = plans;
@@ -272,6 +308,8 @@ export class HomeComponent implements OnInit, OnDestroy {
       },
       error: (error) => {
         console.error('Error loading premium plans:', error);
+        // Set default empty plans array
+        this.availablePlans = [];
       }
     });
   }

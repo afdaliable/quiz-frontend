@@ -47,14 +47,32 @@ export class AuthService {
     this.initializeUserState();
   }
 
+  // Get the correct API URL for the endpoint
+  private getApiUrl(endpoint: string): string {
+    // In production, use the full URL with the domain
+    if (environment.production) {
+      // Remove leading slash if present
+      if (endpoint.startsWith('/')) {
+        endpoint = endpoint.substring(1);
+      }
+      
+      // Use window.location.origin to get the base URL
+      const baseUrl = window.location.origin;
+      return `${baseUrl}/api/${endpoint}`;
+    } else {
+      // In development, use the relative URL
+      return `/api/${endpoint}`;
+    }
+  }
+
   /**
    * Exchanges the authorization code for access token with the backend
    */
   exchangeCodeForToken(code: string): Observable<AuthResponse> {
+    const url = this.getApiUrl('auth/google/callback');
+    
     return this.http.post<AuthResponse>(
-      environment.production ? 
-        `${this.baseUrl}/auth/google/callback` :
-        `/api/auth/google/callback`,
+      url,
       { code },
       { 
         withCredentials: true,
@@ -95,6 +113,7 @@ export class AuthService {
    */
   logout(): Observable<any> {
     const refreshToken = localStorage.getItem('refresh_token');
+    const token = this.getToken();
     
     if (!refreshToken) {
       // If no refresh token, just clear local storage
@@ -102,17 +121,24 @@ export class AuthService {
       return of({ success: true });
     }
     
+    const url = this.getApiUrl('auth/logout');
+    
+    // Include the auth token in the headers
+    const headers = new HttpHeaders({
+      'Content-Type': 'application/json',
+      'Accept': 'application/json'
+    });
+    
+    if (token) {
+      headers.set('Authorization', `Bearer ${token}`);
+    }
+    
     return this.http.post(
-      environment.production ? 
-        `${this.baseUrl}/auth/logout` :
-        `/api/auth/logout`,
+      url,
       { token: refreshToken },
       { 
         withCredentials: true,
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json'
-        }
+        headers: headers
       }
     ).pipe(
       tap(() => {
@@ -122,7 +148,7 @@ export class AuthService {
         console.error('Logout error:', error);
         // Even if the server request fails, clear local storage
         this.clearLocalStorage();
-        return throwError(() => error);
+        return of({ success: true }); // Return success anyway to ensure UI updates
       })
     );
   }
@@ -154,10 +180,13 @@ export class AuthService {
       return of({ valid: false, message: 'No session token found' });
     }
     
+    const url = this.getApiUrl('auth/validate-session');
+    
+    console.log('Validating session at URL:', url);
+    console.log('Using access token:', accessToken ? 'Present' : 'Missing');
+    
     return this.http.post<SessionValidationResponse>(
-      environment.production ? 
-        `${this.baseUrl}/auth/validate-session` :
-        `/api/auth/validate-session`,
+      url,
       { token: refreshToken },
       { 
         withCredentials: true,
@@ -169,6 +198,7 @@ export class AuthService {
       }
     ).pipe(
       tap(response => {
+        console.log('Session validation response:', response);
         if (!response.valid) {
           this.invalidateSession();
           this.clearLocalStorage();
@@ -197,10 +227,10 @@ export class AuthService {
       return of([]);
     }
     
+    const url = this.getApiUrl(`auth/sessions/${user.id}`);
+    
     return this.http.get<Session[]>(
-      environment.production ? 
-        `${this.baseUrl}/auth/sessions/${user.id}` :
-        `/api/auth/sessions/${user.id}`,
+      url,
       { 
         withCredentials: true,
         headers: {
@@ -241,8 +271,28 @@ export class AuthService {
         try {
           const user = JSON.parse(userStr);
           this.setUser(user);
-          // Validate the session on initialization
-          this.validateSession().subscribe();
+          
+          // Validate the session on initialization with a small delay
+          // to ensure the backend has time to recognize the token
+          setTimeout(() => {
+            console.log('Validating session on initialization');
+            this.validateSession().subscribe({
+              next: (response) => {
+                console.log('Session validation response:', response);
+                if (!response.valid) {
+                  console.log('Session invalid on initialization, clearing storage');
+                  this.clearLocalStorage();
+                }
+              },
+              error: (error) => {
+                console.error('Error validating session on initialization:', error);
+                // Only clear storage for auth-related errors
+                if (error.status === 401 || error.status === 403) {
+                  this.clearLocalStorage();
+                }
+              }
+            });
+          }, 500); // 500ms delay
         } catch (e) {
           console.error('Error parsing user data', e);
           this.clearLocalStorage(); // Clear invalid data
@@ -263,10 +313,10 @@ export class AuthService {
       return of({ success: false, message: 'No refresh token available' });
     }
     
+    const url = this.getApiUrl('auth/refresh-token');
+    
     return this.http.post<any>(
-      environment.production ? 
-        `${this.baseUrl}/auth/refresh-token` :
-        `/api/auth/refresh-token`,
+      url,
       { refresh_token: refreshToken },
       { 
         withCredentials: true,

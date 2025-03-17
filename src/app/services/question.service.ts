@@ -40,10 +40,28 @@ export class QuestionService {
 
   constructor(private http: HttpClient, private router: Router) {}
 
+  // Get the correct API URL for the endpoint
+  private getApiUrl(endpoint: string): string {
+    // In production, use the full URL with the domain
+    if (environment.production) {
+      // Remove leading slash if present
+      if (endpoint.startsWith('/')) {
+        endpoint = endpoint.substring(1);
+      }
+      
+      // Use window.location.origin to get the base URL
+      const baseUrl = window.location.origin;
+      return `${baseUrl}/api/${endpoint}`;
+    } else {
+      // In development, use the relative URL
+      return `/api/${endpoint}`;
+    }
+  }
+
   getListPaketSoal(): Observable<any> {
-    const url = environment.production ? 
-    `${this.baseApiUrl}/listpaketsoal` : 
-    '/api/listpaketsoal';
+    const url = this.getApiUrl('listpaketsoal');
+    
+    console.log('Getting paket soal list from URL:', url);
     
     return this.http.get(url, {
       withCredentials: true
@@ -86,9 +104,9 @@ export class QuestionService {
 
       console.log(`Fetching questions for quiz ID: ${quizId}`);
       
-      const url = environment.production ? 
-        `${this.baseApiUrl}/paket-soal-response/${kategori}/${namaPaket}` : 
-        `/api/paket-soal-response/${kategori}/${namaPaket}`;
+      const url = this.getApiUrl(`paket-soal-response/${kategori}/${namaPaket}`);
+      
+      console.log('Getting questions from URL:', url);
       
       return this.http.get<any>(url, {
         withCredentials: true
@@ -155,9 +173,9 @@ export class QuestionService {
   }
 
   getAllCategories(): Observable<any> {
-    const url = environment.production ? 
-      `${this.baseApiUrl}/semuaKategori` : 
-      '/api/semuaKategori';
+    const url = this.getApiUrl('semuaKategori');
+    
+    console.log('Getting categories from URL:', url);
 
     return this.http.get(url, {
       withCredentials: true

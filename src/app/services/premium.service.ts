@@ -529,6 +529,18 @@ export class PremiumService {
       tap(response => console.log('Premium status response from service:', response)),
       catchError((error: HttpErrorResponse) => {
         console.error('Error checking premium status:', error);
+        
+        // For 401 errors, return a default response instead of throwing an error
+        if (error.status === 401) {
+          console.log('Unauthorized error in premium status check, returning default response');
+          return of({
+            success: false,
+            is_premium: false,
+            message: 'Authentication failed. Please try logging in again.',
+            available_plans: []
+          });
+        }
+        
         return throwError(() => new Error('Failed to check premium status. Please try again later.'));
       })
     );

@@ -99,10 +99,53 @@ export class AuthInterceptor implements HttpInterceptor {
         
         // Special handling for premium endpoints
         if (error.status === 401 && (
-            request.url.includes('/premium/subscriptions/active') ||
-            request.url.includes('/premium/check-access')
+            request.url.includes('/premium/') ||
+            request.url.includes('/payment/')
           )) {
-          console.log('401 on premium endpoint, not redirecting to login');
+          console.log('401 on premium endpoint, attempting session validation');
+          
+          // For premium status check specifically, try to validate the session first
+          if (request.url.includes('/premium/check-status')) {
+            return this.authService.validateSession().pipe(
+              switchMap(response => {
+                if (response.valid) {
+                  console.log('Session validated, retrying premium request');
+                  // Session is valid, retry the request with fresh headers
+                  const freshToken = this.authService.getToken();
+                  let freshHeaders = new HttpHeaders({
+                    'Authorization': `Bearer ${freshToken}`,
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
+                  });
+                  
+                  const user = this.authService.getCurrentUser();
+                  if (user && user.id) {
+                    freshHeaders = freshHeaders.set('user_id', user.id.toString());
+                    freshHeaders = freshHeaders.set('User_id', user.id.toString());
+                  }
+                  
+                  const retryRequest = request.clone({
+                    headers: freshHeaders
+                  });
+                  
+                  return next.handle(retryRequest);
+                } else {
+                  // Session is invalid, redirect to login
+                  this.authService.logout().subscribe();
+                  this.router.navigate(['/login']);
+                  return throwError(() => new Error('Session invalid or expired'));
+                }
+              }),
+              catchError(validationError => {
+                console.error('Session validation failed:', validationError);
+                this.authService.logout().subscribe();
+                this.router.navigate(['/login']);
+                return throwError(() => new Error('Session validation failed'));
+              })
+            );
+          }
+          
+          // For other premium endpoints, just return the error
           return throwError(() => error);
         }
         
