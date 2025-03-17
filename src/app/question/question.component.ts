@@ -6,14 +6,7 @@ import { tap } from 'rxjs/operators';
 import { Question } from '../services/question.service';
 import { UserService } from '../services/user.service';
 import { ThemeService } from '../services/theme.service';
-
-interface PaketSoal {
-  id_nama_paket_soal: number;
-  nama_paket_soal: string;
-  id_kategori_soal: number;
-  kategori_soal: string;
-  jumlah_soal: number;
-}
+import { PaketSoal } from '../models/paket-soal.model';
 
 @Component({
   selector: 'app-question',
@@ -66,22 +59,47 @@ export class QuestionComponent implements OnInit {
     this.remainingTime = this.totalTime;
     this.selectedAnswers = new Array(this.questionList.length).fill(null);
 
-    const paketData = localStorage.getItem('selectedPaket');
-    if (paketData) {
-      this.selectedPaket = JSON.parse(paketData);
+    try {
+      const selectedPaketStr = localStorage.getItem('selectedPaket');
+      if (selectedPaketStr) {
+        try {
+          const selectedPaket = JSON.parse(selectedPaketStr);
+          
+          // Validate the selected paket
+          const hasValidId = selectedPaket.id || selectedPaket.id_nama_paket_soal;
+          if (!hasValidId || !selectedPaket.nama_paket_soal || !selectedPaket.kategori_soal) {
+            console.error('Invalid selected paket:', selectedPaket);
+            alert('Error: Invalid quiz data. Please go back and select a quiz again.');
+            this.router.navigate(['/home']);
+            return;
+          }
+          
+          this.selectedPaket = selectedPaket;
+          console.log('Selected paket:', this.selectedPaket);
+          
+          this.getAllQuestions(
+            this.selectedPaket!.kategori_soal,
+            this.selectedPaket!.nama_paket_soal
+          );
+          this.startTimer();
+          this.themeService.darkMode$.subscribe(
+            isDark => this.isDarkMode = isDark
+          );
+        } catch (error) {
+          console.error('Error parsing selectedPaket:', error);
+          alert('Error loading quiz data. Please select a quiz again.');
+          this.router.navigate(['/home']);
+        }
+      } else {
+        console.error('No selectedPaket found in localStorage');
+        alert('Please select a quiz first.');
+        this.router.navigate(['/home']);
+      }
+    } catch (error) {
+      console.error('Error in ngOnInit:', error);
+      alert('An unexpected error occurred. Please try again.');
+      this.router.navigate(['/home']);
     }
-    if (this.selectedPaket) {
-      this.getAllQuestions(
-        this.selectedPaket.kategori_soal,
-        this.selectedPaket.nama_paket_soal
-      );
-    } else {
-      console.error('No selected paket found');
-    }
-    this.startTimer();
-    this.themeService.darkMode$.subscribe(
-      isDark => this.isDarkMode = isDark
-    );
   }
 
   getAllQuestions(kategori: string, paketSoal: string) {

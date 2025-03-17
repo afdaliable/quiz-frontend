@@ -59,44 +59,99 @@ export class QuestionService {
     );
   }
 
-  getQuestions(kategori: string, paketSoal: string): Observable<Question[]> {
-    const url = environment.production ? 
-      `${this.baseApiUrl}/paket-soal-response/${kategori}/${paketSoal}` : 
-      `/api/paket-soal-response/${kategori}/${paketSoal}`;
+  getQuestions(kategori: string, namaPaket: string): Observable<any> {
+    const token = localStorage.getItem('token');
+    if (!token) {
+      console.error('No token found');
+      this.router.navigate(['/login']);
+      return throwError(() => new Error('No token found'));
+    }
 
-    return this.http.get<ApiResponse>(url, {
-      withCredentials: true
-    }).pipe(
-      map((response) => {
-        console.log('Response received:', response);
-        return this.transformQuestions(response.kumpulan_soal);
-      }),
-      catchError((error) => {
-        console.error('Error in getQuestions:', error);
-        if (error.status === 401) {
-          localStorage.clear();
-          this.router.navigate(['/login']);
-        }
-        return throwError(() => error);
-      })
-    );
-  }
+    // Get the selected paket from localStorage
+    const selectedPaketStr = localStorage.getItem('selectedPaket');
+    if (!selectedPaketStr) {
+      console.error('No selected paket found in localStorage');
+      return throwError(() => new Error('No selected paket found'));
+    }
 
-  private transformQuestions(
-    apiQuestions: ApiResponse['kumpulan_soal']
-  ): Question[] {
-    return apiQuestions.map((q) => ({
-      id: q.id,
-      questionText: q.soal,
-      options: [
-        { text: q.opt1, correct: q.correct_answer === 'opt1' },
-        { text: q.opt2, correct: q.correct_answer === 'opt2' },
-        { text: q.opt3, correct: q.correct_answer === 'opt3' },
-        { text: q.opt4, correct: q.correct_answer === 'opt4' },
-        { text: q.opt5, correct: q.correct_answer === 'opt5' },
-      ],
-      solution: q.solution,
-    }));
+    try {
+      const selectedPaket = JSON.parse(selectedPaketStr);
+      // Use either id or id_nama_paket_soal for the quiz ID
+      const quizId = selectedPaket.id || selectedPaket.id_nama_paket_soal;
+      
+      if (!quizId) {
+        console.error('Invalid quiz ID:', selectedPaket);
+        return throwError(() => new Error('Invalid quiz ID'));
+      }
+
+      console.log(`Fetching questions for quiz ID: ${quizId}`);
+      
+      const url = environment.production ? 
+        `${this.baseApiUrl}/paket-soal-response/${kategori}/${namaPaket}` : 
+        `/api/paket-soal-response/${kategori}/${namaPaket}`;
+      
+      return this.http.get<any>(url, {
+        withCredentials: true
+      }).pipe(
+        map(response => {
+          console.log('Question API response:', response);
+          
+          // Check if access is denied for premium quiz
+          if (response.success === false && response.message?.includes('premium')) {
+            console.error('Premium access denied:', response.message);
+            this.router.navigate(['/home'], { 
+              queryParams: { message: 'Premium subscription required to access this quiz.' } 
+            });
+            return [];
+          }
+          
+          // Handle different response structures
+          let questions = [];
+          
+          if (response.kumpulan_soal) {
+            // Direct questions array in response
+            questions = response.kumpulan_soal;
+          } else if (response.quiz_package && response.quiz_package.kumpulan_soal) {
+            // Questions nested in quiz_package
+            questions = response.quiz_package.kumpulan_soal;
+          } else if (Array.isArray(response)) {
+            // Response is directly an array of questions
+            questions = response;
+          } else {
+            console.error('Unexpected response structure:', response);
+            return [];
+          }
+          
+          // Transform questions to match the expected format
+          return questions.map((q: any) => ({
+            id: q.id,
+            questionText: q.soal,
+            options: [
+              { text: q.opt1, correct: q.correct_answer === 'opt1' },
+              { text: q.opt2, correct: q.correct_answer === 'opt2' },
+              { text: q.opt3, correct: q.correct_answer === 'opt3' },
+              { text: q.opt4, correct: q.correct_answer === 'opt4' },
+              { text: q.opt5, correct: q.correct_answer === 'opt5' },
+            ],
+            solution: q.solution,
+          }));
+        }),
+        catchError(error => {
+          console.error('Error fetching questions:', error);
+          
+          if (error.status === 401) {
+            console.error('Unauthorized access, clearing token');
+            localStorage.clear();
+            this.router.navigate(['/login']);
+          }
+          
+          return throwError(() => error);
+        })
+      );
+    } catch (error) {
+      console.error('Error parsing selected paket:', error);
+      return throwError(() => error);
+    }
   }
 
   getAllCategories(): Observable<any> {

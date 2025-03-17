@@ -29,6 +29,7 @@ import { PremiumPlansComponent } from './premium/premium-plans.component';
 import { PaymentCallbackComponent } from './premium/payment-callback.component';
 import { LicenseActivationComponent } from './premium/license-activation.component';
 import { PremiumService } from './services/premium.service';
+import { PremiumAccessModalComponent } from './premium/premium-access-modal.component';
 
 @NgModule({
   declarations: [
@@ -54,6 +55,7 @@ import { PremiumService } from './services/premium.service';
     HttpClientModule,
     PremiumPlansComponent,
     LicenseActivationComponent,
+    PremiumAccessModalComponent,
     AppRoutingModule,
     RouterModule.forRoot([]),
     FormsModule,

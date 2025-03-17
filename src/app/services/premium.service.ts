@@ -136,7 +136,9 @@ export class PremiumService {
 
   // Get premium plans
   getPremiumPlans(): Observable<PremiumPlan[]> {
-    const url = `${this.apiUrl}/premium/plans`;
+    const url = environment.production ? 
+      `${this.apiUrl}/premium/plans` : 
+      '/api/premium/plans';
     const headers = this.createHeaders();
     
     return this.http.get<PremiumPlan[]>(url, { headers }).pipe(
@@ -150,7 +152,9 @@ export class PremiumService {
 
   // Get active subscription
   getActiveSubscription(): Observable<Subscription | null> {
-    const url = `${this.apiUrl}/premium/subscriptions/active`;
+    const url = environment.production ? 
+      `${this.apiUrl}/premium/subscriptions/active` : 
+      '/api/premium/subscriptions/active';
     const headers = this.createHeaders();
     
     return this.http.get<Subscription>(url, { headers }).pipe(
@@ -166,17 +170,24 @@ export class PremiumService {
   }
 
   // Check if user has access to a quiz
-  checkQuizAccess(quizId: number): Observable<QuizAccessResponse> {
-    const url = `${this.apiUrl}/premium/check-access`;
+  checkQuizAccess(quizId: number): Observable<any> {
+    console.log('Checking access for quiz ID:', quizId);
+    const url = environment.production ? 
+      `${this.apiUrl}/premium/check-quiz-access/${quizId}` : 
+      `/api/premium/check-quiz-access/${quizId}`;
     const headers = this.createHeaders();
-    const body = { quiz_id: quizId };
     
-    return this.http.post<QuizAccessResponse>(url, body, { headers }).pipe(
+    return this.http.get<any>(url, { headers }).pipe(
+      tap(response => console.log('Quiz access check response:', response)),
       catchError((error: HttpErrorResponse) => {
         console.error('Error checking quiz access:', error);
         if (error.status === 401 || error.status === 403) {
           // Return a response indicating no access
-          return of({ has_access: false, required_plan_name: 'Premium' });
+          return of({ 
+            success: false, 
+            has_access: false, 
+            message: "This quiz package requires a premium subscription" 
+          });
         }
         return throwError(() => new Error('Failed to check quiz access. Please try again later.'));
       })
@@ -189,7 +200,9 @@ export class PremiumService {
   generatePaymentLink(planId: number): Observable<PaymentLinkResponse> {
     console.log('Generating payment link for plan ID:', planId);
     
-    const url = `${this.apiUrl}/license/payment-link/${planId}`;
+    const url = environment.production ? 
+      `${this.apiUrl}/license/payment-link/${planId}` : 
+      `/api/license/payment-link/${planId}`;
     const headers = this.createHeaders();
     const userId = this.getUserId();
     
@@ -221,7 +234,9 @@ export class PremiumService {
   verifyLicense(licenseData: LicenseVerificationRequest): Observable<LicenseVerificationResponse> {
     console.log('Verifying license with data:', licenseData);
     
-    const url = `${this.apiUrl}/license-public/verify`;
+    const url = environment.production ? 
+      `${this.apiUrl}/license-public/verify` : 
+      '/api/license-public/verify';
     const headers = new HttpHeaders({
       'Content-Type': 'application/json'
     });
@@ -274,7 +289,9 @@ export class PremiumService {
   getUserLicenses(): Observable<UserLicense[]> {
     console.log('Fetching user licenses');
     
-    const url = `${this.apiUrl}/license/user-licenses`;
+    const url = environment.production ? 
+      `${this.apiUrl}/license/user-licenses` : 
+      '/api/license/user-licenses';
     const headers = this.createHeaders();
     const userId = this.getUserId();
     
@@ -496,6 +513,23 @@ export class PremiumService {
       catchError((error: HttpErrorResponse) => {
         console.error('Error checking payment status:', error);
         return throwError(() => new Error('Failed to check payment status. Please try again later.'));
+      })
+    );
+  }
+
+  // Check premium status
+  checkPremiumStatus(): Observable<any> {
+    console.log('Checking premium status from service');
+    const url = environment.production ? 
+      `${this.apiUrl}/premium/check-status` : 
+      '/api/premium/check-status';
+    const headers = this.createHeaders();
+    
+    return this.http.get<any>(url, { headers }).pipe(
+      tap(response => console.log('Premium status response from service:', response)),
+      catchError((error: HttpErrorResponse) => {
+        console.error('Error checking premium status:', error);
+        return throwError(() => new Error('Failed to check premium status. Please try again later.'));
       })
     );
   }

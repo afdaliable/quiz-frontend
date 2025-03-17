@@ -1,0 +1,103 @@
+<div class="modal-backdrop fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-50 backdrop-blur-sm" (click)="onBackdropClick($event)">
+  <div class="modal-content w-full max-w-md mx-4 rounded-xl shadow-2xl overflow-hidden transform transition-all" 
+       [ngClass]="isDarkMode ? 'bg-gray-800' : 'bg-white'">
+    
+    <!-- Premium badge at the top -->
+    <div class="relative">
+      <div class="absolute top-0 right-0 mt-4 mr-4">
+        <button (click)="closeModal()" class="text-gray-400 hover:text-gray-500 focus:outline-none">
+          <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+          </svg>
+        </button>
+      </div>
+      
+      <div class="p-6 text-center">
+        <div class="inline-flex items-center justify-center p-2 mb-4 rounded-full" 
+             [ngClass]="isDarkMode ? 'bg-indigo-900' : 'bg-indigo-100'">
+          <svg class="h-8 w-8" [ngClass]="isDarkMode ? 'text-indigo-400' : 'text-indigo-600'" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
+          </svg>
+        </div>
+        
+        <h2 class="text-2xl font-bold mb-2" [ngClass]="isDarkMode ? 'text-white' : 'text-gray-900'">Premium Content</h2>
+        <p class="mb-4" [ngClass]="isDarkMode ? 'text-gray-300' : 'text-gray-600'">
+          "{{ quizName }}" is a premium quiz that requires a subscription.
+        </p>
+      </div>
+    </div>
+    
+    <!-- Premium features -->
+    <div class="px-6 pb-4">
+      <div class="mb-6">
+        <h3 class="text-lg font-semibold mb-3" [ngClass]="isDarkMode ? 'text-white' : 'text-gray-900'">Premium Benefits:</h3>
+        <ul class="space-y-2">
+          <li class="flex items-start">
+            <svg class="h-5 w-5 mr-2 mt-0.5 flex-shrink-0" [ngClass]="isDarkMode ? 'text-green-400' : 'text-green-600'" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+            </svg>
+            <span [ngClass]="isDarkMode ? 'text-gray-300' : 'text-gray-700'">Access to all premium quizzes</span>
+          </li>
+          <li class="flex items-start">
+            <svg class="h-5 w-5 mr-2 mt-0.5 flex-shrink-0" [ngClass]="isDarkMode ? 'text-green-400' : 'text-green-600'" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+            </svg>
+            <span [ngClass]="isDarkMode ? 'text-gray-300' : 'text-gray-700'">Advanced question types</span>
+          </li>
+          <li class="flex items-start">
+            <svg class="h-5 w-5 mr-2 mt-0.5 flex-shrink-0" [ngClass]="isDarkMode ? 'text-green-400' : 'text-green-600'" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+            </svg>
+            <span [ngClass]="isDarkMode ? 'text-gray-300' : 'text-gray-700'">Detailed explanations and solutions</span>
+          </li>
+          <li class="flex items-start">
+            <svg class="h-5 w-5 mr-2 mt-0.5 flex-shrink-0" [ngClass]="isDarkMode ? 'text-green-400' : 'text-green-600'" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+            </svg>
+            <span [ngClass]="isDarkMode ? 'text-gray-300' : 'text-gray-700'">Performance tracking and analytics</span>
+          </li>
+        </ul>
+      </div>
+      
+      <!-- Available plans preview (if any) -->
+      <div *ngIf="availablePlans && availablePlans.length > 0" class="mb-6">
+        <h3 class="text-lg font-semibold mb-3" [ngClass]="isDarkMode ? 'text-white' : 'text-gray-900'">Available Plans:</h3>
+        <div class="space-y-2">
+          <div *ngFor="let plan of availablePlans.slice(0, 2)" class="flex justify-between items-center p-3 rounded-lg" 
+               [ngClass]="isDarkMode ? 'bg-gray-700' : 'bg-gray-100'">
+            <div>
+              <p class="font-medium" [ngClass]="isDarkMode ? 'text-white' : 'text-gray-900'">{{ plan.name }}</p>
+              <p class="text-sm" [ngClass]="isDarkMode ? 'text-gray-400' : 'text-gray-600'">
+                {{ plan.is_lifetime ? 'Lifetime Access' : plan.duration_days + ' days' }}
+              </p>
+            </div>
+            <p class="font-bold" [ngClass]="isDarkMode ? 'text-white' : 'text-gray-900'">Rp {{ plan.price.toLocaleString() }}</p>
+          </div>
+          <p *ngIf="availablePlans.length > 2" class="text-sm text-center mt-2" [ngClass]="isDarkMode ? 'text-gray-400' : 'text-gray-600'">
+            And {{ availablePlans.length - 2 }} more plans available
+          </p>
+        </div>
+      </div>
+      
+      <!-- Action buttons -->
+      <div class="flex flex-col space-y-3">
+        <button 
+          (click)="goToPremiumPlans()" 
+          class="w-full py-3 px-4 rounded-lg font-medium transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2"
+          [ngClass]="isDarkMode ? 
+            'bg-indigo-600 hover:bg-indigo-700 text-white focus:ring-indigo-500' : 
+            'bg-indigo-600 hover:bg-indigo-700 text-white focus:ring-indigo-500'">
+          Subscribe Now
+        </button>
+        <button 
+          (click)="closeModal()" 
+          class="w-full py-3 px-4 rounded-lg font-medium transition-colors duration-200 focus:outline-none"
+          [ngClass]="isDarkMode ? 
+            'bg-gray-700 hover:bg-gray-600 text-gray-300' : 
+            'bg-gray-200 hover:bg-gray-300 text-gray-700'">
+          Maybe Later
+        </button>
+      </div>
+    </div>
+  </div>
+</div> 

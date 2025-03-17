@@ -4,14 +4,7 @@ import { UserService } from '../services/user.service';
 import { ThemeService } from '../services/theme.service';
 import { AuthService } from '../services/auth.service';
 import { Subscription } from 'rxjs';
-
-interface PaketSoal {
-  id_nama_paket_soal: number;
-  nama_paket_soal: string;
-  id_kategori_soal: number;
-  kategori_soal: string;
-  jumlah_soal: number;
-}
+import { PaketSoal } from '../models/paket-soal.model';
 
 @Component({
   selector: 'app-welcome',
@@ -62,8 +55,20 @@ export class WelcomeComponent implements OnInit, OnDestroy {
 
   startQuiz() {
     if (this.selectedPaket) {
+      // Validate the selected paket
+      const hasValidId = this.selectedPaket.id || this.selectedPaket.id_nama_paket_soal;
+      if (!hasValidId || !this.selectedPaket.nama_paket_soal || !this.selectedPaket.kategori_soal) {
+        console.error('Invalid selected paket:', this.selectedPaket);
+        alert('Error: Invalid quiz data. Please go back and select a quiz again.');
+        return;
+      }
+      
+      console.log('Starting quiz with paket:', this.selectedPaket);
       localStorage.setItem('durasi', this.selectedDurasi.toString());
       this.router.navigate(['/question']);
+    } else {
+      console.error('No paket selected');
+      alert('Please select a quiz package first.');
     }
   }
 }
