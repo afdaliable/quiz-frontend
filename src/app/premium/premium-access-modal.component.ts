@@ -30,7 +30,7 @@ export class PremiumAccessModalComponent implements OnInit {
 
   goToPremiumPlans(): void {
     this.closeModal();
-    this.router.navigate(['/premium/plans']);
+    this.router.navigate(['/premium-plans']);
   }
 
   // Close modal when clicking outside the modal content
