@@ -95,10 +95,32 @@ export class AuthCallbackComponent implements OnInit {
     // Exchange the code for tokens with the backend
     this.authService.exchangeCodeForToken(code).subscribe({
       next: () => {
-        console.log('Authentication successful, redirecting to home');
-        setTimeout(() => {
-          this.router.navigate(['/home']);
-        }, 1000);
+        console.log('Authentication successful');
+        
+        // Check if we have a stored return URL
+        const returnUrl = localStorage.getItem('authReturnUrl');
+        const hasPendingPayment = localStorage.getItem('hasPendingPayment');
+        
+        // Clear stored return URL and pending payment flag
+        localStorage.removeItem('authReturnUrl');
+        localStorage.removeItem('hasPendingPayment');
+        
+        if (returnUrl && returnUrl.includes('/payment/callback')) {
+          console.log('Redirecting to payment callback:', returnUrl);
+          setTimeout(() => {
+            this.router.navigate([returnUrl]);
+          }, 1000);
+        } else if (returnUrl) {
+          console.log('Redirecting to stored return URL:', returnUrl);
+          setTimeout(() => {
+            this.router.navigate([returnUrl]);
+          }, 1000);
+        } else {
+          console.log('No stored return URL, redirecting to home');
+          setTimeout(() => {
+            this.router.navigate(['/home']);
+          }, 1000);
+        }
       },
       error: (error) => {
         console.error('Error exchanging code for token:', error);

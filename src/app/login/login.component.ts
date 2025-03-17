@@ -13,6 +13,10 @@ export class LoginComponent implements OnInit, OnDestroy {
   isDarkMode: boolean = false;
   loading = false;
   errorMessage: string = '';
+  infoMessage: string = '';
+  returnUrl: string = '/home';
+  hasPendingPayment: boolean = false;
+  transactionId: string | null = null;
   private userSubscription: Subscription | null = null;
 
   constructor(
@@ -27,18 +31,47 @@ export class LoginComponent implements OnInit, OnDestroy {
       isDark => this.isDarkMode = isDark
     );
     
-    // Check for error query parameter (from auth callback)
+    // Check for query parameters
     this.route.queryParams.subscribe(params => {
+      // Check for error message
       if (params['error']) {
         this.errorMessage = params['error'];
+      }
+      
+      // Check for info message
+      if (params['message']) {
+        this.infoMessage = params['message'];
+        console.log('Info message from URL:', this.infoMessage);
+      }
+      
+      // Check for return URL
+      if (params['returnUrl']) {
+        this.returnUrl = params['returnUrl'];
+        console.log('Return URL set to:', this.returnUrl);
+      }
+      
+      // Check if there's a pending payment
+      if (params['paymentPending'] === 'true') {
+        this.hasPendingPayment = true;
+        this.infoMessage = 'Please log in to check your payment status.';
+        console.log('User has pending payment, will redirect to:', this.returnUrl);
+      }
+      
+      // Check for transaction ID
+      if (params['transactionId']) {
+        this.transactionId = params['transactionId'];
+        console.log('Transaction ID from URL:', this.transactionId);
+        // Store in localStorage for later use
+        localStorage.setItem('pending_transaction_id', this.transactionId || '');
       }
     });
     
     // Subscribe to user changes
     this.userSubscription = this.authService.user$.subscribe(user => {
       if (user) {
-        // User is logged in, redirect to home
-        this.router.navigate(['/home']);
+        // User is logged in, redirect to the return URL or home
+        console.log('User logged in, redirecting to:', this.returnUrl);
+        this.router.navigate([this.returnUrl]);
       }
     });
   }
@@ -58,6 +91,19 @@ export class LoginComponent implements OnInit, OnDestroy {
       const state = this.generateRandomString(32);
       // Store state in localStorage to verify when Google redirects back
       localStorage.setItem('googleOAuthState', state);
+      
+      // Store return URL in localStorage to use after authentication
+      localStorage.setItem('authReturnUrl', this.returnUrl);
+      
+      // Store pending payment flag if needed
+      if (this.hasPendingPayment) {
+        localStorage.setItem('hasPendingPayment', 'true');
+      }
+      
+      // Store transaction ID if available
+      if (this.transactionId) {
+        localStorage.setItem('pending_transaction_id', this.transactionId || '');
+      }
 
       // Google OAuth parameters
       const googleAuthUrl = 'https://accounts.google.com/o/oauth2/v2/auth';

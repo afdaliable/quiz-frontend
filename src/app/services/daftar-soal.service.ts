@@ -29,4 +29,23 @@ export class DaftarSoalService {
       })
     );
   }
+
+  getSoalListByPaketId(paketSoalId: number): Observable<any[]> {
+    const url = `/api/soalsoal/paket/${paketSoalId}`;
+
+    return this.http.get<any[]>(url, {
+      withCredentials: true
+    }).pipe(
+      catchError((error) => {
+        console.error(`Error fetching soal list for paket ID ${paketSoalId}:`, error);
+        if (error.status === 401) {
+          localStorage.clear();
+          this.router.navigate(['/login']);
+        }
+        return throwError(
+          () => new Error('Terjadi kesalahan saat mengambil daftar soal')
+        );
+      })
+    );
+  }
 }

@@ -1,0 +1,31 @@
+/* Payment Callback Component Styles */
+.animate-spin {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.animate-progress {
+  animation: progress 3s linear forwards;
+  width: 0%;
+}
+
+@keyframes progress {
+  0% {
+    width: 0%;
+  }
+  100% {
+    width: 100%;
+  }
+}
+
+.min-h-screen {
+  min-height: calc(100vh - 64px); /* Adjust based on your header height */
+} 

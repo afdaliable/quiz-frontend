@@ -1,0 +1,471 @@
+---
+description: feature premium and payment
+globs: 
+alwaysApply: false
+---
+
+Now that we have implemented all the necessary components for the premium payment feature, let's summarize what we've done and provide a guide for the frontend to integrate with this feature.
+
+Here's a summary of what we've implemented:
+
+1. **Database Schema**:
+   - Added tables for premium plans, user subscriptions, premium quiz access, and payment transactions
+   - Added foreign key constraints to maintain data integrity
+   - Added default premium plans (Silver, Gold, Platinum, Ultimate)
+
+2. **Models**:
+   - Created models for premium plans, user subscriptions, premium quiz access, and payment transactions
+   - Added request and response models for API endpoints
+
+3. **Data Access Objects (DAOs)**:
+   - Implemented DAOs for premium plans, user subscriptions, premium quiz access, and payment transactions
+   - Added methods for CRUD operations and business logic
+
+4. **Services**:
+   - Created a payment service for Mayar payment gateway integration
+   - Implemented methods for creating payments and checking payment status
+
+5. **Controllers**:
+   - Created controllers for premium features and payment processing
+   - Implemented API endpoints for managing premium plans, user subscriptions, premium quiz access, and payments
+   - Added webhook endpoint for receiving payment notifications from Mayar
+
+6. **Configuration**:
+   - Updated configuration to include Mayar API settings
+   - Added API documentation for new endpoints
+
+Here's a guide for the frontend to integrate with this feature:
+
+## Frontend Integration Guide for Premium Features
+
+### 1. Display Premium Plans
+
+First, you need to display the available premium plans to users:
+
+```typescript
+// Angular service
+import { Injectable } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { Observable } from 'rxjs';
+
+@Injectable({
+  providedIn: 'root'
+})
+export class PremiumService {
+  private apiUrl = 'http://your-backend-url/api';
+
+  constructor(private http: HttpClient) { }
+
+  // Get all premium plans
+  getPremiumPlans(): Observable<any> {
+    return this.http.get(`${this.apiUrl}/premium/plans`);
+  }
+
+  // Get user's active subscription
+  getActiveSubscription(): Observable<any> {
+    return this.http.get(`${this.apiUrl}/premium/subscriptions/active`);
+  }
+
+  // Create payment for a plan
+  createPayment(planId: number, redirectUrl: string): Observable<any> {
+    const userId = localStorage.getItem('user_id'); // Get user ID from local storage
+    return this.http.post(`${this.apiUrl}/payment/create`, {
+      user_id: userId,
+      plan_id: planId,
+      redirect_url: redirectUrl
+    });
+  }
+
+  // Check payment status
+  checkPaymentStatus(transactionId: string): Observable<any> {
+    return this.http.get(`${this.apiUrl}/payment/check/${transactionId}`);
+  }
+
+  // Check if user has access to a quiz
+  checkQuizAccess(paketSoalId: number): Observable<any> {
+    return this.http.get(`${this.apiUrl}/premium/quiz-access/check/${paketSoalId}`);
+  }
+}
+```
+
+### 2. Create Premium Plans Component
+
+Create a component to display premium plans:
+
+```typescript
+// premium-plans.component.ts
+import { Component, OnInit } from '@angular/core';
+import { PremiumService } from '../services/premium.service';
+import { Router } from '@angular/router';
+
+@Component({
+  selector: 'app-premium-plans',
+  templateUrl: './premium-plans.component.html',
+  styleUrls: ['./premium-plans.component.scss']
+})
+export class PremiumPlansComponent implements OnInit {
+  plans: any[] = [];
+  activeSubscription: any = null;
+  loading = true;
+  error = '';
+
+  constructor(
+    private premiumService: PremiumService,
+    private router: Router
+  ) { }
+
+  ngOnInit(): void {
+    this.loadPlans();
+    this.checkActiveSubscription();
+  }
+
+  loadPlans(): void {
+    this.premiumService.getPremiumPlans().subscribe(
+      (data) => {
+        this.plans = data;
+        this.loading = false;
+      },
+      (error) => {
+        this.error = 'Failed to load premium plans';
+        this.loading = false;
+        console.error(error);
+      }
+    );
+  }
+
+  checkActiveSubscription(): void {
+    this.premiumService.getActiveSubscription().subscribe(
+      (data) => {
+        this.activeSubscription = data;
+      },
+      (error) => {
+        if (error.status !== 404) {
+          console.error(error);
+        }
+      }
+    );
+  }
+
+  subscribeToPlan(planId: number): void {
+    // Create a payment for the selected plan
+    const redirectUrl = `${window.location.origin}/payment/callback`;
+    this.premiumService.createPayment(planId, redirectUrl).subscribe(
+      (data) => {
+        // Store transaction ID in local storage for later verification
+        localStorage.setItem('pending_transaction_id', data.transaction_id);
+        
+        // Redirect to payment page
+        window.location.href = data.payment_link;
+      },
+      (error) => {
+        this.error = 'Failed to create payment';
+        console.error(error);
+      }
+    );
+  }
+}
+```
+
+### 3. Create HTML Template for Premium Plans
+
+```html
+<!-- premium-plans.component.html -->
+<div class="premium-plans-container">
+  <h1>Premium Plans</h1>
+  
+  <div *ngIf="activeSubscription" class="active-subscription">
+    <div class="alert alert-success">
+      <h3>You have an active subscription!</h3>
+      <p>Plan: {{ activeSubscription.plan_name }}</p>
+      <p *ngIf="activeSubscription.days_remaining">
+        Days remaining: {{ activeSubscription.days_remaining }}
+      </p>
+      <p *ngIf="activeSubscription.is_lifetime">
+        Lifetime subscription
+      </p>
+    </div>
+  </div>
+  
+  <div *ngIf="loading" class="loading">
+    <p>Loading plans...</p>
+  </div>
+  
+  <div *ngIf="error" class="error">
+    <p>{{ error }}</p>
+  </div>
+  
+  <div class="plans-grid">
+    <div *ngFor="let plan of plans" class="plan-card">
+      <div class="plan-header">
+        <h2>{{ plan.name }}</h2>
+        <p class="price">Rp {{ plan.price.toLocaleString() }}</p>
+        <p *ngIf="plan.is_lifetime" class="lifetime">Lifetime Access</p>
+        <p *ngIf="!plan.is_lifetime" class="duration">{{ plan.duration_days }} days</p>
+      </div>
+      
+      <div class="plan-features">
+        <h3>Features:</h3>
+        <ul>
+          <li *ngFor="let feature of plan.features">{{ feature }}</li>
+        </ul>
+      </div>
+      
+      <div class="plan-footer">
+        <button 
+          (click)="subscribeToPlan(plan.id)" 
+          [disabled]="activeSubscription && activeSubscription.plan_id >= plan.id"
+          class="subscribe-btn">
+          {{ activeSubscription && activeSubscription.plan_id >= plan.id ? 'Already Subscribed' : 'Subscribe Now' }}
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+```
+
+### 4. Create Payment Callback Component
+
+Create a component to handle payment callbacks:
+
+```typescript
+// payment-callback.component.ts
+import { Component, OnInit } from '@angular/core';
+import { ActivatedRoute, Router } from '@angular/router';
+import { PremiumService } from '../services/premium.service';
+
+@Component({
+  selector: 'app-payment-callback',
+  templateUrl: './payment-callback.component.html',
+  styleUrls: ['./payment-callback.component.scss']
+})
+export class PaymentCallbackComponent implements OnInit {
+  status = 'checking';
+  message = 'Checking payment status...';
+  error = '';
+
+  constructor(
+    private route: ActivatedRoute,
+    private router: Router,
+    private premiumService: PremiumService
+  ) { }
+
+  ngOnInit(): void {
+    // Get transaction ID from local storage
+    const transactionId = localStorage.getItem('pending_transaction_id');
+    
+    if (!transactionId) {
+      this.status = 'error';
+      this.error = 'No pending transaction found';
+      return;
+    }
+    
+    // Check payment status
+    this.premiumService.checkPaymentStatus(transactionId).subscribe(
+      (data) => {
+        if (data.status === 'Completed') {
+          this.status = 'success';
+          this.message = 'Payment successful! You are now subscribed.';
+          
+          // Remove transaction ID from local storage
+          localStorage.removeItem('pending_transaction_id');
+          
+          // Redirect to premium content after 3 seconds
+          setTimeout(() => {
+            this.router.navigate(['/premium']);
+          }, 3000);
+        } else if (data.status === 'Pending') {
+          this.status = 'pending';
+          this.message = 'Payment is still being processed. Please wait...';
+          
+          // Check again after 5 seconds
+          setTimeout(() => {
+            this.ngOnInit();
+          }, 5000);
+        } else {
+          this.status = 'error';
+          this.error = `Payment ${data.status.toLowerCase()}. Please try again.`;
+          
+          // Remove transaction ID from local storage
+          localStorage.removeItem('pending_transaction_id');
+        }
+      },
+      (error) => {
+        this.status = 'error';
+        this.error = 'Failed to check payment status';
+        console.error(error);
+      }
+    );
+  }
+}
+```
+
+### 5. Create HTML Template for Payment Callback
+
+```html
+<!-- payment-callback.component.html -->
+<div class="payment-callback-container">
+  <div *ngIf="status === 'checking'" class="checking">
+    <h2>{{ message }}</h2>
+    <div class="spinner"></div>
+  </div>
+  
+  <div *ngIf="status === 'pending'" class="pending">
+    <h2>{{ message }}</h2>
+    <div class="spinner"></div>
+  </div>
+  
+  <div *ngIf="status === 'success'" class="success">
+    <h2>{{ message }}</h2>
+    <p>Redirecting to premium content...</p>
+  </div>
+  
+  <div *ngIf="status === 'error'" class="error">
+    <h2>Payment Error</h2>
+    <p>{{ error }}</p>
+    <button (click)="router.navigate(['/premium-plans'])">Try Again</button>
+  </div>
+</div>
+```
+
+### 6. Modify Quiz Access to Check Premium Status
+
+Update your quiz component to check if the user has access to premium quizzes:
+
+```typescript
+// quiz.component.ts
+import { Component, OnInit } from '@angular/core';
+import { ActivatedRoute, Router } from '@angular/router';
+import { QuizService } from '../services/quiz.service';
+import { PremiumService } from '../services/premium.service';
+
+@Component({
+  selector: 'app-quiz',
+  templateUrl: './quiz.component.html',
+  styleUrls: ['./quiz.component.scss']
+})
+export class QuizComponent implements OnInit {
+  quizId: number;
+  quiz: any = null;
+  loading = true;
+  error = '';
+  premiumRequired = false;
+  requiredPlanName = '';
+
+  constructor(
+    private route: ActivatedRoute,
+    private router: Router,
+    private quizService: QuizService,
+    private premiumService: PremiumService
+  ) { }
+
+  ngOnInit(): void {
+    this.quizId = +this.route.snapshot.paramMap.get('id');
+    this.checkQuizAccess();
+  }
+
+  checkQuizAccess(): void {
+    this.premiumService.checkQuizAccess(this.quizId).subscribe(
+      (data) => {
+        if (data.has_access) {
+          // User has access, load the quiz
+          this.loadQuiz();
+        } else {
+          // User doesn't have access, show premium required message
+          this.loading = false;
+          this.premiumRequired = true;
+          this.requiredPlanName = data.required_plan_name;
+        }
+      },
+      (error) => {
+        this.error = 'Failed to check quiz access';
+        this.loading = false;
+        console.error(error);
+      }
+    );
+  }
+
+  loadQuiz(): void {
+    this.quizService.getQuiz(this.quizId).subscribe(
+      (data) => {
+        this.quiz = data;
+        this.loading = false;
+      },
+      (error) => {
+        this.error = 'Failed to load quiz';
+        this.loading = false;
+        console.error(error);
+      }
+    );
+  }
+
+  goToPremiumPlans(): void {
+    this.router.navigate(['/premium-plans']);
+  }
+}
+```
+
+### 7. Update Quiz HTML Template
+
+```html
+<!-- quiz.component.html -->
+<div class="quiz-container">
+  <div *ngIf="loading" class="loading">
+    <p>Loading quiz...</p>
+  </div>
+  
+  <div *ngIf="error" class="error">
+    <p>{{ error }}</p>
+  </div>
+  
+  <div *ngIf="premiumRequired" class="premium-required">
+    <h2>Premium Access Required</h2>
+    <p>This quiz is only available to premium users with {{ requiredPlanName }} or higher.</p>
+    <button (click)="goToPremiumPlans()" class="upgrade-btn">Upgrade to Premium</button>
+  </div>
+  
+  <div *ngIf="quiz && !premiumRequired" class="quiz-content">
+    <!-- Quiz content here -->
+  </div>
+</div>
+```
+
+### 8. Add Routes
+
+Update your app routing module:
+
+```typescript
+// app-routing.module.ts
+import { NgModule } from '@angular/core';
+import { RouterModule, Routes } from '@angular/router';
+import { PremiumPlansComponent } from './components/premium-plans/premium-plans.component';
+import { PaymentCallbackComponent } from './components/payment-callback/payment-callback.component';
+import { AuthGuard } from './guards/auth.guard';
+
+const routes: Routes = [
+  // Existing routes
+  { path: 'premium-plans', component: PremiumPlansComponent, canActivate: [AuthGuard] },
+  { path: 'payment/callback', component: PaymentCallbackComponent, canActivate: [AuthGuard] },
+  // Other routes
+];
+
+@NgModule({
+  imports: [RouterModule.forRoot(routes)],
+  exports: [RouterModule]
+})
+export class AppRoutingModule { }
+```
+
+### 9. Add Navigation Link
+
+Add a link to premium plans in your navigation menu:
+
+```html
+<!-- nav.component.html -->
+<nav>
+  <!-- Existing navigation items -->
+  <a routerLink="/premium-plans" routerLinkActive="active">Premium Plans</a>
+  <!-- Other navigation items -->
+</nav>
+```
+
+This guide provides a comprehensive implementation for integrating the premium payment feature in your Angular frontend. The implementation includes displaying premium plans, handling payments through Mayar, checking payment status, and restricting access to premium quizzes based on the user's subscription level.

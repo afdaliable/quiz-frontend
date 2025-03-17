@@ -12,6 +12,9 @@ import { AccountComponent } from './account/account.component';
 import { AuthGuard } from './auth/auth.guard';
 import { AuthCallbackComponent } from './auth-callback/auth-callback.component';
 import { InvalidSessionComponent } from './invalid-session/invalid-session.component';
+import { PremiumPlansComponent } from './premium/premium-plans.component';
+import { PaymentCallbackComponent } from './premium/payment-callback.component';
+import { LicenseActivationComponent } from './premium/license-activation.component';
 
 const routes: Routes = [
   {
@@ -66,6 +69,20 @@ const routes: Routes = [
     path: 'paket-soal/:kategori',
     component: DaftarSoalComponent,
     canActivate: [AuthGuard]
+  },
+  {
+    path: 'premium-plans',
+    component: PremiumPlansComponent,
+    canActivate: [AuthGuard]
+  },
+  {
+    path: 'payment/callback',
+    component: PaymentCallbackComponent,
+    canActivate: [AuthGuard]
+  },
+  {
+    path: 'aktivasi-berlangganan',
+    component: LicenseActivationComponent
   },
   {
     path: 'invalid-session',

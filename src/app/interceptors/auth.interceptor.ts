@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, Injector } from '@angular/core';
 import {
   HttpRequest,
   HttpHandler,
@@ -15,7 +15,9 @@ import { environment } from '../../environments/environment';
 
 @Injectable()
 export class AuthInterceptor implements HttpInterceptor {
-  constructor(private router: Router, private authService: AuthService) {}
+  private authService!: AuthService;
+
+  constructor(private router: Router, private injector: Injector) {}
 
   intercept(request: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
     // Skip token check for login, callback, logout, and validate-session endpoints
@@ -27,6 +29,11 @@ export class AuthInterceptor implements HttpInterceptor {
         request.url.includes('api/auth/validate-session') ||
         request.method === 'OPTIONS') {
       return next.handle(request);
+    }
+
+    // Lazily get the auth service to avoid circular dependency
+    if (!this.authService) {
+      this.authService = this.injector.get(AuthService);
     }
 
     // Get the auth token
@@ -45,13 +52,41 @@ export class AuthInterceptor implements HttpInterceptor {
       return next.handle(request);
     }
 
-    // Clone the request with auth token
+    // Add user_id to headers for premium and payment endpoints
+    let headers = new HttpHeaders({
+      'Authorization': `Bearer ${token}`,
+      'Content-Type': 'application/json',
+      'Accept': 'application/json'
+    });
+
+    // Preserve existing User_id header if present
+    if (request.headers.has('User_id')) {
+      const userId = request.headers.get('User_id');
+      headers = headers.set('User_id', userId!);
+      console.log('Preserved existing User_id header:', userId);
+    }
+
+    // Add user_id header for premium, payment, and user endpoints
+    if (request.url.includes('/premium/') || 
+        request.url.includes('/payment/') || 
+        request.url.includes('/user/update-phone') ||
+        request.url.includes('/license/')) {
+      const user = this.authService.getCurrentUser();
+      if (user && user.id) {
+        headers = headers.set('user_id', user.id.toString());
+        // Also add User_id with capital U as expected by some backend endpoints
+        if (!headers.has('User_id')) {
+          headers = headers.set('User_id', user.id.toString());
+        }
+        console.log('Added user_id and User_id headers for endpoint:', user.id);
+      } else {
+        console.warn('User ID not available for request to:', request.url);
+      }
+    }
+
+    // Clone the request with headers
     request = request.clone({
-      setHeaders: {
-        'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json',
-        'Accept': 'application/json'
-      },
+      headers: headers,
       withCredentials: environment.withCredentials
     });
 
@@ -61,6 +96,16 @@ export class AuthInterceptor implements HttpInterceptor {
           console.error('CORS or Network error:', error);
           return throwError(() => new Error('Network error occurred'));
         }
+        
+        // Special handling for premium endpoints
+        if (error.status === 401 && (
+            request.url.includes('/premium/subscriptions/active') ||
+            request.url.includes('/premium/check-access')
+          )) {
+          console.log('401 on premium endpoint, not redirecting to login');
+          return throwError(() => error);
+        }
+        
         if (error.status === 401) {
           // Token expired or invalid, validate session
           return this.handleUnauthorizedError(request, next);
@@ -89,10 +134,23 @@ export class AuthInterceptor implements HttpInterceptor {
           // For now, just retry the request
           const token = this.authService.getToken();
           if (token) {
-            const clonedRequest = request.clone({
-              setHeaders: {
-                'Authorization': `Bearer ${token}`
+            let headers = new HttpHeaders({
+              'Authorization': `Bearer ${token}`,
+              'Content-Type': 'application/json',
+              'Accept': 'application/json'
+            });
+
+            // Add user_id header for premium and payment endpoints
+            if (request.url.includes('/premium/') || request.url.includes('/payment/')) {
+              const user = this.authService.getCurrentUser();
+              if (user && user.id) {
+                headers = headers.set('user_id', user.id.toString());
+                headers = headers.set('User_id', user.id.toString());
               }
+            }
+
+            const clonedRequest = request.clone({
+              headers: headers
             });
             return next.handle(clonedRequest);
           }

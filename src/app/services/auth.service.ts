@@ -250,4 +250,64 @@ export class AuthService {
       }
     }
   }
+
+  /**
+   * Refreshes the access token using the refresh token
+   */
+  refreshToken(): Observable<any> {
+    console.log('Attempting to refresh token');
+    const refreshToken = this.getRefreshToken();
+    
+    if (!refreshToken) {
+      console.error('No refresh token available');
+      return of({ success: false, message: 'No refresh token available' });
+    }
+    
+    return this.http.post<any>(
+      environment.production ? 
+        `${this.baseUrl}/auth/refresh-token` :
+        `/api/auth/refresh-token`,
+      { refresh_token: refreshToken },
+      { 
+        withCredentials: true,
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        }
+      }
+    ).pipe(
+      tap(response => {
+        console.log('Token refresh response received');
+        if (response.access_token) {
+          localStorage.setItem('token', response.access_token);
+          // Update refresh token if provided
+          if (response.refresh_token) {
+            localStorage.setItem('refresh_token', response.refresh_token);
+          }
+          // Reset session invalid flag
+          this.sessionInvalidSubject.next(false);
+          return { success: true };
+        }
+        return { success: false, message: 'Invalid response from server' };
+      }),
+      catchError(error => {
+        console.error('Token refresh error:', error);
+        
+        // If refresh token is invalid, try to validate session as fallback
+        return this.validateSession().pipe(
+          switchMap(validationResponse => {
+            if (validationResponse.valid) {
+              console.log('Session is still valid despite refresh token error');
+              return of({ success: true });
+            }
+            return of({ success: false, message: 'Session validation failed' });
+          }),
+          catchError(validationError => {
+            console.error('Session validation also failed:', validationError);
+            return of({ success: false, message: 'Both refresh and validation failed' });
+          })
+        );
+      })
+    );
+  }
 }

@@ -25,6 +25,10 @@ import { AccountComponent } from './account/account.component';
 import { AuthCallbackComponent } from './auth-callback/auth-callback.component';
 import { SessionManagementComponent } from './session-management/session-management.component';
 import { InvalidSessionComponent } from './invalid-session/invalid-session.component';
+import { PremiumPlansComponent } from './premium/premium-plans.component';
+import { PaymentCallbackComponent } from './premium/payment-callback.component';
+import { LicenseActivationComponent } from './premium/license-activation.component';
+import { PremiumService } from './services/premium.service';
 
 @NgModule({
   declarations: [
@@ -42,11 +46,14 @@ import { InvalidSessionComponent } from './invalid-session/invalid-session.compo
     AccountComponent,
     AuthCallbackComponent,
     SessionManagementComponent,
-    InvalidSessionComponent
+    InvalidSessionComponent,
+    PaymentCallbackComponent
   ],
   imports: [
     BrowserModule,
     HttpClientModule,
+    PremiumPlansComponent,
+    LicenseActivationComponent,
     AppRoutingModule,
     RouterModule.forRoot([]),
     FormsModule,
@@ -65,7 +72,8 @@ import { InvalidSessionComponent } from './invalid-session/invalid-session.compo
     },
     UserService,
     AuthService,
-    ThemeService
+    ThemeService,
+    PremiumService
   ],
   bootstrap: [AppComponent]
 })

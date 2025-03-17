@@ -10,6 +10,11 @@
         {{ errorMessage }}
       </div>
       
+      <!-- Info Message -->
+      <div *ngIf="infoMessage" class="mb-4 p-3 rounded-md text-sm" [ngClass]="isDarkMode ? 'bg-blue-900/50 text-blue-200' : 'bg-blue-50 text-blue-700'">
+        {{ infoMessage }}
+      </div>
+      
       <!-- Google Sign In Button -->
       <button 
         (click)="signInWithGoogle()" 

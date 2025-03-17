@@ -1,0 +1,61 @@
+<div class="container" [ngClass]="{'dark-mode': isDarkMode}">
+  <div class="activation-card">
+    <h1>Activate Your Subscription</h1>
+    <p>Please review your information and click the Activate button to complete your subscription.</p>
+    
+    <div *ngIf="loading" class="loading-container">
+      <div class="spinner"></div>
+      <p>Processing your activation...</p>
+    </div>
+    
+    <div *ngIf="success" class="success-message">
+      <div class="success-icon">✓</div>
+      <h2>Activation Successful!</h2>
+      <p>Your subscription has been activated successfully.</p>
+      <p>You will be redirected to the home page shortly...</p>
+    </div>
+    
+    <div *ngIf="error" class="error-message">
+      <p>{{ error }}</p>
+      <button *ngIf="error.includes('already been used')" 
+              (click)="goToLogin()" 
+              class="btn-secondary mt-3" 
+              [ngClass]="{'btn-dark-secondary': isDarkMode}">
+        Go to Login
+      </button>
+    </div>
+    
+    <div *ngIf="!loading && !success" class="form-container">
+      <div class="form-group">
+        <label for="licenseCode">License Code</label>
+        <input type="text" id="licenseCode" [(ngModel)]="licenseCode" readonly>
+      </div>
+      
+      <div class="form-group">
+        <label for="email">Email</label>
+        <input type="email" id="email" [(ngModel)]="email" readonly>
+      </div>
+      
+      <div class="form-group">
+        <label for="name">Name</label>
+        <input type="text" id="name" [(ngModel)]="name" readonly>
+      </div>
+      
+      <div class="form-group">
+        <label for="phone">Phone Number</label>
+        <input type="text" id="phone" [(ngModel)]="phone">
+      </div>
+      
+      <div class="form-group hidden">
+        <label for="productId">Product ID</label>
+        <input type="text" id="productId" [(ngModel)]="productId" readonly>
+      </div>
+      
+      <div class="form-actions">
+        <button (click)="handleActivation()" class="btn-primary" [ngClass]="{'btn-dark': isDarkMode}">
+          Activate Subscription
+        </button>
+      </div>
+    </div>
+  </div>
+</div> 
