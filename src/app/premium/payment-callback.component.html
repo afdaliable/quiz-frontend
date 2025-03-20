@@ -4,7 +4,7 @@
     <div *ngIf="status === 'checking'" class="text-center">
       <div class="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 mx-auto mb-6" [ngClass]="isDarkMode ? 'border-white' : 'border-indigo-600'"></div>
       <h2 class="text-2xl font-bold mb-4" [ngClass]="isDarkMode ? 'text-white' : 'text-gray-900'">{{ message }}</h2>
-      <p class="text-sm" [ngClass]="isDarkMode ? 'text-gray-400' : 'text-gray-600'">Please do not close this window.</p>
+      <p class="text-sm" [ngClass]="isDarkMode ? 'text-gray-400' : 'text-gray-600'">Please do not close this window</p>
     </div>
     
     <div *ngIf="status === 'pending'" class="text-center">
