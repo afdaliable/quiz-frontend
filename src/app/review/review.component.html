@@ -28,8 +28,8 @@
             <div class="text-lg font-semibold mb-4" [ngClass]="isDarkMode ? 'text-white' : 'text-gray-900'">
               Pertanyaan {{ currentQuestion + 1 }} dari {{ questionList.length }}
             </div>
-            <p class="text-lg mb-6" [ngClass]="isDarkMode ? 'text-gray-200' : 'text-gray-700'">
-              {{ questionList[currentQuestion].questionText }}
+            <p class="text-lg mb-6" [ngClass]="isDarkMode ? 'text-gray-200' : 'text-gray-700'"
+              [innerHTML]="questionList[currentQuestion].questionText">
             </p>
             
             <!-- Options -->
