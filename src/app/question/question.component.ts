@@ -40,6 +40,12 @@ export class QuestionComponent implements OnInit {
   selectedPaket: PaketSoal | null = null;
   currentUser: any;
   isDarkMode: boolean = false;
+  isReviewMode: boolean = false;
+  showExplanation: boolean = false;
+  isAnswerChecked: boolean = false;
+  currentAnswerIsCorrect: boolean = false;
+  correctAnswerIndex: number | null = null;
+  answerExplanation: string = '';
 
   constructor(
     private questionService: QuestionService,
@@ -58,6 +64,7 @@ export class QuestionComponent implements OnInit {
     this.totalTime = parseInt(localStorage.getItem('durasi')!) * 60;
     this.remainingTime = this.totalTime;
     this.selectedAnswers = new Array(this.questionList.length).fill(null);
+    this.isReviewMode = localStorage.getItem('isReviewMode') === 'true';
 
     try {
       const selectedPaketStr = localStorage.getItem('selectedPaket');
@@ -124,6 +131,7 @@ export class QuestionComponent implements OnInit {
     if (this.currentQuestion < this.questionList.length - 1) {
       this.currentQuestion++;
       this.getProgressPercent();
+      this.resetAnswerCheck();
     } else {
       this.isQuizCompleted = true;
       this.stopTimer();
@@ -132,12 +140,17 @@ export class QuestionComponent implements OnInit {
 
   prevQuestion() {
     this.currentQuestion--;
+    this.resetAnswerCheck();
   }
 
   answer(currentQno: number, option: number) {
     this.selectedAnswers[currentQno] = option;
     this.answeredQuestions[currentQno] = true;
     this.saveUserAnswers();
+    if (this.isReviewMode) {
+      this.isAnswerChecked = false;
+      this.showExplanation = false;
+    }
   }
 
   calculateScore() {
@@ -226,9 +239,7 @@ export class QuestionComponent implements OnInit {
   goToQuestion(index: number) {
     this.currentQuestion = index;
     this.getProgressPercent();
-    this.showAnswerKey = false;
-    this.showCorrectAnswer = false;
-    // Hapus pemanggilan startTimer() di sini
+    this.resetAnswerCheck();
   }
 
   startTimer() {
@@ -347,5 +358,39 @@ export class QuestionComponent implements OnInit {
         return 'bg-white text-gray-700 border border-gray-300';
       }
     }
+  }
+
+  showAnswer() {
+    if (this.isReviewMode && this.currentQuestion < this.questionList.length) {
+      const currentQuestionObj = this.questionList[this.currentQuestion];
+      this.correctAnswerIndex = currentQuestionObj.options.findIndex((option: any) => option.correct);
+      this.answerExplanation = currentQuestionObj.explanation || 'Tidak ada penjelasan tersedia untuk soal ini.';
+    }
+  }
+
+  hideAnswer() {
+    this.correctAnswerIndex = null;
+    this.answerExplanation = '';
+  }
+
+  checkAnswer() {
+    if (this.isReviewMode && this.currentQuestion < this.questionList.length) {
+      const currentQuestionObj = this.questionList[this.currentQuestion];
+      const selectedAnswer = this.selectedAnswers[this.currentQuestion];
+      
+      if (selectedAnswer !== undefined) {
+        this.isAnswerChecked = true;
+        this.currentAnswerIsCorrect = currentQuestionObj.options[selectedAnswer].correct;
+      }
+    }
+  }
+
+  toggleExplanation() {
+    this.showExplanation = !this.showExplanation;
+  }
+
+  resetAnswerCheck() {
+    this.isAnswerChecked = false;
+    this.showExplanation = false;
   }
 }

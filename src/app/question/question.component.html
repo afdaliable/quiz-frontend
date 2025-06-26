@@ -26,7 +26,25 @@
             </h3>
             <p class="text-lg mb-6" [ngClass]="isDarkMode ? 'text-gray-200' : 'text-gray-700'"
                  [innerHTML]="questionList[currentQuestion]?.questionText">
-          </p>
+            </p>
+
+            <!-- Review Mode Controls
+            <div *ngIf="isReviewMode" class="mb-4">
+              <button
+                (click)="showAnswer()"
+                *ngIf="correctAnswerIndex === null"
+                class="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors duration-200"
+              >
+                Lihat Jawaban
+              </button>
+              <button
+                (click)="hideAnswer()"
+                *ngIf="correctAnswerIndex !== null"
+                class="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors duration-200"
+              >
+                Sembunyikan Jawaban
+              </button>
+            </div> -->
 
             <!-- Options -->
             <div class="space-y-3">
@@ -34,12 +52,53 @@
                 (click)="answer(currentQuestion, i)"
                 class="p-4 rounded-lg cursor-pointer transition-colors duration-200"
                 [ngClass]="{
-                  'bg-blue-600 text-white': selectedAnswers[currentQuestion] === i,
+                  'bg-blue-600 text-white': selectedAnswers[currentQuestion] === i && !isAnswerChecked,
+                  'bg-green-600 text-white': isReviewMode && isAnswerChecked && selectedAnswers[currentQuestion] === i && currentAnswerIsCorrect,
+                  'bg-red-600 text-white': isReviewMode && isAnswerChecked && selectedAnswers[currentQuestion] === i && !currentAnswerIsCorrect,
                   'bg-gray-700 text-gray-200 hover:bg-gray-600': isDarkMode && selectedAnswers[currentQuestion] !== i,
                   'bg-white border border-gray-300 hover:bg-gray-50': !isDarkMode && selectedAnswers[currentQuestion] !== i
                 }"
               >
                 {{ option.text }}
+              </div>
+            </div>
+
+            <!-- Review Mode Controls -->
+            <div *ngIf="isReviewMode" class="mt-6 space-y-4">
+              <!-- Check Answer Button -->
+              <div class="flex justify-center">
+                <button
+                  *ngIf="!isAnswerChecked && selectedAnswers[currentQuestion] !== undefined"
+                  (click)="checkAnswer()"
+                  class="px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors duration-200"
+                >
+                  Cek Jawaban
+                </button>
+              </div>
+
+              <!-- Answer Result and Explanation Button -->
+              <div *ngIf="isAnswerChecked" class="space-y-4">
+                <div class="text-center font-medium text-lg"
+                     [ngClass]="currentAnswerIsCorrect ? 'text-green-500' : 'text-red-500'">
+                  {{ currentAnswerIsCorrect ? 'Jawaban Benar!' : 'Jawaban Salah!' }}
+                </div>
+
+                <div class="flex justify-center">
+                  <button
+                    (click)="toggleExplanation()"
+                    class="px-6 py-2 bg-indigo-500 text-white rounded-lg hover:bg-indigo-600 transition-colors duration-200"
+                  >
+                    {{ showExplanation ? 'Sembunyikan Penjelasan' : 'Lihat Penjelasan' }}
+                  </button>
+                </div>
+
+                <!-- Answer Explanation -->
+                <div *ngIf="showExplanation" class="p-4 rounded-lg" [ngClass]="isDarkMode ? 'bg-gray-700' : 'bg-gray-100'">
+                  <h4 class="font-semibold mb-2" [ngClass]="isDarkMode ? 'text-white' : 'text-gray-900'">Penjelasan:</h4>
+                  <p [ngClass]="isDarkMode ? 'text-gray-200' : 'text-gray-700'">
+                    {{ questionList[currentQuestion]?.solution || 'Tidak ada penjelasan tersedia untuk soal ini.' }}
+                  </p>
+                </div>
               </div>
             </div>
           </div>

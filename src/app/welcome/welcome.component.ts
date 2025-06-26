@@ -18,6 +18,7 @@ export class WelcomeComponent implements OnInit, OnDestroy {
   user: any;
   isDarkMode: boolean = false;
   isAuthenticated: boolean = false;
+  isReviewMode: boolean = false;
   private userSubscription: Subscription | null = null;
 
 
@@ -65,6 +66,7 @@ export class WelcomeComponent implements OnInit, OnDestroy {
       
       console.log('Starting quiz with paket:', this.selectedPaket);
       localStorage.setItem('durasi', this.selectedDurasi.toString());
+      localStorage.setItem('isReviewMode', this.isReviewMode.toString());
       this.router.navigate(['/question']);
     } else {
       console.error('No paket selected');
