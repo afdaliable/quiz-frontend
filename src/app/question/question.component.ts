@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { interval } from 'rxjs';
 import { QuestionService } from '../services/question.service';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -7,13 +7,14 @@ import { Question } from '../services/question.service';
 import { UserService } from '../services/user.service';
 import { ThemeService } from '../services/theme.service';
 import { PaketSoal } from '../models/paket-soal.model';
+import { QuizSessionService, QuizSession } from '../services/quiz-session.service';
 
 @Component({
   selector: 'app-question',
   templateUrl: './question.component.html',
   styleUrls: ['./question.component.scss'],
 })
-export class QuestionComponent implements OnInit {
+export class QuestionComponent implements OnInit, OnDestroy {
   public name: string = '';
   public questionList: any = [];
   public currentQuestion: number = 0;
@@ -34,7 +35,7 @@ export class QuestionComponent implements OnInit {
   answeredQuestions: boolean[] = [];
   showCorrectAnswer: boolean = false;
   markedQuestions: boolean[] = [];
-  selectedAnswers: number[] = [];
+  selectedAnswers: (number | null)[] = [];
   showScore: boolean = false;
 
   selectedPaket: PaketSoal | null = null;
@@ -47,12 +48,18 @@ export class QuestionComponent implements OnInit {
   correctAnswerIndex: number | null = null;
   answerExplanation: string = '';
 
+  // Quiz session management properties
+  currentSession: QuizSession | null = null;
+  autoSaveInterval: any;
+  sessionInitialized: boolean = false;
+
   constructor(
     private questionService: QuestionService,
     private route: ActivatedRoute,
     private router: Router,
     private userService: UserService,
-    private themeService: ThemeService
+    private themeService: ThemeService,
+    private quizSessionService: QuizSessionService
   ) {}
 
   ngOnInit(): void {
@@ -63,7 +70,6 @@ export class QuestionComponent implements OnInit {
     this.name = localStorage.getItem('name')!;
     this.totalTime = parseInt(localStorage.getItem('durasi')!) * 60;
     this.remainingTime = this.totalTime;
-    this.selectedAnswers = new Array(this.questionList.length).fill(null);
     this.isReviewMode = localStorage.getItem('isReviewMode') === 'true';
 
     try {
@@ -84,11 +90,9 @@ export class QuestionComponent implements OnInit {
           this.selectedPaket = selectedPaket;
           console.log('Selected paket:', this.selectedPaket);
           
-          this.getAllQuestions(
-            this.selectedPaket!.kategori_soal,
-            this.selectedPaket!.nama_paket_soal
-          );
-          this.startTimer();
+          // Initialize quiz session first, then load questions
+          this.initializeQuizSession();
+          
           this.themeService.darkMode$.subscribe(
             isDark => this.isDarkMode = isDark
           );
@@ -109,22 +113,176 @@ export class QuestionComponent implements OnInit {
     }
   }
 
+  ngOnDestroy(): void {
+    // Clean up intervals
+    if (this.interval$) {
+      this.interval$.unsubscribe();
+    }
+    if (this.autoSaveInterval) {
+      clearInterval(this.autoSaveInterval);
+    }
+    
+    // Save final progress before leaving
+    if (this.currentSession && !this.isQuizCompleted) {
+      this.saveProgressToSession();
+    }
+  }
+
+  /**
+   * Initialize or resume quiz session
+   */
+  private async initializeQuizSession(): Promise<void> {
+    if (!this.selectedPaket || this.sessionInitialized) {
+      return;
+    }
+
+    try {
+      // Initialize session with the quiz session service
+      this.currentSession = await this.quizSessionService.initializeQuizSession(
+        this.selectedPaket, 
+        this.totalTime
+      );
+      
+      if (this.currentSession) {
+        this.sessionInitialized = true;
+        console.log('Quiz session initialized:', this.currentSession);
+        
+        // Load session data if resuming
+        this.loadSessionData();
+        
+        // Load questions
+        this.getAllQuestions(
+          this.selectedPaket.kategori_soal,
+          this.selectedPaket.nama_paket_soal
+        );
+        
+        // Setup auto-save
+        this.setupAutoSave();
+      }
+    } catch (error) {
+      console.error('Error initializing quiz session:', error);
+      // Fallback to original behavior
+      this.getAllQuestions(
+        this.selectedPaket.kategori_soal,
+        this.selectedPaket.nama_paket_soal
+      );
+      this.startTimer();
+    }
+  }
+
+  /**
+   * Load session data if resuming
+   */
+  private loadSessionData(): void {
+    if (!this.currentSession) return;
+
+    // Load progress from session
+    this.currentQuestion = this.currentSession.current_question || 0;
+    this.selectedAnswers = this.currentSession.answers || [];
+    this.markedQuestions = this.currentSession.marked_questions || [];
+    
+    if (this.currentSession.time_remaining !== null) {
+      this.remainingTime = this.currentSession.time_remaining;
+    } else {
+      this.remainingTime = this.totalTime;
+    }
+    
+    console.log('Loaded session data:', {
+      currentQuestion: this.currentQuestion,
+      answersCount: this.selectedAnswers.length,
+      timeRemaining: this.remainingTime
+    });
+  }
+
+  /**
+   * Setup auto-save interval
+   */
+  private setupAutoSave(): void {
+    // Auto-save every 30 seconds
+    this.autoSaveInterval = setInterval(() => {
+      this.autoSaveProgress();
+    }, 30000);
+  }
+
+  /**
+   * Auto-save progress
+   */
+  private autoSaveProgress(): void {
+    if (!this.currentSession || this.isQuizCompleted) {
+      return;
+    }
+
+    this.quizSessionService.autoSaveProgress(this.currentSession.id, {
+      current_question: this.currentQuestion,
+      answers: this.selectedAnswers,
+      marked_questions: this.markedQuestions,
+      time_remaining: this.remainingTime
+    });
+  }
+
+  /**
+   * Save progress immediately (used on answer selection)
+   */
+  private saveProgressToSession(): void {
+    if (!this.currentSession || this.isQuizCompleted) {
+      return;
+    }
+
+    this.quizSessionService.saveQuizProgress(this.currentSession.id, {
+      current_question: this.currentQuestion,
+      answers: this.selectedAnswers,
+      marked_questions: this.markedQuestions,
+      time_remaining: this.remainingTime
+    }).subscribe({
+      next: (session) => {
+        console.log('Progress saved to session:', session.updated_at);
+      },
+      error: (error) => {
+        console.error('Error saving progress:', error);
+      }
+    });
+  }
+
   getAllQuestions(kategori: string, paketSoal: string) {
     this.questionService
       .getQuestions(kategori, paketSoal)
       .pipe(
         tap((res: Question[]) => {
           this.questionList = res;
-          this.answeredQuestions = new Array(this.questionList.length).fill(
-            false
-          );
-          this.selectedAnswers = new Array(this.questionList.length).fill(
-            undefined
-          );
+          
+          // Initialize arrays only if not resuming from session
+          if (!this.currentSession || this.selectedAnswers.length === 0) {
+            this.answeredQuestions = new Array(this.questionList.length).fill(false);
+            this.selectedAnswers = new Array(this.questionList.length).fill(null);
+            this.markedQuestions = new Array(this.questionList.length).fill(false);
+          } else {
+            // Ensure arrays are properly sized when resuming
+            while (this.selectedAnswers.length < this.questionList.length) {
+              this.selectedAnswers.push(null);
+            }
+            while (this.answeredQuestions.length < this.questionList.length) {
+              this.answeredQuestions.push(false);
+            }
+            while (this.markedQuestions.length < this.questionList.length) {
+              this.markedQuestions.push(false);
+            }
+            
+            // Update answeredQuestions based on selectedAnswers
+            this.selectedAnswers.forEach((answer, index) => {
+              this.answeredQuestions[index] = answer !== null;
+            });
+          }
         })
       )
-      .subscribe();
-    this.startTimer();
+      .subscribe({
+        next: () => {
+          this.startTimer();
+          this.getProgressPercent();
+        },
+        error: (error) => {
+          console.error('Error loading questions:', error);
+        }
+      });
   }
 
   nextQuestion() {
@@ -146,7 +304,15 @@ export class QuestionComponent implements OnInit {
   answer(currentQno: number, option: number) {
     this.selectedAnswers[currentQno] = option;
     this.answeredQuestions[currentQno] = true;
+    
+    // Save to localStorage (legacy support)
     this.saveUserAnswers();
+    
+    // Save to session (new feature)
+    if (this.currentSession) {
+      this.saveProgressToSession();
+    }
+    
     if (this.isReviewMode) {
       this.isAnswerChecked = false;
       this.showExplanation = false;
@@ -157,8 +323,9 @@ export class QuestionComponent implements OnInit {
     this.correctAnswer = 0;
     this.incorrectAnswer = 0;
     this.questionList.forEach((question: any, index: number) => {
-      if (this.selectedAnswers[index] !== undefined) {
-        if (question.options[this.selectedAnswers[index]].correct) {
+      const selectedAnswer = this.selectedAnswers[index];
+      if (selectedAnswer !== null && selectedAnswer !== undefined) {
+        if (question.options[selectedAnswer].correct) {
           this.correctAnswer++;
         } else {
           this.incorrectAnswer++;
@@ -281,6 +448,11 @@ export class QuestionComponent implements OnInit {
   toggleMarkQuestion() {
     this.markedQuestions[this.currentQuestion] =
       !this.markedQuestions[this.currentQuestion];
+    
+    // Save to session
+    if (this.currentSession) {
+      this.saveProgressToSession();
+    }
   }
 
   endQuiz() {
@@ -288,6 +460,8 @@ export class QuestionComponent implements OnInit {
     this.isQuizCompleted = true;
     this.stopCounter();
     this.calculateScore();
+    
+    // Save to localStorage (legacy support)
     localStorage.setItem('totalQuestions', this.questionList.length.toString());
     localStorage.setItem(
       'answeredQuestions',
@@ -299,9 +473,32 @@ export class QuestionComponent implements OnInit {
       'incorrectAnswers',
       (this.questionList.length - this.correctAnswer).toString()
     );
-    console.log('Navigating to result page...');
     this.saveUserAnswers();
-    this.router.navigate(['/result']);
+    
+    // Complete session (new feature)
+    if (this.currentSession) {
+      this.quizSessionService.completeQuizSession(this.currentSession.id, {
+        answers: this.selectedAnswers,
+        time_remaining: this.remainingTime
+      }).subscribe({
+        next: (completedSession) => {
+          console.log('Quiz session completed:', completedSession);
+          localStorage.setItem('completedSessionId', completedSession.id);
+          console.log('Navigating to result page...');
+          this.router.navigate(['/result']);
+        },
+        error: (error) => {
+          console.error('Error completing session:', error);
+          // Still navigate to result page even if session completion fails
+          console.log('Navigating to result page...');
+          this.router.navigate(['/result']);
+        }
+      });
+    } else {
+      // Original behavior if no session
+      console.log('Navigating to result page...');
+      this.router.navigate(['/result']);
+    }
   }
 
   reviewQuiz() {
@@ -378,7 +575,7 @@ export class QuestionComponent implements OnInit {
       const currentQuestionObj = this.questionList[this.currentQuestion];
       const selectedAnswer = this.selectedAnswers[this.currentQuestion];
       
-      if (selectedAnswer !== undefined) {
+      if (selectedAnswer !== null && selectedAnswer !== undefined) {
         this.isAnswerChecked = true;
         this.currentAnswerIsCorrect = currentQuestionObj.options[selectedAnswer].correct;
       }
