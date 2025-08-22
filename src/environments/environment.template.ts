@@ -1,6 +1,6 @@
 export const environment = {
   production: false,
-  frontendOnly: false, // Enable frontend-only mode for development
+  frontendOnly: false, // Set to true for development without backend
   apiUrl: '/api',
   withCredentials: true,
   corsConfig: {
@@ -11,8 +11,8 @@ export const environment = {
     allowCredentials: true,
     maxAge: 3600
   },
-  // Replace this with your actual Google Client ID
-  googleClientId: '122895789472-eia69vo0e28t043on78v2qk4raplov4b.apps.googleusercontent.com',
+  // Replace with your Google Client ID
+  googleClientId: 'YOUR_GOOGLE_CLIENT_ID',
   // JWT secret for frontend-only mode (development only)
-  jwtSecret: 'w+fWySaviI5P2LTNx120xYc75QyCdbrWAofU/uhzgRvtY+vuoD6XrbxJGcqZK08E/ruYMGM5tEISDGXwAT2Q8A=='
-}; 
+  jwtSecret: 'YOUR_JWT_SECRET_HERE'
+};
