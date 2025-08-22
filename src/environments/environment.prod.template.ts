@@ -1,20 +1,18 @@
 export const environment = {
   production: true,
-  frontendOnly: false, // Disable frontend-only mode in production
+  frontendOnly: false, // Should be false in production
   apiUrl: '/api',
   withCredentials: true,
   corsConfig: {
-    allowedOrigins: ['https://kuis.canducation.com'],
+    allowedOrigins: ['https://your-domain.com'],
     allowedMethods: ['GET', 'POST', 'OPTIONS'],
     allowedHeaders: ['*'],
     exposedHeaders: ['Authorization'],
     allowCredentials: true,
     maxAge: 3600
   },
-  // Replace this with your actual Google Client ID
-  googleClientId: '122895789472-5ppmksj8nnha9nhlktuikl4tggdal0pf.apps.googleusercontent.com',
+  // Replace with your production Google Client ID
+  googleClientId: 'YOUR_PRODUCTION_GOOGLE_CLIENT_ID',
   // JWT secret not needed in production (OAuth used instead)
   jwtSecret: ''
-};   
-
-  
+};
