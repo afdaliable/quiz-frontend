@@ -18,6 +18,11 @@ export class LoginComponent implements OnInit, OnDestroy {
   hasPendingPayment: boolean = false;
   transactionId: string | null = null;
   private userSubscription: Subscription | null = null;
+  
+  // Frontend-only mode properties
+  isFrontendOnly = environment.frontendOnly;
+  username = '';
+  password = '';
 
   constructor(
     private router: Router,
@@ -82,7 +87,36 @@ export class LoginComponent implements OnInit, OnDestroy {
     }
   }
 
+  mockLogin(): void {
+    if (!this.username || !this.password) {
+      this.errorMessage = 'Please enter both username and password';
+      return;
+    }
+
+    this.errorMessage = '';
+    this.loading = true;
+
+    this.authService.mockLogin(this.username, this.password).subscribe({
+      next: () => {
+        console.log('Mock login successful');
+        this.loading = false;
+        this.router.navigate([this.returnUrl]);
+      },
+      error: (error) => {
+        console.error('Mock login failed:', error);
+        this.errorMessage = 'Login failed. Please try again.';
+        this.loading = false;
+      }
+    });
+  }
+
   signInWithGoogle(): void {
+    // In frontend-only mode, show message that Google OAuth is disabled
+    if (this.isFrontendOnly) {
+      this.errorMessage = 'Google OAuth is disabled in frontend-only mode. Please use the username/password form above.';
+      return;
+    }
+
     this.errorMessage = '';
     this.loading = true;
     

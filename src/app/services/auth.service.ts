@@ -3,6 +3,7 @@ import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable, BehaviorSubject, throwError, of } from 'rxjs';
 import { tap, catchError, switchMap } from 'rxjs/operators';
 import { environment } from '../../environments/environment';
+import * as CryptoJS from 'crypto-js';
 
 interface AuthResponse {
   access_token: string;
@@ -66,9 +67,122 @@ export class AuthService {
   }
 
   /**
+   * Generate a real JWT token for frontend-only mode
+   */
+  private generateJWTToken(userId: string, email: string): string {
+    if (!environment.jwtSecret) {
+      throw new Error('JWT secret not configured');
+    }
+
+    // JWT Header
+    const header = {
+      "alg": "HS256",
+      "typ": "JWT"
+    };
+
+    // JWT Payload - matching your backend's expected format
+    const payload = {
+      "sub": userId,
+      "aud": "authenticated",
+      "exp": Math.floor(Date.now() / 1000) + (10 * 365 * 24 * 60 * 60), // 10 years
+      "iat": Math.floor(Date.now() / 1000),
+      "email": email,
+      "phone": "",
+      "app_metadata": {
+        "provider": "email",
+        "providers": ["email"]
+      },
+      "user_metadata": {
+        "email": email,
+        "email_verified": true,
+        "phone_verified": false,
+        "sub": userId
+      },
+      "role": "authenticated",
+      "aal": "aal1",
+      "amr": [
+        {
+          "method": "password",
+          "timestamp": Math.floor(Date.now() / 1000)
+        }
+      ],
+      "session_id": "mock-session-" + Date.now(),
+      "is_anonymous": false
+    };
+
+    // Base64URL encode function
+    const base64url = (source: any): string => {
+      return CryptoJS.enc.Base64.stringify(source)
+        .replace(/\+/g, '-')
+        .replace(/\//g, '_')
+        .replace(/=+$/, '');
+    };
+
+    // Convert header and payload to Base64URL
+    const encodedHeader = base64url(CryptoJS.enc.Utf8.parse(JSON.stringify(header)));
+    const encodedPayload = base64url(CryptoJS.enc.Utf8.parse(JSON.stringify(payload)));
+
+    // Create signature using environment secret
+    const signature = base64url(CryptoJS.HmacSHA256(`${encodedHeader}.${encodedPayload}`, environment.jwtSecret));
+
+    // Construct JWT
+    return `${encodedHeader}.${encodedPayload}.${signature}`;
+  }
+
+  /**
+   * Mock login for frontend-only mode
+   */
+  mockLogin(username: string, password: string): Observable<AuthResponse> {
+    // Simple mock authentication for development
+    if (username && password) {
+      const userId = '12e31b19-2ac8-492b-b38b-d7fe8233a978'; // Same as your Postman script
+      const email = username.includes('@') ? username : `${username}@example.com`;
+      
+      // Generate real JWT token
+      const jwtToken = this.generateJWTToken(userId, email);
+      
+      const mockResponse: AuthResponse = {
+        access_token: jwtToken,
+        token_type: 'Bearer',
+        expires_in: 10 * 365 * 24 * 60 * 60, // 10 years in seconds
+        refresh_token: 'mock-refresh-token-' + Date.now(),
+        user: {
+          id: userId,
+          email: email,
+          display_name: username,
+          picture: 'https://via.placeholder.com/150'
+        }
+      };
+
+      localStorage.setItem('token', mockResponse.access_token);
+      localStorage.setItem('refresh_token', mockResponse.refresh_token);
+      const userData = {
+        id: mockResponse.user.id,
+        email: mockResponse.user.email,
+        display_name: mockResponse.user.display_name,
+        picture: mockResponse.user.picture
+      };
+      localStorage.setItem('user', JSON.stringify(userData));
+      this.setUser(userData);
+      this.sessionInvalidSubject.next(false);
+
+      console.log('Generated JWT Token:', jwtToken.substring(0, 50) + '...');
+
+      return of(mockResponse);
+    }
+
+    return throwError(() => new Error('Invalid credentials'));
+  }
+
+  /**
    * Exchanges the authorization code for access token with the backend
    */
   exchangeCodeForToken(code: string): Observable<AuthResponse> {
+    // In frontend-only mode, skip OAuth exchange
+    if (environment.frontendOnly) {
+      return throwError(() => new Error('OAuth not available in frontend-only mode'));
+    }
+
     const url = this.getApiUrl('auth/google/callback');
     
     return this.http.post<AuthResponse>(
@@ -112,6 +226,12 @@ export class AuthService {
    * Logs out the user by calling the backend logout endpoint
    */
   logout(): Observable<any> {
+    // In frontend-only mode, just clear local storage
+    if (environment.frontendOnly) {
+      this.clearLocalStorage();
+      return of({ success: true });
+    }
+
     const refreshToken = localStorage.getItem('refresh_token');
     const token = this.getToken();
     
@@ -172,6 +292,15 @@ export class AuthService {
    * Validates the current session with the backend
    */
   validateSession(): Observable<SessionValidationResponse> {
+    // In frontend-only mode, always return valid for JWT tokens
+    if (environment.frontendOnly) {
+      const token = localStorage.getItem('token');
+      if (token && token.includes('.')) { // JWT tokens contain dots
+        return of({ valid: true, userId: '12e31b19-2ac8-492b-b38b-d7fe8233a978' });
+      }
+      return of({ valid: false, message: 'No valid JWT token found' });
+    }
+
     const refreshToken = localStorage.getItem('refresh_token');
     const accessToken = localStorage.getItem('token');
     
