@@ -1,158 +1,226 @@
 <div class="min-h-screen transition-colors duration-200" [ngClass]="isDarkMode ? 'bg-gray-900' : 'bg-gray-50'">
 
-  
+  <!-- Top progress bar + timer bar -->
+  <div class="sticky top-0 z-10 transition-colors duration-200 border-b shadow-sm"
+    [ngClass]="isDarkMode ? 'bg-gray-900 border-gray-700' : 'bg-white border-gray-200'">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex items-center justify-between h-14 gap-4">
+
+        <!-- Question progress -->
+        <div class="flex items-center gap-3 min-w-0">
+          <span class="text-sm font-semibold whitespace-nowrap"
+            [ngClass]="isDarkMode ? 'text-gray-300' : 'text-gray-700'">
+            {{ currentQuestion + 1 }} / {{ questionList.length }}
+          </span>
+          <div class="hidden sm:block w-32 h-1.5 rounded-full overflow-hidden"
+            [ngClass]="isDarkMode ? 'bg-gray-700' : 'bg-gray-200'">
+            <div class="h-full bg-indigo-600 rounded-full transition-all duration-300"
+              [style.width.%]="((currentQuestion + 1) / questionList.length) * 100"></div>
+          </div>
+        </div>
+
+        <!-- Timer -->
+        <div class="flex items-center gap-2 px-4 py-1.5 rounded-full font-semibold text-sm"
+          [ngClass]="remainingTime < 60
+            ? 'bg-rose-100 text-rose-700 animate-pulse'
+            : remainingTime < 300
+            ? (isDarkMode ? 'bg-amber-900/40 text-amber-400' : 'bg-amber-50 text-amber-700')
+            : (isDarkMode ? 'bg-gray-800 text-gray-300' : 'bg-gray-100 text-gray-700')">
+          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+          {{ formatTime(remainingTime) }}
+        </div>
+
+        <!-- Mark + End -->
+        <div class="flex items-center gap-2">
+          <button (click)="toggleMarkQuestion()"
+            class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors duration-200"
+            [ngClass]="markedQuestions[currentQuestion]
+              ? 'bg-amber-500 text-white hover:bg-amber-600'
+              : (isDarkMode ? 'bg-gray-800 text-gray-400 border border-gray-700 hover:bg-gray-700' : 'bg-white text-gray-500 border border-gray-200 hover:bg-gray-50')">
+            <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" />
+            </svg>
+            <span class="hidden sm:inline">{{ markedQuestions[currentQuestion] ? 'Ditandai' : 'Tandai' }}</span>
+          </button>
+
+          <button (click)="confirmEndQuiz()"
+            class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-rose-600 hover:bg-rose-700 text-white transition-colors">
+            Akhiri
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-    <!-- Timer and Question Content -->
     <div class="flex flex-col lg:flex-row gap-6">
-      <div class="w-full lg:w-3/4">
-        <div class="rounded-lg shadow-md p-6 mb-6" [ngClass]="isDarkMode ? 'bg-gray-800' : 'bg-white'">
-          <div class="flex justify-between items-center mb-4">
-            <span class="text-lg font-semibold" [ngClass]="isDarkMode ? 'text-white' : 'text-gray-900'">
-              Waktu: {{ formatTime(remainingTime) }}
+
+      <!-- Main question area -->
+      <div class="w-full lg:flex-1">
+        <div class="rounded-2xl p-6 sm:p-8 transition-colors duration-200 border"
+          [ngClass]="isDarkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-100 shadow-sm'">
+
+          <!-- Question number badge -->
+          <div class="flex items-center gap-2 mb-5">
+            <span class="px-3 py-1 rounded-lg text-sm font-semibold bg-indigo-600 text-white">
+              Soal {{ currentQuestion + 1 }}
             </span>
-            <button
-              (click)="toggleMarkQuestion()"
-              class="px-4 py-2 text-white rounded-lg transition-colors duration-200"
-              [ngClass]="markedQuestions[currentQuestion] ? 'bg-yellow-500 hover:bg-yellow-600' : 'bg-blue-500 hover:bg-blue-600'"
-            >
-              {{ markedQuestions[currentQuestion] ? "Hapus Tanda" : "Tandai Soal" }}
-            </button>
+            <span *ngIf="markedQuestions[currentQuestion]"
+              class="px-2.5 py-1 rounded-lg text-xs font-semibold bg-amber-100 text-amber-700">
+              Ditandai
+            </span>
           </div>
 
-          <!-- Question Content -->
-          <div class="mb-6">
-            <h3 class="text-xl font-bold mb-4" [ngClass]="isDarkMode ? 'text-white' : 'text-gray-900'">
-              Soal {{ currentQuestion + 1 }}
-            </h3>
-            <p class="text-lg mb-6" [ngClass]="isDarkMode ? 'text-gray-200' : 'text-gray-700'"
-                 [innerHTML]="questionList[currentQuestion]?.questionText">
-            </p>
+          <!-- Question text -->
+          <p class="text-base sm:text-lg leading-relaxed mb-7 transition-colors duration-200"
+            [ngClass]="isDarkMode ? 'text-gray-100' : 'text-gray-800'"
+            [innerHTML]="questionList[currentQuestion]?.questionText">
+          </p>
 
-            <!-- Review Mode Controls
-            <div *ngIf="isReviewMode" class="mb-4">
-              <button
-                (click)="showAnswer()"
-                *ngIf="correctAnswerIndex === null"
-                class="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors duration-200"
-              >
-                Lihat Jawaban
-              </button>
-              <button
-                (click)="hideAnswer()"
-                *ngIf="correctAnswerIndex !== null"
-                class="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors duration-200"
-              >
-                Sembunyikan Jawaban
-              </button>
-            </div> -->
+          <!-- Options -->
+          <div class="space-y-3">
+            <div *ngFor="let option of questionList[currentQuestion]?.options; let i = index"
+              (click)="answer(currentQuestion, i)"
+              class="group flex items-start gap-3 p-4 rounded-xl cursor-pointer transition-all duration-150 border"
+              [ngClass]="{
+                'bg-indigo-600 border-indigo-600 text-white': selectedAnswers[currentQuestion] === i && !isAnswerChecked,
+                'bg-emerald-500 border-emerald-500 text-white': isReviewMode && isAnswerChecked && selectedAnswers[currentQuestion] === i && currentAnswerIsCorrect,
+                'bg-rose-500 border-rose-500 text-white': isReviewMode && isAnswerChecked && selectedAnswers[currentQuestion] === i && !currentAnswerIsCorrect,
+                'border-gray-200 hover:border-indigo-300 hover:bg-indigo-50': !isDarkMode && selectedAnswers[currentQuestion] !== i,
+                'border-gray-700 hover:border-indigo-500 hover:bg-indigo-900/20': isDarkMode && selectedAnswers[currentQuestion] !== i
+              }">
+              <!-- Option letter -->
+              <span class="flex-shrink-0 w-7 h-7 rounded-lg flex items-center justify-center text-xs font-bold transition-colors"
+                [ngClass]="selectedAnswers[currentQuestion] === i
+                  ? 'bg-white/20 text-white'
+                  : (isDarkMode ? 'bg-gray-700 text-gray-300' : 'bg-indigo-50 text-indigo-700')">
+                {{ ['A','B','C','D','E'][i] }}
+              </span>
+              <span class="text-sm leading-relaxed" [innerHTML]="option.text"></span>
+            </div>
+          </div>
 
-            <!-- Options -->
-            <div class="space-y-3">
-              <div *ngFor="let option of questionList[currentQuestion]?.options; let i = index"
-                (click)="answer(currentQuestion, i)"
-                class="p-4 rounded-lg cursor-pointer transition-colors duration-200"
-                [ngClass]="{
-                  'bg-blue-600 text-white': selectedAnswers[currentQuestion] === i && !isAnswerChecked,
-                  'bg-green-600 text-white': isReviewMode && isAnswerChecked && selectedAnswers[currentQuestion] === i && currentAnswerIsCorrect,
-                  'bg-red-600 text-white': isReviewMode && isAnswerChecked && selectedAnswers[currentQuestion] === i && !currentAnswerIsCorrect,
-                  'bg-gray-700 text-gray-200 hover:bg-gray-600': isDarkMode && selectedAnswers[currentQuestion] !== i,
-                  'bg-white border border-gray-300 hover:bg-gray-50': !isDarkMode && selectedAnswers[currentQuestion] !== i
-                }"
-              >
-                {{ option.text }}
-              </div>
+          <!-- Review mode controls -->
+          <div *ngIf="isReviewMode" class="mt-6 space-y-4">
+            <div class="flex justify-center">
+              <button *ngIf="!isAnswerChecked && selectedAnswers[currentQuestion] !== undefined"
+                (click)="checkAnswer()"
+                class="px-6 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold transition-colors">
+                Cek Jawaban
+              </button>
             </div>
 
-            <!-- Review Mode Controls -->
-            <div *ngIf="isReviewMode" class="mt-6 space-y-4">
-              <!-- Check Answer Button -->
+            <div *ngIf="isAnswerChecked" class="space-y-3">
+              <div class="flex items-center justify-center gap-2 text-base font-semibold"
+                [ngClass]="currentAnswerIsCorrect ? 'text-emerald-500' : 'text-rose-500'">
+                <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path *ngIf="currentAnswerIsCorrect" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7" />
+                  <path *ngIf="!currentAnswerIsCorrect" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+                {{ currentAnswerIsCorrect ? 'Jawaban Benar!' : 'Jawaban Salah!' }}
+              </div>
+
               <div class="flex justify-center">
-                <button
-                  *ngIf="!isAnswerChecked && selectedAnswers[currentQuestion] !== undefined"
-                  (click)="checkAnswer()"
-                  class="px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors duration-200"
-                >
-                  Cek Jawaban
+                <button (click)="toggleExplanation()"
+                  class="px-5 py-2 rounded-xl text-sm font-semibold border transition-colors"
+                  [ngClass]="isDarkMode ? 'border-gray-600 text-gray-300 hover:bg-gray-700' : 'border-gray-300 text-gray-700 hover:bg-gray-50'">
+                  {{ showExplanation ? 'Sembunyikan Pembahasan' : 'Lihat Pembahasan' }}
                 </button>
               </div>
 
-              <!-- Answer Result and Explanation Button -->
-              <div *ngIf="isAnswerChecked" class="space-y-4">
-                <div class="text-center font-medium text-lg"
-                     [ngClass]="currentAnswerIsCorrect ? 'text-green-500' : 'text-red-500'">
-                  {{ currentAnswerIsCorrect ? 'Jawaban Benar!' : 'Jawaban Salah!' }}
-                </div>
-
-                <div class="flex justify-center">
-                  <button
-                    (click)="toggleExplanation()"
-                    class="px-6 py-2 bg-indigo-500 text-white rounded-lg hover:bg-indigo-600 transition-colors duration-200"
-                  >
-                    {{ showExplanation ? 'Sembunyikan Penjelasan' : 'Lihat Penjelasan' }}
-                  </button>
-                </div>
-
-                <!-- Answer Explanation -->
-                <div *ngIf="showExplanation" class="p-4 rounded-lg" [ngClass]="isDarkMode ? 'bg-gray-700' : 'bg-gray-100'">
-                  <h4 class="font-semibold mb-2" [ngClass]="isDarkMode ? 'text-white' : 'text-gray-900'">Penjelasan:</h4>
-                  <p [ngClass]="isDarkMode ? 'text-gray-200' : 'text-gray-700'">
-                    {{ questionList[currentQuestion]?.solution || 'Tidak ada penjelasan tersedia untuk soal ini.' }}
-                  </p>
-                </div>
+              <div *ngIf="showExplanation" class="p-4 rounded-xl border-l-4 border-indigo-500"
+                [ngClass]="isDarkMode ? 'bg-indigo-900/20' : 'bg-indigo-50'">
+                <h4 class="text-sm font-semibold mb-2"
+                  [ngClass]="isDarkMode ? 'text-indigo-300' : 'text-indigo-700'">Pembahasan:</h4>
+                <p class="text-sm leading-relaxed"
+                  [ngClass]="isDarkMode ? 'text-gray-300' : 'text-gray-700'">
+                  {{ questionList[currentQuestion]?.solution || 'Tidak ada pembahasan untuk soal ini.' }}
+                </p>
               </div>
             </div>
           </div>
 
           <!-- Navigation -->
-          <div class="flex justify-between items-center">
-            <button
-              (click)="prevQuestion()"
-              [disabled]="currentQuestion === 0"
-              class="px-4 py-2 rounded-lg font-medium text-white transition-colors duration-200"
-              [ngClass]="[
-                currentQuestion === 0 ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer',
-                'bg-blue-500 hover:bg-blue-600'
-              ]"
-            >
-              ← Sebelumnya
+          <div class="flex justify-between items-center mt-8 pt-6 border-t"
+            [ngClass]="isDarkMode ? 'border-gray-700' : 'border-gray-100'">
+            <button (click)="prevQuestion()" [disabled]="currentQuestion === 0"
+              class="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold transition-colors duration-200"
+              [ngClass]="currentQuestion === 0
+                ? 'opacity-40 cursor-not-allowed ' + (isDarkMode ? 'bg-gray-800 text-gray-400' : 'bg-gray-100 text-gray-400')
+                : (isDarkMode ? 'bg-gray-700 text-white hover:bg-gray-600' : 'bg-gray-100 text-gray-700 hover:bg-gray-200')">
+              <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+              </svg>
+              Sebelumnya
             </button>
 
-            <button
-              (click)="nextQuestion()"
-              [disabled]="currentQuestion === questionList.length - 1"
-              class="px-4 py-2 rounded-lg font-medium text-white transition-colors duration-200"
-              [ngClass]="[
-                currentQuestion === questionList.length - 1 ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer',
-                'bg-blue-500 hover:bg-blue-600'
-              ]"
-            >
-              Selanjutnya →
+            <button (click)="nextQuestion()" [disabled]="currentQuestion === questionList.length - 1"
+              class="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold transition-colors duration-200"
+              [ngClass]="currentQuestion === questionList.length - 1
+                ? 'opacity-40 cursor-not-allowed ' + (isDarkMode ? 'bg-gray-800 text-gray-400' : 'bg-gray-100 text-gray-400')
+                : 'bg-indigo-600 text-white hover:bg-indigo-700'">
+              Selanjutnya
+              <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+              </svg>
             </button>
           </div>
         </div>
       </div>
 
-      <!-- Question Navigation -->
-      <div class="w-full lg:w-1/4">
-        <div class="rounded-lg shadow-md p-4" [ngClass]="isDarkMode ? 'bg-gray-800' : 'bg-white'">
-          <h3 class="text-lg font-semibold mb-4" [ngClass]="isDarkMode ? 'text-white' : 'text-gray-900'">
+      <!-- Navigation panel -->
+      <div class="w-full lg:w-60">
+        <div class="rounded-2xl p-4 transition-colors duration-200 border sticky top-20"
+          [ngClass]="isDarkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-100 shadow-sm'">
+
+          <h3 class="text-sm font-semibold mb-3 pb-3 border-b"
+            [ngClass]="isDarkMode ? 'text-gray-300 border-gray-700' : 'text-gray-700 border-gray-100'">
             Navigasi Soal
           </h3>
-          <div class="grid grid-cols-6 sm:grid-cols-8 lg:grid-cols-5 gap-2 mb-4">
+
+          <!-- Legend -->
+          <div class="flex flex-wrap gap-2 mb-3 text-xs"
+            [ngClass]="isDarkMode ? 'text-gray-400' : 'text-gray-500'">
+            <div class="flex items-center gap-1">
+              <div class="w-3 h-3 rounded bg-indigo-600"></div>
+              <span>Aktif</span>
+            </div>
+            <div class="flex items-center gap-1">
+              <div class="w-3 h-3 rounded bg-emerald-500"></div>
+              <span>Dijawab</span>
+            </div>
+            <div class="flex items-center gap-1">
+              <div class="w-3 h-3 rounded bg-amber-400"></div>
+              <span>Ditandai</span>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-5 gap-1.5 mb-4">
             <button
               *ngFor="let q of questionList; let i = index"
               (click)="goToQuestion(i)"
-              class="aspect-square flex items-center justify-center text-sm font-medium rounded-lg transition-colors duration-200"
-              [ngClass]="getQuestionButtonClass(i)"
-            >
+              class="aspect-square flex items-center justify-center text-xs font-semibold rounded-lg transition-colors duration-150"
+              [ngClass]="getQuestionButtonClass(i)">
               {{ i + 1 }}
             </button>
           </div>
 
-          <button
-            (click)="confirmEndQuiz()"
-            class="w-full mt-6 px-4 py-3 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors duration-200 font-medium"
-          >
+          <!-- Summary -->
+          <div class="space-y-1.5 py-3 border-t mb-3"
+            [ngClass]="isDarkMode ? 'border-gray-700' : 'border-gray-100'">
+            <div class="flex justify-between text-xs"
+              [ngClass]="isDarkMode ? 'text-gray-400' : 'text-gray-500'">
+              <span>Dijawab</span>
+              <span class="font-semibold text-emerald-500">
+                {{ getAnsweredQuestionsCount() }} / {{ questionList.length }}
+              </span>
+            </div>
+          </div>
+
+          <button (click)="confirmEndQuiz()"
+            class="w-full py-2.5 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-sm font-semibold transition-colors text-center">
             Akhiri Ujian
           </button>
         </div>

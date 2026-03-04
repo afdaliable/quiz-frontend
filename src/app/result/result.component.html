@@ -1,50 +1,153 @@
 <div class="min-h-screen transition-colors duration-200" [ngClass]="isDarkMode ? 'bg-gray-900' : 'bg-gray-50'">
-  <div class="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-    <div class="rounded-xl shadow-lg transition-colors duration-200" [ngClass]="isDarkMode ? 'bg-gray-800' : 'bg-white'">
+  <div class="max-w-2xl mx-auto px-4 sm:px-6 py-8">
+
+    <!-- Card -->
+    <div class="rounded-2xl shadow-xl overflow-hidden transition-colors duration-200"
+      [ngClass]="isDarkMode ? 'bg-gray-800' : 'bg-white'">
+
+      <!-- Top gradient strip -->
+      <div class="h-2"
+        [ngClass]="points >= 80 ? 'bg-gradient-to-r from-green-400 to-emerald-500'
+          : points >= 60 ? 'bg-gradient-to-r from-amber-400 to-yellow-500'
+          : 'bg-gradient-to-r from-red-400 to-rose-500'">
+      </div>
+
       <div class="p-6 sm:p-8">
+
         <!-- Header -->
-        <h1 class="text-2xl sm:text-3xl font-bold mb-6" [ngClass]="isDarkMode ? 'text-white' : 'text-gray-900'">
-          Hasil Quiz
-        </h1>
-
-        <!-- Quiz Info -->
-        <div class="space-y-2 mb-6" [ngClass]="isDarkMode ? 'text-gray-300' : 'text-gray-700'">
-          <p><strong>Kategori:</strong> {{ selectedPaket?.kategori_soal }}</p>
-          <p><strong>Paket Soal:</strong> {{ selectedPaket?.nama_paket_soal }}</p>
+        <div class="flex items-center gap-3 mb-6">
+          <div class="p-2.5 rounded-xl"
+            [ngClass]="isDarkMode ? 'bg-gray-700' : 'bg-gray-100'">
+            <svg class="w-5 h-5" [ngClass]="isDarkMode ? 'text-gray-300' : 'text-gray-600'"
+              fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
+            </svg>
+          </div>
+          <div>
+            <h1 class="text-xl font-bold" [ngClass]="isDarkMode ? 'text-white' : 'text-gray-900'">
+              Hasil Quiz
+            </h1>
+            <p class="text-sm" [ngClass]="isDarkMode ? 'text-gray-400' : 'text-gray-500'">
+              {{ selectedPaket?.kategori_soal }} · {{ selectedPaket?.nama_paket_soal }}
+            </p>
+          </div>
         </div>
 
-        <!-- Statistics -->
-        <div class="space-y-2 mb-6" [ngClass]="isDarkMode ? 'text-gray-300' : 'text-gray-700'">
-          <p><strong>Total Soal:</strong> {{ totalQuestions }}</p>
-          <p><strong>Soal Dijawab:</strong> {{ answeredQuestions }}</p>
-          <p><strong>Soal Tidak Dijawab:</strong> {{ unansweredQuestions }}</p>
-          <p><strong>Jawaban Benar:</strong> {{ correctAnswers }}</p>
-          <p><strong>Jawaban Salah:</strong> {{ incorrectAnswers }}</p>
+        <!-- Score Circle -->
+        <div class="flex flex-col items-center py-6">
+          <div class="relative w-44 h-44">
+            <svg class="w-full h-full -rotate-90" viewBox="0 0 100 100">
+              <!-- Background ring -->
+              <circle cx="50" cy="50" r="40" fill="none"
+                [ngClass]="isDarkMode ? 'stroke-gray-700' : 'stroke-gray-100'"
+                stroke-width="8" />
+              <!-- Score ring -->
+              <circle cx="50" cy="50" r="40" fill="none"
+                [ngClass]="points >= 80 ? 'stroke-emerald-500' : points >= 60 ? 'stroke-amber-500' : 'stroke-rose-500'"
+                stroke-width="8"
+                stroke-dasharray="251.2"
+                [style.stroke-dashoffset]="251.2 - (points / 100) * 251.2"
+                stroke-linecap="round" />
+            </svg>
+            <!-- Center label -->
+            <div class="absolute inset-0 flex flex-col items-center justify-center">
+              <span class="text-4xl font-bold"
+                [ngClass]="points >= 80 ? 'text-emerald-500' : points >= 60 ? 'text-amber-500' : 'text-rose-500'">
+                {{ points }}
+              </span>
+              <span class="text-lg font-semibold" [ngClass]="isDarkMode ? 'text-gray-400' : 'text-gray-400'">/ 100</span>
+            </div>
+          </div>
+
+          <!-- Achievement label -->
+          <div class="mt-4 px-4 py-1.5 rounded-full text-sm font-semibold"
+            [ngClass]="points >= 80
+              ? (isDarkMode ? 'bg-emerald-900/40 text-emerald-400' : 'bg-emerald-50 text-emerald-700')
+              : points >= 60
+              ? (isDarkMode ? 'bg-amber-900/40 text-amber-400' : 'bg-amber-50 text-amber-700')
+              : (isDarkMode ? 'bg-rose-900/40 text-rose-400' : 'bg-rose-50 text-rose-700')">
+            {{ points >= 80 ? 'Luar Biasa!' : points >= 60 ? 'Cukup Baik' : 'Perlu Belajar Lagi' }}
+          </div>
         </div>
 
-        <!-- Score -->
-        <div class="text-center py-6">
-          <h2 class="text-4xl font-bold mb-2" [ngClass]="isDarkMode ? 'text-white' : 'text-gray-900'">
-            {{ points }}%
-          </h2>
-          <p class="text-lg" [ngClass]="isDarkMode ? 'text-gray-300' : 'text-gray-700'">
-            Nilai Anda
-          </p>
+        <!-- Stats grid -->
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-8">
+          <div class="rounded-xl p-4 text-center transition-colors"
+            [ngClass]="isDarkMode ? 'bg-gray-700' : 'bg-gray-50'">
+            <p class="text-2xl font-bold mb-1" [ngClass]="isDarkMode ? 'text-white' : 'text-gray-900'">{{ totalQuestions }}</p>
+            <p class="text-xs" [ngClass]="isDarkMode ? 'text-gray-400' : 'text-gray-500'">Total Soal</p>
+          </div>
+          <div class="rounded-xl p-4 text-center transition-colors"
+            [ngClass]="isDarkMode ? 'bg-gray-700' : 'bg-gray-50'">
+            <p class="text-2xl font-bold mb-1" [ngClass]="isDarkMode ? 'text-white' : 'text-gray-900'">{{ answeredQuestions }}</p>
+            <p class="text-xs" [ngClass]="isDarkMode ? 'text-gray-400' : 'text-gray-500'">Dijawab</p>
+          </div>
+          <div class="rounded-xl p-4 text-center">
+            <p class="text-2xl font-bold text-emerald-500 mb-1">{{ correctAnswers }}</p>
+            <p class="text-xs" [ngClass]="isDarkMode ? 'text-gray-400' : 'text-gray-500'">Benar</p>
+          </div>
+          <div class="rounded-xl p-4 text-center">
+            <p class="text-2xl font-bold text-rose-500 mb-1">{{ incorrectAnswers }}</p>
+            <p class="text-xs" [ngClass]="isDarkMode ? 'text-gray-400' : 'text-gray-500'">Salah</p>
+          </div>
+        </div>
+
+        <!-- Progress bars for correct/incorrect -->
+        <div class="space-y-3 mb-8">
+          <div>
+            <div class="flex justify-between text-xs mb-1"
+              [ngClass]="isDarkMode ? 'text-gray-400' : 'text-gray-500'">
+              <span>Jawaban Benar</span>
+              <span class="font-medium text-emerald-500">{{ totalQuestions ? ((correctAnswers / totalQuestions) * 100 | number:'1.0-0') : 0 }}%</span>
+            </div>
+            <div class="h-2 rounded-full overflow-hidden" [ngClass]="isDarkMode ? 'bg-gray-700' : 'bg-gray-100'">
+              <div class="h-full bg-emerald-500 rounded-full transition-all duration-700"
+                [style.width.%]="totalQuestions ? (correctAnswers / totalQuestions) * 100 : 0"></div>
+            </div>
+          </div>
+          <div>
+            <div class="flex justify-between text-xs mb-1"
+              [ngClass]="isDarkMode ? 'text-gray-400' : 'text-gray-500'">
+              <span>Jawaban Salah</span>
+              <span class="font-medium text-rose-500">{{ totalQuestions ? ((incorrectAnswers / totalQuestions) * 100 | number:'1.0-0') : 0 }}%</span>
+            </div>
+            <div class="h-2 rounded-full overflow-hidden" [ngClass]="isDarkMode ? 'bg-gray-700' : 'bg-gray-100'">
+              <div class="h-full bg-rose-500 rounded-full transition-all duration-700"
+                [style.width.%]="totalQuestions ? (incorrectAnswers / totalQuestions) * 100 : 0"></div>
+            </div>
+          </div>
+          <div>
+            <div class="flex justify-between text-xs mb-1"
+              [ngClass]="isDarkMode ? 'text-gray-400' : 'text-gray-500'">
+              <span>Tidak Dijawab</span>
+              <span class="font-medium" [ngClass]="isDarkMode ? 'text-gray-300' : 'text-gray-600'">{{ totalQuestions ? ((unansweredQuestions / totalQuestions) * 100 | number:'1.0-0') : 0 }}%</span>
+            </div>
+            <div class="h-2 rounded-full overflow-hidden" [ngClass]="isDarkMode ? 'bg-gray-700' : 'bg-gray-100'">
+              <div class="h-full rounded-full transition-all duration-700"
+                [ngClass]="isDarkMode ? 'bg-gray-500' : 'bg-gray-300'"
+                [style.width.%]="totalQuestions ? (unansweredQuestions / totalQuestions) * 100 : 0"></div>
+            </div>
+          </div>
         </div>
 
         <!-- Action Buttons -->
-        <div class="flex flex-col sm:flex-row gap-4 mt-6">
-          <button
-            (click)="reviewAnswers()"
-            class="flex-1 py-3 px-4 rounded-lg font-medium bg-blue-500 text-white hover:bg-blue-600 transition-colors duration-200"
-          >
+        <div class="flex flex-col sm:flex-row gap-3">
+          <button (click)="reviewAnswers()"
+            class="flex-1 py-3 px-4 rounded-xl font-semibold text-sm bg-indigo-600 hover:bg-indigo-700 text-white transition-colors duration-200 flex items-center justify-center gap-2">
+            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+            </svg>
             Review Jawaban
           </button>
-          <button
-            (click)="goToHome()"
-            class="flex-1 py-3 px-4 rounded-lg font-medium transition-colors duration-200"
-            [ngClass]="isDarkMode ? 'bg-gray-700 text-white hover:bg-gray-600' : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'"
-          >
+          <button (click)="goToHome()"
+            class="flex-1 py-3 px-4 rounded-xl font-semibold text-sm transition-colors duration-200 flex items-center justify-center gap-2 border"
+            [ngClass]="isDarkMode
+              ? 'bg-gray-700 text-gray-200 border-gray-600 hover:bg-gray-600'
+              : 'bg-white text-gray-700 border-gray-200 hover:bg-gray-50'">
+            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+            </svg>
             Kembali ke Beranda
           </button>
         </div>

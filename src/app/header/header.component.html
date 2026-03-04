@@ -1,54 +1,72 @@
-<header class="transition-colors duration-200" [ngClass]="isDarkMode ? 'bg-gray-800' : 'bg-white'">
+<header class="sticky top-0 z-50 border-b shadow-sm transition-colors duration-200"
+  [ngClass]="isDarkMode ? 'bg-gray-900 border-gray-700' : 'bg-white border-gray-200'">
   <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
     <div class="flex justify-between items-center h-16">
-      <div class="flex items-center">
-        <a routerLink="/home" class="text-xl font-bold cursor-pointer transition-colors duration-200" [ngClass]="isDarkMode ? 'text-white' : 'text-gray-900'">
-          Quiz App
-        </a>
-      </div>
-      
-      <div class="flex items-center space-x-4">
-        <!-- Premium Plans Link -->
-        <a *ngIf="isLoggedIn()" routerLink="/premium-plans" class="flex items-center px-3 py-2 rounded-lg text-sm font-medium transition-colors duration-200" [ngClass]="isDarkMode ? 'bg-yellow-700 text-white hover:bg-yellow-600' : 'bg-yellow-100 text-yellow-700 hover:bg-yellow-200'">
-          <svg class="w-5 h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
+
+      <!-- Brand -->
+      <a routerLink="/home" class="flex items-center gap-2 group">
+        <div class="w-8 h-8 rounded-lg bg-indigo-600 flex items-center justify-center shadow-sm group-hover:bg-indigo-700 transition-colors">
+          <svg class="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
+          </svg>
+        </div>
+        <span class="text-xl font-bold tracking-tight transition-colors duration-200"
+          [ngClass]="isDarkMode ? 'text-white' : 'text-gray-900'">
+          QuizKu
+        </span>
+      </a>
+
+      <!-- Right side -->
+      <div class="flex items-center gap-2">
+
+        <!-- Premium badge -->
+        <a *ngIf="isLoggedIn()" routerLink="/premium-plans"
+          class="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold transition-all duration-200"
+          [ngClass]="isDarkMode ? 'bg-amber-500/20 text-amber-400 hover:bg-amber-500/30' : 'bg-amber-50 text-amber-700 hover:bg-amber-100'">
+          <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">
+            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
           </svg>
           Premium
         </a>
-        
-        <button
-          (click)="toggleTheme()"
+
+        <!-- Dark mode toggle -->
+        <button (click)="toggleTheme()"
           class="p-2 rounded-lg transition-colors duration-200"
-          [ngClass]="isDarkMode ? 'bg-gray-700 text-white hover:bg-gray-600' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'"
-          aria-label="Toggle theme"
-        >
+          [ngClass]="isDarkMode ? 'text-gray-400 hover:text-white hover:bg-gray-800' : 'text-gray-500 hover:text-gray-900 hover:bg-gray-100'"
+          aria-label="Toggle theme">
           <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path *ngIf="!isDarkMode" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
-              d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/>
+            <path *ngIf="!isDarkMode" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
             <path *ngIf="isDarkMode" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-              d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707"/>
+              d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707" />
           </svg>
         </button>
 
-        <a *ngIf="isLoggedIn()" routerLink="/account" class="flex items-center px-3 py-2 rounded-lg text-sm font-medium transition-colors duration-200" [ngClass]="isDarkMode ? 'bg-gray-700 text-white hover:bg-gray-600' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'">
-          <svg width="20" height="20" stroke-width="1.5" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" color="currentColor">
-            <path d="M5 20V19C5 15.134 8.13401 12 12 12V12C15.866 12 19 15.134 19 19V20" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path>
-            <path d="M12 12C14.2091 12 16 10.2091 16 8C16 5.79086 14.2091 4 12 4C9.79086 4 8 5.79086 8 8C8 10.2091 9.79086 12 12 12Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path>
-          </svg>
-          <span *ngIf="isLoggedIn()" class="text-sm px-2 font-medium transition-colors duration-200" [ngClass]="isDarkMode ? 'text-gray-300' : 'text-gray-700'">
+        <!-- User avatar + name -->
+        <a *ngIf="isLoggedIn()" routerLink="/account"
+          class="flex items-center gap-2 pl-2 pr-3 py-1.5 rounded-full transition-colors duration-200"
+          [ngClass]="isDarkMode ? 'hover:bg-gray-800' : 'hover:bg-gray-100'">
+          <div class="w-7 h-7 rounded-full bg-indigo-600 flex items-center justify-center text-white text-sm font-semibold">
+            {{ (getUserName() || 'U').charAt(0).toUpperCase() }}
+          </div>
+          <span class="hidden sm:block text-sm font-medium transition-colors duration-200 max-w-[120px] truncate"
+            [ngClass]="isDarkMode ? 'text-gray-300' : 'text-gray-700'">
             {{ getUserName() }}
           </span>
         </a>
 
-        <button
-          *ngIf="!isLoggedIn() || getButtonText() === 'Logout'"
-          (click)="isLoggedIn() ? logout() : router.navigate([getButtonRoute()])"
-          class="px-4 py-2 rounded-lg text-sm font-medium transition-colors duration-200"
-          [ngClass]="getButtonText() === 'Logout' ? 
-            (isDarkMode ? 'bg-red-600 text-white hover:bg-red-700' : 'bg-red-600 text-white hover:bg-red-700') : 
-            (isDarkMode ? 'bg-indigo-600 text-white hover:bg-indigo-700' : 'bg-indigo-600 text-white hover:bg-indigo-700')"
-        >
-          {{ getButtonText() }}
+        <!-- Logout button -->
+        <button *ngIf="isLoggedIn()" (click)="logout()"
+          class="px-3 py-1.5 rounded-lg text-sm font-medium transition-colors duration-200 text-red-600 hover:bg-red-50"
+          [ngClass]="isDarkMode ? 'hover:bg-red-900/20 text-red-400' : 'hover:bg-red-50 text-red-600'">
+          Keluar
+        </button>
+
+        <!-- Login button (if not logged in) -->
+        <button *ngIf="!isLoggedIn()" (click)="router.navigate([getButtonRoute()])"
+          class="px-4 py-2 rounded-lg text-sm font-semibold bg-indigo-600 text-white hover:bg-indigo-700 transition-colors duration-200">
+          Masuk
         </button>
       </div>
     </div>
