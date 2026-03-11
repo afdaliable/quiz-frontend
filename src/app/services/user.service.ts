@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { BehaviorSubject, Observable, catchError, throwError } from 'rxjs';
+import { BehaviorSubject, Observable, catchError, throwError, of } from 'rxjs';
 import { HttpClient } from '@angular/common/http';
 import { environment } from '../../environments/environment';
 
@@ -40,5 +40,15 @@ export class UserService {
   clearUser() {
     this.currentUser.next(null);
     localStorage.removeItem('user');
+  }
+
+  updatePreferences(prefs: { theme: string }): void {
+    const url = environment.production ?
+      `${this.baseApiUrl}/user/preferences` :
+      '/api/user/preferences';
+
+    this.http.patch(url, prefs, { withCredentials: true }).pipe(
+      catchError(() => of(null))
+    ).subscribe();
   }
 }

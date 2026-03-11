@@ -4,6 +4,7 @@ import { Observable, BehaviorSubject, throwError, of } from 'rxjs';
 import { tap, catchError, switchMap } from 'rxjs/operators';
 import { environment } from '../../environments/environment';
 import * as CryptoJS from 'crypto-js';
+import { ThemeService } from './theme.service';
 
 interface AuthResponse {
   access_token: string;
@@ -44,7 +45,7 @@ export class AuthService {
   private sessionInvalidSubject = new BehaviorSubject<boolean>(false);
   sessionInvalid$ = this.sessionInvalidSubject.asObservable();
 
-  constructor(private http: HttpClient) {
+  constructor(private http: HttpClient, private themeService: ThemeService) {
     this.initializeUserState();
   }
 
@@ -400,7 +401,15 @@ export class AuthService {
         try {
           const user = JSON.parse(userStr);
           this.setUser(user);
-          
+
+          // Apply saved theme preference
+          const savedTheme = localStorage.getItem('theme');
+          if (user.theme_preference) {
+            this.themeService.setTheme(user.theme_preference === 'dark');
+          } else if (savedTheme) {
+            this.themeService.setTheme(savedTheme === 'dark');
+          }
+
           // Validate the session on initialization with a small delay
           // to ensure the backend has time to recognize the token
           setTimeout(() => {

@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject } from 'rxjs';
+import { UserService } from './user.service';
 
 @Injectable({
   providedIn: 'root'
@@ -8,7 +9,7 @@ export class ThemeService {
   private darkMode = new BehaviorSubject<boolean>(false);
   darkMode$ = this.darkMode.asObservable();
 
-  constructor() {
+  constructor(private userService: UserService) {
     // Check local storage for saved preference
     const savedTheme = localStorage.getItem('theme');
     if (savedTheme) {
@@ -17,11 +18,17 @@ export class ThemeService {
     }
   }
 
-  toggleTheme(): void {
-    const isDark = !this.darkMode.value;
+  setTheme(isDark: boolean): void {
     this.darkMode.next(isDark);
     this.applyTheme(isDark);
     localStorage.setItem('theme', isDark ? 'dark' : 'light');
+  }
+
+  toggleTheme(): void {
+    const isDark = !this.darkMode.value;
+    this.setTheme(isDark);
+    // Sync to backend — fire and forget
+    this.userService.updatePreferences({ theme: isDark ? 'dark' : 'light' });
   }
 
   private applyTheme(isDark: boolean): void {
@@ -31,4 +38,4 @@ export class ThemeService {
       document.documentElement.classList.remove('dark');
     }
   }
-} 
+}
