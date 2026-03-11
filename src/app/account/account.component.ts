@@ -1,15 +1,27 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
-import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { AuthService } from '../services/auth.service';
+import { UserService } from '../services/user.service';
 import { ThemeService } from '../services/theme.service';
-import { Subscription } from 'rxjs';
+import { forkJoin, Subscription } from 'rxjs';
 
-interface Profile {
+interface UserProfile {
   id: string;
   email: string;
   display_name: string;
-  picture?: string;
+  picture_url: string | null;
+  joined_at: string;
+  account_status: 'Free' | 'Premium';
+  premium_expires_at: string | null;
+}
+
+interface UserStats {
+  total_quizzes: number;
+  avg_score: number;
+  favorite_category: string | null;
+  learning_streak_days: number;
+  total_correct: number;
+  total_questions: number;
 }
 
 @Component({
@@ -18,50 +30,57 @@ interface Profile {
 })
 export class AccountComponent implements OnInit, OnDestroy {
   loading = false;
-  profile: Profile | null = null;
+  profile: UserProfile | null = null;
+  stats: UserStats | null = null;
   errorMessage = '';
-  successMessage = '';
   isDarkMode = false;
-  private userSubscription: Subscription | null = null;
+  private themeSubscription: Subscription | null = null;
 
   constructor(
     private authService: AuthService,
+    private userService: UserService,
     private router: Router,
     private themeService: ThemeService
   ) {}
 
   ngOnInit() {
-    // Subscribe to theme changes
-    this.themeService.darkMode$.subscribe(
+    this.themeSubscription = this.themeService.darkMode$.subscribe(
       isDark => this.isDarkMode = isDark
     );
-    
-    // Check if user is logged in
+
     const token = this.authService.getToken();
     if (!token) {
       this.router.navigate(['/login']);
       return;
     }
 
-    // Subscribe to user changes
-    this.userSubscription = this.authService.user$.subscribe(user => {
-      if (user) {
-        this.profile = {
-          id: user.id,
-          email: user.email,
-          display_name: user.display_name,
-          picture: user.picture
-        };
-      } else {
-        this.profile = null;
+    this.loading = true;
+    forkJoin({
+      profile: this.userService.getUserProfile(),
+      stats: this.userService.getUserStats()
+    }).subscribe({
+      next: ({ profile, stats }) => {
+        this.profile = profile;
+        this.stats = stats;
+        this.loading = false;
+      },
+      error: (err) => {
+        console.error('Failed to load profile data:', err);
+        this.errorMessage = 'Gagal memuat data profil. Silakan coba lagi.';
+        this.loading = false;
       }
     });
   }
 
   ngOnDestroy() {
-    if (this.userSubscription) {
-      this.userSubscription.unsubscribe();
+    if (this.themeSubscription) {
+      this.themeSubscription.unsubscribe();
     }
+  }
+
+  get accuracyPercent(): number {
+    if (!this.stats || this.stats.total_questions === 0) return 0;
+    return Math.round((this.stats.total_correct / this.stats.total_questions) * 100);
   }
 
   signOut() {
