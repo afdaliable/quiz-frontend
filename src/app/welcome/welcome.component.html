@@ -1,76 +1,149 @@
-<div class="min-h-screen transition-colors duration-200" [ngClass]="isDarkMode ? 'bg-gray-900' : 'bg-gray-50'">
-  <div class="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-    <div class="rounded-xl shadow-lg transition-colors duration-200" [ngClass]="isDarkMode ? 'bg-gray-800' : 'bg-white'">
-      <div class="p-6 sm:p-8">
-        <h1 class="text-2xl sm:text-4xl font-extrabold mb-6 transition-colors duration-200" [ngClass]="isDarkMode ? 'text-white' : 'text-gray-900'">
-          Selamat Datang di Quiz App
-        </h1>
-        
-        <form (ngSubmit)="startQuiz()" #quizForm="ngForm" class="space-y-6">
-          <!-- User Info -->
-          <div *ngIf="user" class="rounded-lg p-4 transition-colors duration-200" [ngClass]="isDarkMode ? 'bg-gray-700' : 'bg-gray-50'">
-            <p class="text-base sm:text-lg transition-colors duration-200" [ngClass]="isDarkMode ? 'text-gray-200' : 'text-gray-700'">
-              <strong>Nama        : </strong> 
-              <span>{{ user.display_name }}</span>
-            </p>
-          </div>
-          
-          <!-- Quiz Info -->
-          <div *ngIf="selectedPaket" class="rounded-lg p-4 space-y-2 transition-colors duration-200" [ngClass]="isDarkMode ? 'bg-gray-700' : 'bg-gray-50'">
-            <p class="text-base sm:text-lg" [ngClass]="isDarkMode ? 'text-gray-200' : 'text-gray-700'">
-              <strong>Kategori    : </strong> 
-              <span>{{ selectedPaket.kategori_soal }}</span>
-            </p>
-            <p class="text-base sm:text-lg" [ngClass]="isDarkMode ? 'text-gray-200' : 'text-gray-700'">
-              <strong>Paket Soal  : </strong> 
-              <span>{{ selectedPaket.nama_paket_soal }}</span>
-            </p>
-            <p class="text-base sm:text-lg" [ngClass]="isDarkMode ? 'text-gray-200' : 'text-gray-700'">
-              <strong>Jumlah Soal : </strong> 
-              <span>{{ selectedPaket.jumlah_soal }}</span>
-            </p>
-          </div>
+<div
+  class="min-h-screen flex items-center justify-center px-4 transition-colors duration-200"
+  [ngClass]="isDarkMode ? 'bg-gray-900' : 'bg-gray-100'"
+>
+  <div class="w-full max-w-lg">
+    <!-- Card -->
+    <div
+      class="rounded-2xl shadow-xl overflow-hidden transition-colors duration-200"
+      [ngClass]="isDarkMode ? 'bg-gray-800' : 'bg-white'"
+    >
+      <!-- Header: Paket info with category color -->
+      <div class="px-6 pt-6 pb-4" [ngClass]="categoryHeaderClass">
+        <!-- Back button -->
+        <button
+          type="button"
+          (click)="goBack()"
+          class="inline-flex items-center gap-1 text-sm font-medium mb-3 opacity-80 hover:opacity-100 transition-opacity text-white"
+        >
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+          </svg>
+          Pilih Paket Lain
+        </button>
 
-          <!-- Duration Selection -->
-          <div>
-            <label class="block text-base font-medium mb-2" [ngClass]="isDarkMode ? 'text-gray-200' : 'text-gray-700'">
-              Pilih Durasi
-            </label>
-            <select 
-              name="durasi" 
-              [(ngModel)]="selectedDurasi" 
-              required
-              class="block w-full rounded-md py-3 pl-3 pr-10 text-base focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-colors duration-200"
-              [ngClass]="isDarkMode ? 'bg-gray-700 text-white border-gray-600' : 'bg-white text-gray-900 border-gray-300'"
-            >
-              <option *ngFor="let durasi of durasiOptions" [value]="durasi">
-                {{ durasi }} menit
-              </option>
-            </select>
+        <div class="flex items-start gap-3">
+          <!-- Category icon -->
+          <div class="flex-shrink-0 w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center text-xl">
+            {{ categoryIcon }}
           </div>
-          
-          <!-- Review Mode Toggle -->
-          <div class="flex items-center space-x-3">
-            <label class="relative inline-flex items-center cursor-pointer">
-              <input type="checkbox" [(ngModel)]="isReviewMode" name="reviewMode" class="sr-only peer">
-              <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-indigo-300 dark:peer-focus:ring-indigo-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-indigo-600"></div>
-            </label>
-            <span class="text-base font-medium" [ngClass]="isDarkMode ? 'text-gray-200' : 'text-gray-700'">
-              Review Mode
-            </span>
+          <div class="min-w-0">
+            <p class="text-xs font-semibold uppercase tracking-wider text-white/70">
+              {{ selectedPaket?.kategori_soal || '—' }}
+            </p>
+            <h1 class="text-lg font-bold text-white leading-snug">
+              {{ selectedPaket?.nama_paket_soal || 'Memuat...' }}
+            </h1>
           </div>
-          
-          <!-- Start Button -->
-          <button 
-            type="submit" 
-            [disabled]="!quizForm.form.valid"
-            class="w-full flex justify-center py-3 px-4 rounded-md shadow-sm text-base sm:text-lg font-medium text-white transition-colors duration-200"
-            [ngClass]="isDarkMode ? 'bg-indigo-600 hover:bg-indigo-700' : 'bg-indigo-600 hover:bg-indigo-700'"
-          >
-            Mulai Kuis
-          </button>
-        </form>
+        </div>
+
+        <!-- Compact info row -->
+        <div *ngIf="selectedPaket" class="mt-4 flex items-center gap-4 text-white/90 text-sm">
+          <span class="flex items-center gap-1">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A2 2 0 013 12V7a2 2 0 012-2z"/>
+            </svg>
+            {{ selectedPaket.kategori_soal }}
+          </span>
+          <span class="text-white/40">|</span>
+          <span class="flex items-center gap-1">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+            </svg>
+            {{ selectedPaket.jumlah_soal }} soal
+          </span>
+          <span class="text-white/40">|</span>
+          <span class="flex items-center gap-1">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+            ±{{ estimasiDetikPerSoal }} dtk/soal
+          </span>
+        </div>
       </div>
+
+      <!-- Form body -->
+      <form (ngSubmit)="startQuiz()" #quizForm="ngForm" class="px-6 py-5 space-y-5">
+
+        <!-- User info -->
+        <div *ngIf="user" class="flex items-center gap-3">
+          <div
+            class="w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold text-white"
+            [ngClass]="categoryHeaderClass"
+          >
+            {{ userInitial }}
+          </div>
+          <span class="text-sm font-medium" [ngClass]="isDarkMode ? 'text-gray-200' : 'text-gray-700'">
+            {{ user.display_name }}
+          </span>
+        </div>
+
+        <!-- Duration Selection -->
+        <div>
+          <label
+            class="block text-sm font-semibold mb-1.5"
+            [ngClass]="isDarkMode ? 'text-gray-200' : 'text-gray-700'"
+          >
+            Durasi
+          </label>
+          <select
+            name="durasi"
+            [(ngModel)]="selectedDurasi"
+            (ngModelChange)="onDurasiChange()"
+            required
+            class="block w-full rounded-lg px-3 py-2.5 text-sm border focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-colors duration-200"
+            [ngClass]="isDarkMode
+              ? 'bg-gray-700 text-white border-gray-600'
+              : 'bg-gray-50 text-gray-900 border-gray-300'"
+          >
+            <option *ngFor="let durasi of durasiOptions" [value]="durasi">{{ durasi }} menit</option>
+          </select>
+        </div>
+
+        <!-- Review Mode Toggle -->
+        <div
+          class="flex items-start gap-3 rounded-xl p-3 transition-colors duration-200"
+          [ngClass]="isDarkMode ? 'bg-gray-700/60' : 'bg-gray-50'"
+        >
+          <label class="relative inline-flex items-center cursor-pointer mt-0.5 flex-shrink-0">
+            <input type="checkbox" [(ngModel)]="isReviewMode" name="reviewMode" class="sr-only peer">
+            <div
+              class="w-10 h-6 rounded-full peer peer-focus:ring-2 peer-focus:ring-indigo-400
+                     after:content-[''] after:absolute after:top-[2px] after:left-[2px]
+                     after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all
+                     peer-checked:after:translate-x-4 peer-checked:bg-indigo-600
+                     bg-gray-300"
+            ></div>
+          </label>
+          <div>
+            <p class="text-sm font-semibold" [ngClass]="isDarkMode ? 'text-gray-100' : 'text-gray-800'">
+              Review Mode
+            </p>
+            <p class="text-xs mt-0.5" [ngClass]="isDarkMode ? 'text-gray-400' : 'text-gray-500'">
+              Lihat jawaban benar setelah setiap soal dijawab
+            </p>
+          </div>
+        </div>
+
+        <!-- Start Button -->
+        <button
+          type="submit"
+          [disabled]="!quizForm.form.valid"
+          class="w-full flex items-center justify-center gap-2 py-3 px-4 rounded-xl text-base font-bold text-white shadow-md
+                 transition-all duration-200 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
+          [ngClass]="isDarkMode
+            ? 'bg-indigo-600 hover:bg-indigo-500'
+            : 'bg-indigo-600 hover:bg-indigo-700'"
+        >
+          Mulai Kuis
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 7l5 5m0 0l-5 5m5-5H6"/>
+          </svg>
+        </button>
+      </form>
     </div>
   </div>
 </div>
