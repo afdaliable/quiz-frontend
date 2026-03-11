@@ -331,4 +331,14 @@ export class HomeComponent implements OnInit, OnDestroy {
     const sevenDaysAgo = Date.now() - 7 * 24 * 60 * 60 * 1000;
     return created >= sevenDaysAgo;
   }
+
+  countForCategory(categoryName: string): number {
+    return this.paketSoalList.filter(p => p.kategori_soal === categoryName).length;
+  }
+
+  resetFilters(): void {
+    this.searchTerm = '';
+    this.selectedCategory = '';
+    this.filteredPaketSoalList = [...this.paketSoalList];
+  }
 }

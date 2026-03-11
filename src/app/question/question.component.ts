@@ -155,18 +155,25 @@ export class QuestionComponent implements OnInit, OnDestroy {
       if (this.currentSession) {
         this.sessionInitialized = true;
         console.log('Quiz session initialized:', this.currentSession);
-        
+
         // Load session data if resuming
         this.loadSessionData();
-        
+
         // Load questions
         this.getAllQuestions(
           this.selectedPaket.kategori_soal,
           this.selectedPaket.nama_paket_soal
         );
-        
+
         // Setup auto-save
         this.setupAutoSave();
+      } else {
+        // Session service returned null/undefined — fallback to direct load
+        console.warn('Quiz session returned null, loading questions directly');
+        this.getAllQuestions(
+          this.selectedPaket.kategori_soal,
+          this.selectedPaket.nama_paket_soal
+        );
       }
     } catch (error) {
       console.error('Error initializing quiz session:', error);
@@ -175,7 +182,6 @@ export class QuestionComponent implements OnInit, OnDestroy {
         this.selectedPaket.kategori_soal,
         this.selectedPaket.nama_paket_soal
       );
-      this.startTimer();
     }
   }
 
