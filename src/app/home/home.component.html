@@ -83,23 +83,37 @@
 
       <button
         (click)="sortPaketSoal('nama_paket_soal')"
-        class="flex items-center gap-1.5 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors duration-200 whitespace-nowrap"
-        [ngClass]="isDarkMode ? 'bg-gray-800 text-gray-300 border border-gray-700 hover:bg-gray-700' : 'bg-white text-gray-600 border border-gray-200 hover:bg-gray-50'">
+        [title]="sortField === 'nama_paket_soal' ? (sortDirection === 'asc' ? 'Urutkan Z-A' : 'Urutkan A-Z') : 'Urutkan A-Z'"
+        class="flex items-center gap-1.5 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 whitespace-nowrap"
+        [ngClass]="sortField === 'nama_paket_soal'
+          ? 'bg-indigo-600 text-white border border-indigo-600 shadow-sm shadow-indigo-200'
+          : (isDarkMode ? 'bg-gray-800 text-gray-400 border border-gray-700 hover:bg-gray-700' : 'bg-white text-gray-400 border border-gray-200 hover:bg-gray-50')">
         Nama
-        <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+        <svg class="w-3.5 h-3.5 transition-transform duration-200" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path *ngIf="sortField !== 'nama_paket_soal'" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
             d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4" />
+          <path *ngIf="sortField === 'nama_paket_soal' && sortDirection === 'asc'" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
+            d="M5 15l7-7 7 7" />
+          <path *ngIf="sortField === 'nama_paket_soal' && sortDirection === 'desc'" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
+            d="M19 9l-7 7-7-7" />
         </svg>
       </button>
 
       <button
         (click)="sortPaketSoal('jumlah_soal')"
-        class="hidden sm:flex items-center gap-1.5 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors duration-200 whitespace-nowrap"
-        [ngClass]="isDarkMode ? 'bg-gray-800 text-gray-300 border border-gray-700 hover:bg-gray-700' : 'bg-white text-gray-600 border border-gray-200 hover:bg-gray-50'">
+        [title]="sortField === 'jumlah_soal' ? (sortDirection === 'asc' ? 'Tersedikit' : 'Terbanyak') : 'Terbanyak'"
+        class="hidden sm:flex items-center gap-1.5 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 whitespace-nowrap"
+        [ngClass]="sortField === 'jumlah_soal'
+          ? 'bg-indigo-600 text-white border border-indigo-600 shadow-sm shadow-indigo-200'
+          : (isDarkMode ? 'bg-gray-800 text-gray-400 border border-gray-700 hover:bg-gray-700' : 'bg-white text-gray-400 border border-gray-200 hover:bg-gray-50')">
         Jumlah
-        <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+        <svg class="w-3.5 h-3.5 transition-transform duration-200" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path *ngIf="sortField !== 'jumlah_soal'" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
             d="M3 4h13M3 8h9m-9 4h6m4 0l4-4m0 0l4 4m-4-4v12" />
+          <path *ngIf="sortField === 'jumlah_soal' && sortDirection === 'asc'" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
+            d="M5 15l7-7 7 7" />
+          <path *ngIf="sortField === 'jumlah_soal' && sortDirection === 'desc'" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
+            d="M19 9l-7 7-7-7" />
         </svg>
       </button>
     </div>

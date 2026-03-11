@@ -113,14 +113,18 @@
           <button (click)="toggleMarkQuestion()"
             [attr.aria-label]="markedQuestions[currentQuestion] ? 'Hapus tanda pada soal ini' : 'Tandai soal ini untuk ditinjau'"
             [attr.aria-pressed]="markedQuestions[currentQuestion]"
-            class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors duration-200"
+            class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all duration-200"
             [ngClass]="markedQuestions[currentQuestion]
-              ? 'bg-amber-500 text-white hover:bg-amber-600'
+              ? 'bg-amber-500 text-white hover:bg-amber-600 shadow-sm shadow-amber-200'
               : (isDarkMode ? 'bg-gray-800 text-gray-400 border border-gray-700 hover:bg-gray-700' : 'bg-white text-gray-500 border border-gray-200 hover:bg-gray-50')">
-            <svg class="w-3.5 h-3.5" aria-hidden="true" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <!-- Icon filled saat ditandai, outline saat tidak -->
+            <svg *ngIf="markedQuestions[currentQuestion]" class="w-3.5 h-3.5" aria-hidden="true" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" />
+            </svg>
+            <svg *ngIf="!markedQuestions[currentQuestion]" class="w-3.5 h-3.5" aria-hidden="true" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" />
             </svg>
-            <span class="hidden sm:inline">{{ markedQuestions[currentQuestion] ? 'Ditandai' : 'Tandai' }}</span>
+            <span class="hidden sm:inline">{{ markedQuestions[currentQuestion] ? '⭐ Ditandai' : 'Tandai' }}</span>
           </button>
 
           <button (click)="confirmEndQuiz()"
