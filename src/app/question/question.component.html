@@ -31,32 +31,42 @@
 
         <!-- Timer -->
         <div class="flex items-center gap-2 px-4 py-1.5 rounded-full font-semibold text-sm border transition-colors duration-500"
+          role="timer"
+          [attr.aria-label]="'Waktu tersisa ' + formatTime(remainingTime)"
           [class.timer-critical]="remainingTime <= 30"
           [ngClass]="remainingTime <= 30
             ? (isDarkMode ? 'bg-red-900/40 text-red-400 border-red-600' : 'bg-red-100 text-red-600 border-red-400')
             : remainingTime <= 60
             ? (isDarkMode ? 'bg-orange-900/40 text-orange-400 border-orange-600' : 'bg-orange-100 text-orange-600 border-orange-400')
             : (isDarkMode ? 'bg-gray-800 text-gray-300 border-gray-700' : 'bg-gray-100 text-gray-700 border-transparent')">
-          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <svg class="w-4 h-4" aria-hidden="true" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
           </svg>
-          {{ formatTime(remainingTime) }}
+          <span aria-hidden="true">{{ formatTime(remainingTime) }}</span>
+        </div>
+        <!-- Screen reader timer announcements -->
+        <div aria-live="polite" aria-atomic="true" class="sr-only">
+          <span *ngIf="remainingTime === 60">Waktu tersisa 1 menit</span>
+          <span *ngIf="remainingTime === 30">Peringatan: waktu tersisa 30 detik</span>
         </div>
 
         <!-- Mark + End -->
         <div class="flex items-center gap-2">
           <button (click)="toggleMarkQuestion()"
+            [attr.aria-label]="markedQuestions[currentQuestion] ? 'Hapus tanda pada soal ini' : 'Tandai soal ini untuk ditinjau'"
+            [attr.aria-pressed]="markedQuestions[currentQuestion]"
             class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors duration-200"
             [ngClass]="markedQuestions[currentQuestion]
               ? 'bg-amber-500 text-white hover:bg-amber-600'
               : (isDarkMode ? 'bg-gray-800 text-gray-400 border border-gray-700 hover:bg-gray-700' : 'bg-white text-gray-500 border border-gray-200 hover:bg-gray-50')">
-            <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <svg class="w-3.5 h-3.5" aria-hidden="true" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" />
             </svg>
             <span class="hidden sm:inline">{{ markedQuestions[currentQuestion] ? 'Ditandai' : 'Tandai' }}</span>
           </button>
 
           <button (click)="confirmEndQuiz()"
+            aria-label="Akhiri ujian"
             class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-rose-600 hover:bg-rose-700 text-white transition-colors">
             Akhiri
           </button>
@@ -91,9 +101,15 @@
           </p>
 
           <!-- Options -->
-          <div class="space-y-3">
+          <div class="space-y-3" role="radiogroup" aria-label="Pilihan jawaban">
             <div *ngFor="let option of questionList[currentQuestion]?.options; let i = index"
               (click)="answer(currentQuestion, i)"
+              (keydown.enter)="answer(currentQuestion, i)"
+              (keydown.space)="answer(currentQuestion, i)"
+              role="radio"
+              [attr.aria-checked]="selectedAnswers[currentQuestion] === i"
+              [attr.aria-label]="['A','B','C','D','E'][i] + '. ' + option.text"
+              tabindex="0"
               class="group flex items-start gap-3 p-4 rounded-xl cursor-pointer transition-all duration-150 border"
               [ngClass]="{
                 'bg-indigo-600 border-indigo-600 text-white': selectedAnswers[currentQuestion] === i && !isAnswerChecked,
@@ -103,13 +119,13 @@
                 'border-gray-700 hover:border-indigo-500 hover:bg-indigo-900/20': isDarkMode && selectedAnswers[currentQuestion] !== i
               }">
               <!-- Option letter -->
-              <span class="flex-shrink-0 w-7 h-7 rounded-lg flex items-center justify-center text-xs font-bold transition-colors"
+              <span aria-hidden="true" class="flex-shrink-0 w-7 h-7 rounded-lg flex items-center justify-center text-xs font-bold transition-colors"
                 [ngClass]="selectedAnswers[currentQuestion] === i
                   ? 'bg-white/20 text-white'
                   : (isDarkMode ? 'bg-gray-700 text-gray-300' : 'bg-indigo-50 text-indigo-700')">
                 {{ ['A','B','C','D','E'][i] }}
               </span>
-              <span class="text-sm leading-relaxed" [innerHTML]="option.text"></span>
+              <span class="text-sm leading-relaxed" aria-hidden="true" [innerHTML]="option.text"></span>
             </div>
           </div>
 
@@ -157,23 +173,25 @@
           <div class="flex justify-between items-center mt-8 pt-6 border-t"
             [ngClass]="isDarkMode ? 'border-gray-700' : 'border-gray-100'">
             <button (click)="prevQuestion()" [disabled]="currentQuestion === 0"
+              aria-label="Soal sebelumnya"
               class="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold transition-colors duration-200"
               [ngClass]="currentQuestion === 0
                 ? 'opacity-40 cursor-not-allowed ' + (isDarkMode ? 'bg-gray-800 text-gray-400' : 'bg-gray-100 text-gray-400')
                 : (isDarkMode ? 'bg-gray-700 text-white hover:bg-gray-600' : 'bg-gray-100 text-gray-700 hover:bg-gray-200')">
-              <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <svg class="w-4 h-4" aria-hidden="true" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
               </svg>
               Sebelumnya
             </button>
 
             <button (click)="nextQuestion()" [disabled]="currentQuestion === questionList.length - 1"
+              aria-label="Soal selanjutnya"
               class="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold transition-colors duration-200"
               [ngClass]="currentQuestion === questionList.length - 1
                 ? 'opacity-40 cursor-not-allowed ' + (isDarkMode ? 'bg-gray-800 text-gray-400' : 'bg-gray-100 text-gray-400')
                 : 'bg-indigo-600 text-white hover:bg-indigo-700'">
               Selanjutnya
-              <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <svg class="w-4 h-4" aria-hidden="true" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
               </svg>
             </button>
@@ -208,10 +226,12 @@
             </div>
           </div>
 
-          <div class="grid grid-cols-5 gap-1.5 mb-4">
+          <div class="grid grid-cols-5 gap-1.5 mb-4" role="navigation" aria-label="Navigasi soal">
             <button
               *ngFor="let q of questionList; let i = index"
               (click)="goToQuestion(i)"
+              [attr.aria-label]="'Soal ' + (i + 1) + (answeredQuestions[i] ? ', sudah dijawab' : '') + (markedQuestions[i] ? ', ditandai' : '') + (currentQuestion === i ? ', sedang aktif' : '')"
+              [attr.aria-current]="currentQuestion === i ? 'true' : null"
               class="aspect-square flex items-center justify-center text-xs font-semibold rounded-lg transition-colors duration-150"
               [ngClass]="getQuestionButtonClass(i)">
               {{ i + 1 }}
