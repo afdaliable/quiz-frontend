@@ -48,6 +48,9 @@ export class QuestionComponent implements OnInit, OnDestroy {
   correctAnswerIndex: number | null = null;
   answerExplanation: string = '';
 
+  // End quiz confirmation modal
+  showEndModal: boolean = false;
+
   // Timer visual warning
   showToast: boolean = false;
   toastMessage: string = '';
@@ -550,23 +553,22 @@ export class QuestionComponent implements OnInit, OnDestroy {
   }
 
   confirmEndQuiz() {
-    console.log('Confirming end quiz...');
-    const unansweredQuestions = this.answeredQuestions.filter(
-      (answered) => !answered
-    ).length;
-    if (unansweredQuestions > 0) {
-      if (
-        confirm(
-          `Anda masih memiliki ${unansweredQuestions} soal yang belum dijawab. Apakah Anda yakin ingin mengakhiri ujian?`
-        )
-      ) {
-        this.endQuiz();
-      }
+    const unanswered = this.getUnansweredQuestionsCount();
+    if (unanswered === 0) {
+      // All answered — skip modal, end directly
+      this.endQuiz();
     } else {
-      if (confirm('Apakah Anda yakin ingin mengakhiri ujian?')) {
-        this.endQuiz();
-      }
+      this.showEndModal = true;
     }
+  }
+
+  cancelEndQuiz() {
+    this.showEndModal = false;
+  }
+
+  confirmEndNow() {
+    this.showEndModal = false;
+    this.endQuiz();
   }
 
   getQuestionButtonClass(index: number): string {
