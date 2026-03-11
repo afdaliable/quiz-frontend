@@ -29,6 +29,10 @@ export class ResultComponent implements OnInit {
   currentUser: any;
   isDarkMode: boolean = false;
 
+  motivationMessage: string = '';
+  wrongQuestions: number[] = [];
+  celebrationActive: boolean = false;
+
   constructor(
     private router: Router,
     private userService: UserService,
@@ -59,6 +63,32 @@ export class ResultComponent implements OnInit {
     this.points = parseInt(localStorage.getItem('points') || '0');
     this.correctAnswers = parseInt(localStorage.getItem('correctAnswers') || '0');
     this.incorrectAnswers = parseInt(localStorage.getItem('incorrectAnswers') || '0');
+
+    const wrongData = localStorage.getItem('wrongQuestions');
+    if (wrongData) {
+      this.wrongQuestions = JSON.parse(wrongData);
+    }
+
+    this.motivationMessage = this.getMotivationMessage();
+
+    if (this.points >= 80) {
+      this.celebrationActive = true;
+      setTimeout(() => (this.celebrationActive = false), 5000);
+    }
+  }
+
+  getMotivationMessage(): string {
+    if (this.points >= 80) return 'Luar biasa! Kamu menguasai materi ini! 🎉';
+    if (this.points >= 50) return 'Hampir! Sedikit lagi kamu pasti bisa 🎯';
+    return 'Jangan menyerah! Review jawaban dan coba lagi 💪';
+  }
+
+  get wrongQuestionsPreview(): number[] {
+    return this.wrongQuestions.slice(0, 10);
+  }
+
+  get remainingWrongCount(): number {
+    return Math.max(0, this.wrongQuestions.length - 10);
   }
 
   toggleScore(): void {
@@ -67,6 +97,10 @@ export class ResultComponent implements OnInit {
 
   reviewAnswers(): void {
     this.router.navigate(['/review']);
+  }
+
+  retryQuiz(): void {
+    this.router.navigate(['/welcome']);
   }
 
   goToHome(): void {
