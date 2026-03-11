@@ -3,6 +3,7 @@ import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable, map, throwError, catchError } from 'rxjs';
 import { environment } from '../../environments/environment';
 import { Router } from '@angular/router';
+import { QuizHistoryResponse } from '../models/quiz-history.model';
 
 interface ApiResponse {
   kategori_id: number;
@@ -170,6 +171,16 @@ export class QuestionService {
       console.error('Error parsing selected paket:', error);
       return throwError(() => error);
     }
+  }
+
+  getQuizHistory(page: number = 1, limit: number = 20): Observable<QuizHistoryResponse> {
+    const url = this.getApiUrl(`user/quiz-history?page=${page}&limit=${limit}`);
+    return this.http.get<QuizHistoryResponse>(url, { withCredentials: true }).pipe(
+      catchError(error => {
+        console.error('Error fetching quiz history:', error);
+        return throwError(() => error);
+      })
+    );
   }
 
   getAllCategories(): Observable<any> {

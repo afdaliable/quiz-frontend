@@ -30,6 +30,7 @@ import { PaymentCallbackComponent } from './premium/payment-callback.component';
 import { LicenseActivationComponent } from './premium/license-activation.component';
 import { PremiumService } from './services/premium.service';
 import { PremiumAccessModalComponent } from './premium/premium-access-modal.component';
+import { HistoryComponent } from './history/history.component';
 
 @NgModule({
   declarations: [
@@ -48,7 +49,8 @@ import { PremiumAccessModalComponent } from './premium/premium-access-modal.comp
     AuthCallbackComponent,
     SessionManagementComponent,
     InvalidSessionComponent,
-    PaymentCallbackComponent
+    PaymentCallbackComponent,
+    HistoryComponent
   ],
   imports: [
     BrowserModule,
