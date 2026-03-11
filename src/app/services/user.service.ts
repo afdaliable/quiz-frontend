@@ -14,15 +14,26 @@ export class UserService {
   constructor(private http: HttpClient) {}
 
   getUserProfile(): Observable<any> {
-    const url = environment.production ? 
-      `${this.baseApiUrl}/user/profile` : 
+    const url = environment.production ?
+      `${this.baseApiUrl}/user/profile` :
       '/api/user/profile';
 
-    return this.http.get(url, {
-      withCredentials: true
-    }).pipe(
+    return this.http.get(url).pipe(
       catchError(error => {
         console.error('Error fetching user profile:', error);
+        return throwError(() => error);
+      })
+    );
+  }
+
+  getUserStats(): Observable<any> {
+    const url = environment.production ?
+      `${this.baseApiUrl}/user/stats` :
+      '/api/user/stats';
+
+    return this.http.get(url).pipe(
+      catchError(error => {
+        console.error('Error fetching user stats:', error);
         return throwError(() => error);
       })
     );

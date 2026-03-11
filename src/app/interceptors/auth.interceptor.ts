@@ -67,9 +67,9 @@ export class AuthInterceptor implements HttpInterceptor {
     }
 
     // Add user_id header for premium, payment, and user endpoints
-    if (request.url.includes('/premium/') || 
-        request.url.includes('/payment/') || 
-        request.url.includes('/user/update-phone') ||
+    if (request.url.includes('/premium/') ||
+        request.url.includes('/payment/') ||
+        request.url.includes('/user/') ||
         request.url.includes('/license/')) {
       const user = this.authService.getCurrentUser();
       if (user && user.id) {
