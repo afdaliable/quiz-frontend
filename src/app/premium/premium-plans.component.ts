@@ -1,10 +1,32 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, HostBinding } from '@angular/core';
 import { PremiumService } from '../services/premium.service';
 import { Router } from '@angular/router';
 import { ThemeService } from '../services/theme.service';
-import { catchError, finalize } from 'rxjs/operators';
-import { of } from 'rxjs';
+import { finalize } from 'rxjs/operators';
 import { CommonModule } from '@angular/common';
+
+const FEATURE_TRANSLATIONS: Array<[string, string]> = [
+  ['access to all premium',        'Akses semua paket soal premium'],
+  ['access to basic premium',      'Akses paket soal premium (dasar)'],
+  ['access to basic',              'Akses paket soal (dasar)'],
+  ['access to premium',            'Akses paket soal premium'],
+  ['priority support',             'Dukungan prioritas'],
+  ['ad-free',                      'Tanpa iklan'],
+  ['detailed performance',         'Analitik performa lengkap'],
+  ['downloadable',                 'Laporan kuis bisa diunduh'],
+  ['personalized learning',        'Jalur belajar personal'],
+  ['expert consultation',          'Konsultasi dengan pengajar'],
+  ['early access',                 'Akses awal fitur baru'],
+  ['performance analytics',        'Analitik performa lengkap'],
+  ['quiz reports',                 'Laporan kuis bisa diunduh'],
+];
+
+const PLAN_BADGES: Record<string, { label: string; color: string }> = {
+  silver:   { label: 'Mulai dari sini',  color: 'bg-gray-500 text-white' },
+  gold:     { label: '⭐ Paling Populer', color: 'bg-amber-500 text-white' },
+  platinum: { label: '🔥 Best Value',     color: 'bg-indigo-600 text-white' },
+  ultimate: { label: '♾️ Seumur Hidup',   color: 'bg-purple-600 text-white' },
+};
 
 @Component({
   selector: 'app-premium-plans',
@@ -14,6 +36,8 @@ import { CommonModule } from '@angular/common';
   imports: [CommonModule]
 })
 export class PremiumPlansComponent implements OnInit {
+
+  @HostBinding('class') hostClasses = 'block bg-white dark:bg-gray-900';
   plans: any[] = [];
   activeSubscription: any = null;
   loading = true;
@@ -21,6 +45,15 @@ export class PremiumPlansComponent implements OnInit {
   isDarkMode = false;
   loadingSubscription = false;
   processingPayment = false;
+
+  readonly paymentMethods = [
+    { icon: '📱', name: 'QRIS' },
+    { icon: '🏦', name: 'Transfer Bank' },
+    { icon: '💳', name: 'Kartu Kredit/Debit' },
+    { icon: '🛍️', name: 'GoPay' },
+    { icon: '💜', name: 'OVO' },
+    { icon: '🔵', name: 'Dana' },
+  ];
 
   constructor(
     private premiumService: PremiumService,
@@ -39,85 +72,57 @@ export class PremiumPlansComponent implements OnInit {
   loadPlans(): void {
     this.loading = true;
     this.error = '';
-    
+
     this.premiumService.getPremiumPlans().pipe(
-      finalize(() => {
-        this.loading = false;
-      })
+      finalize(() => { this.loading = false; })
     ).subscribe({
       next: (plans) => {
         this.plans = plans;
-        console.log('Loaded premium plans:', plans);
       },
-      error: (error) => {
-        console.error('Error loading plans:', error);
-        this.error = 'Failed to load premium plans. Please try again.';
+      error: () => {
+        this.error = 'Gagal memuat paket premium. Silakan coba lagi.';
       }
     });
   }
 
   checkActiveSubscription(): void {
     this.loadingSubscription = true;
-    
+
     this.premiumService.getActiveSubscription().pipe(
-      finalize(() => {
-        this.loadingSubscription = false;
-      })
+      finalize(() => { this.loadingSubscription = false; })
     ).subscribe({
-      next: (subscription) => {
-        this.activeSubscription = subscription;
-        console.log('Active subscription:', subscription);
-      },
-      error: (error) => {
-        console.error('Error checking subscription:', error);
-        // Don't show error to user, just log it
-      }
+      next: (subscription) => { this.activeSubscription = subscription; },
+      error: () => { /* silent */ }
     });
   }
 
   subscribeToPlan(planId: number): void {
-    if (this.processingPayment) {
-      return; // Prevent multiple clicks
-    }
-    
+    if (this.processingPayment) return;
+
     this.processingPayment = true;
     this.error = '';
-    
-    console.log('Subscribing to plan ID:', planId);
-    
-    // Generate payment link for the selected plan
+
     this.premiumService.generatePaymentLink(planId).subscribe({
       next: (response) => {
-        console.log('Payment link generated:', response);
-        
-        // Redirect to Mayar payment page
         if (response.payment_link) {
-          // Store the plan ID in localStorage in case we need it later
           localStorage.setItem('selected_plan_id', planId.toString());
           window.location.href = response.payment_link;
         } else {
           this.processingPayment = false;
-          this.error = 'Invalid payment link received. Please try again.';
-          console.error('Payment link is empty or invalid:', response);
+          this.error = 'Link pembayaran tidak valid. Silakan coba lagi.';
         }
       },
       error: (error) => {
         this.processingPayment = false;
-        console.error('Error generating payment link:', error);
-        
         if (error.status === 401 || error.message?.includes('Authentication failed')) {
-          this.error = 'Authentication failed. Please log in again to continue.';
-          // Optionally redirect to login page after a delay
+          this.error = 'Sesi berakhir. Silakan login kembali.';
           setTimeout(() => {
-            this.router.navigate(['/login'], { 
-              queryParams: { 
-                returnUrl: '/premium-plans',
-                error: 'Your session has expired. Please log in again to continue.'
-              } 
+            this.router.navigate(['/login'], {
+              queryParams: { returnUrl: '/premium-plans' }
             });
           }, 3000);
         } else {
-          this.error = error.message || 'Failed to generate payment link. Please try again later.';
+          this.error = 'Gagal membuat link pembayaran. Silakan coba lagi.';
         }
       }
     });
@@ -132,4 +137,29 @@ export class PremiumPlansComponent implements OnInit {
     this.loadPlans();
     this.checkActiveSubscription();
   }
-} 
+
+  translateFeature(feature: string): string {
+    const lower = feature.toLowerCase();
+    const match = FEATURE_TRANSLATIONS.find(([key]) => lower.includes(key));
+    return match ? match[1] : feature;
+  }
+
+  getPlanBadge(planName: string): { label: string; color: string } | null {
+    return PLAN_BADGES[planName?.toLowerCase()] ?? null;
+  }
+
+  isPopularPlan(planName: string): boolean {
+    return planName?.toLowerCase() === 'gold';
+  }
+
+  getPricePerDay(plan: any): string {
+    if (plan.is_lifetime) return 'Akses seumur hidup';
+    if (!plan.duration_days || plan.duration_days <= 0) return '';
+    const perDay = Math.round(plan.price / plan.duration_days);
+    return `≈ Rp ${perDay.toLocaleString('id-ID')}/hari`;
+  }
+
+  formatPrice(price: number): string {
+    return price.toLocaleString('id-ID');
+  }
+}
