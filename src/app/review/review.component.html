@@ -1,151 +1,194 @@
 <div class="min-h-screen transition-colors duration-200" [ngClass]="isDarkMode ? 'bg-gray-900' : 'bg-gray-50'">
   <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-    <!-- Header -->
-    <div class="rounded-lg shadow-md mb-6" [ngClass]="isDarkMode ? 'bg-gray-800' : 'bg-white'">
-      <div class="bg-indigo-600 text-white p-4 rounded-t-lg">
-        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center space-y-2 sm:space-y-0">
-          <div>
-            <h4 class="text-xl font-bold">
-              {{ selectedPaket?.nama_paket_soal || "Paket Soal" }} - Review
-            </h4>
-            <span class="text-sm">
-              Kategori: {{ selectedPaket?.kategori_soal || "Tidak ada kategori" }}
-            </span>
-          </div>
-          <div>
-            <span class="text-sm">Nama: {{ currentUser?.display_name || 'Unknown User' }}</span>
-          </div>
-        </div>
+
+    <!-- Header — hanya nama paket + kategori, tanpa nama user -->
+    <div class="rounded-2xl overflow-hidden shadow-md mb-6"
+      [ngClass]="isDarkMode ? 'bg-gray-800' : 'bg-white'">
+      <div class="bg-indigo-600 px-6 py-4">
+        <h1 class="text-lg font-bold text-white">
+          {{ selectedPaket?.nama_paket_soal || 'Paket Soal' }} — Review Jawaban
+        </h1>
+        <p class="text-indigo-200 text-sm mt-0.5">
+          {{ selectedPaket?.kategori_soal || '' }}
+        </p>
       </div>
     </div>
 
     <!-- Main Content -->
     <div class="flex flex-col lg:flex-row gap-6">
+
       <!-- Question Section -->
-      <div class="w-full lg:w-3/4">
-        <div *ngIf="questionList.length > 0" class="space-y-6">
-          <div class="rounded-lg shadow-md p-6" [ngClass]="isDarkMode ? 'bg-gray-800' : 'bg-white'">
-            <div class="text-lg font-semibold mb-4" [ngClass]="isDarkMode ? 'text-white' : 'text-gray-900'">
-              Pertanyaan {{ currentQuestion + 1 }} dari {{ questionList.length }}
+      <div class="w-full lg:flex-1">
+        <div *ngIf="questionList.length > 0" class="space-y-4">
+          <div class="rounded-2xl shadow-md p-6 border"
+            [ngClass]="isDarkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-100'">
+
+            <!-- Question header -->
+            <div class="flex items-center gap-2 mb-4">
+              <span class="px-3 py-1 rounded-lg text-sm font-bold bg-indigo-600 text-white">
+                Soal {{ currentQuestion + 1 }}
+              </span>
+              <span class="text-xs font-medium px-2 py-1 rounded-md"
+                [ngClass]="isUserAnswerCorrect(currentQuestion)
+                  ? (isDarkMode ? 'bg-emerald-900/40 text-emerald-400' : 'bg-emerald-50 text-emerald-700')
+                  : selectedAnswers[currentQuestion] !== undefined && selectedAnswers[currentQuestion] !== null
+                  ? (isDarkMode ? 'bg-red-900/40 text-red-400' : 'bg-red-50 text-red-700')
+                  : (isDarkMode ? 'bg-gray-700 text-gray-400' : 'bg-gray-100 text-gray-500')">
+                {{ isUserAnswerCorrect(currentQuestion) ? '✓ Benar' :
+                   (selectedAnswers[currentQuestion] !== undefined && selectedAnswers[currentQuestion] !== null) ? '✗ Salah' : 'Tidak dijawab' }}
+              </span>
             </div>
-            <p class="text-lg mb-6" [ngClass]="isDarkMode ? 'text-gray-200' : 'text-gray-700'"
+
+            <!-- Question text -->
+            <p class="text-base leading-relaxed mb-6"
+              [ngClass]="isDarkMode ? 'text-gray-100' : 'text-gray-800'"
               [innerHTML]="questionList[currentQuestion].questionText">
             </p>
-            
+
             <!-- Options -->
-            <div class="space-y-3">
+            <div class="space-y-2.5">
               <div
                 *ngFor="let option of questionList[currentQuestion].options; let i = index"
-                (click)="toggleExplanation()"
-                [ngClass]="{
-                  'bg-green-800 border-green-600 text-white': isDarkMode && option.correct,
-                  'bg-green-100 border-green-500 text-green-900': !isDarkMode && option.correct,
-                  'bg-red-800 border-red-600 text-white': isDarkMode && selectedAnswers[currentQuestion] === i && !option.correct,
-                  'bg-red-100 border-red-500 text-red-900': !isDarkMode && selectedAnswers[currentQuestion] === i && !option.correct,
-                  'bg-gray-700 text-gray-200': isDarkMode && !option.correct && selectedAnswers[currentQuestion] !== i,
-                  'bg-white text-gray-900': !isDarkMode && !option.correct && selectedAnswers[currentQuestion] !== i
-                }"
-                class="p-4 border-2 rounded-lg cursor-pointer transition-colors duration-200"
-              >
-                <div class="flex items-center">
-                  <span 
-                    class="w-8 h-8 flex items-center justify-center rounded-full mr-3 font-bold border-2 transition-colors duration-200"
-                    [ngClass]="{
-                      'border-white text-white': isDarkMode && (option.correct || selectedAnswers[currentQuestion] === i),
-                      'border-green-500 text-green-900': !isDarkMode && option.correct,
-                      'border-red-500 text-red-900': !isDarkMode && selectedAnswers[currentQuestion] === i && !option.correct,
-                      'border-gray-300': (!isDarkMode && !option.correct && selectedAnswers[currentQuestion] !== i) || (isDarkMode && !option.correct && selectedAnswers[currentQuestion] !== i)
-                    }"
-                  >
-                    {{ ['A', 'B', 'C', 'D', 'E'][i] }}
-                  </span>
-                  <span class="text-base sm:text-lg">{{ option.text }}</span>
-                </div>
+                class="flex items-start gap-3 p-4 rounded-xl border-2 transition-colors duration-150"
+                [ngClass]="option.correct
+                  ? (isDarkMode
+                      ? 'bg-emerald-500/20 border-emerald-500/40 text-emerald-100'
+                      : 'bg-emerald-50 border-emerald-400 text-emerald-900')
+                  : (selectedAnswers[currentQuestion] === i && !option.correct)
+                  ? (isDarkMode
+                      ? 'bg-red-500/20 border-red-500/40 text-red-100'
+                      : 'bg-red-50 border-red-400 text-red-900')
+                  : (isDarkMode
+                      ? 'bg-gray-700/50 border-gray-600 text-gray-300'
+                      : 'bg-gray-50 border-gray-200 text-gray-700')">
+                <!-- Letter badge -->
+                <span class="flex-shrink-0 w-7 h-7 rounded-lg flex items-center justify-center text-xs font-bold"
+                  [ngClass]="option.correct
+                    ? (isDarkMode ? 'bg-emerald-500/40 text-emerald-200' : 'bg-emerald-200 text-emerald-800')
+                    : (selectedAnswers[currentQuestion] === i && !option.correct)
+                    ? (isDarkMode ? 'bg-red-500/40 text-red-200' : 'bg-red-200 text-red-800')
+                    : (isDarkMode ? 'bg-gray-600 text-gray-300' : 'bg-gray-200 text-gray-600')">
+                  {{ ['A','B','C','D','E'][i] }}
+                </span>
+                <span class="text-sm leading-relaxed">{{ option.text }}</span>
+                <!-- Correct marker -->
+                <svg *ngIf="option.correct" class="ml-auto flex-shrink-0 w-4 h-4 mt-0.5"
+                  [ngClass]="isDarkMode ? 'text-emerald-400' : 'text-emerald-600'"
+                  fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>
+                </svg>
               </div>
             </div>
 
-            <!-- Explanation Button -->
+            <!-- Penjelasan (auto-tampil, bisa disembunyikan) -->
             <div class="mt-6">
               <button
                 (click)="toggleExplanation()"
-                class="w-full py-3 px-4 text-white rounded-lg transition-colors duration-200 text-base sm:text-lg font-medium"
-                [ngClass]="isDarkMode ? 'bg-blue-600 hover:bg-blue-700' : 'bg-blue-500 hover:bg-blue-600'"
-              >
+                class="flex items-center gap-2 text-sm font-medium mb-3 transition-colors"
+                [ngClass]="isDarkMode ? 'text-indigo-400 hover:text-indigo-300' : 'text-indigo-600 hover:text-indigo-700'">
+                <svg class="w-4 h-4 transition-transform duration-200"
+                  [class.rotate-180]="showExplanation"
+                  fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                </svg>
                 {{ showExplanation ? 'Sembunyikan Penjelasan' : 'Lihat Penjelasan' }}
               </button>
-            </div>
 
-            <!-- Solution -->
-            <div 
-              *ngIf="showExplanation" 
-              class="mt-6 p-4 rounded-lg transition-colors duration-200"
-              [ngClass]="isDarkMode ? 'bg-gray-700' : 'bg-blue-50'"
-            >
-              <h4 class="font-semibold mb-2" [ngClass]="isDarkMode ? 'text-white' : 'text-gray-900'">
-                Penjelasan:
-              </h4>
-              <p [ngClass]="isDarkMode ? 'text-gray-200' : 'text-gray-700'">
-                {{ questionList[currentQuestion].solution }}
-              </p>
+              <div *ngIf="showExplanation"
+                class="p-4 rounded-xl border-l-4 border-indigo-500 transition-colors duration-200"
+                [ngClass]="isDarkMode ? 'bg-indigo-900/20' : 'bg-indigo-50'">
+                <h4 class="text-sm font-semibold mb-1.5"
+                  [ngClass]="isDarkMode ? 'text-indigo-300' : 'text-indigo-700'">Penjelasan:</h4>
+                <p class="text-sm leading-relaxed"
+                  [ngClass]="isDarkMode ? 'text-gray-300' : 'text-gray-700'">
+                  {{ questionList[currentQuestion].solution || 'Tidak ada penjelasan untuk soal ini.' }}
+                </p>
+              </div>
             </div>
           </div>
 
           <!-- Navigation Buttons -->
-          <div class="flex justify-between">
+          <div class="flex justify-between gap-3">
             <button
               (click)="prevQuestion()"
               [disabled]="currentQuestion === 0"
-              class="px-4 py-2 bg-blue-500 text-white rounded-lg disabled:opacity-50"
-            >
+              class="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold transition-colors duration-200"
+              [ngClass]="currentQuestion === 0
+                ? 'opacity-40 cursor-not-allowed ' + (isDarkMode ? 'bg-gray-800 text-gray-400' : 'bg-gray-100 text-gray-400')
+                : (isDarkMode ? 'bg-gray-700 text-white hover:bg-gray-600' : 'bg-gray-100 text-gray-700 hover:bg-gray-200')">
+              <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+              </svg>
               Sebelumnya
             </button>
             <button
               (click)="nextQuestion()"
               [disabled]="currentQuestion === questionList.length - 1"
-              class="px-4 py-2 bg-blue-500 text-white rounded-lg disabled:opacity-50"
-            >
+              class="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold transition-colors duration-200"
+              [ngClass]="currentQuestion === questionList.length - 1
+                ? 'opacity-40 cursor-not-allowed ' + (isDarkMode ? 'bg-gray-800 text-gray-400' : 'bg-gray-100 text-gray-400')
+                : 'bg-indigo-600 text-white hover:bg-indigo-700'">
               Selanjutnya
+              <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+              </svg>
             </button>
           </div>
         </div>
       </div>
 
-      <!-- Question Navigator -->
-      <div class="w-full lg:w-1/4 rounded-lg shadow-md p-4 h-fit" [ngClass]="isDarkMode ? 'bg-gray-800' : 'bg-white'">
-        <h3 class="text-lg font-semibold mb-4">Navigasi Soal</h3>
-        <div class="grid grid-cols-5 gap-2">
-          <button
-            *ngFor="let question of questionList; let i = index"
-            (click)="goToQuestion(i)"
-            [ngClass]="{
-              'bg-green-500 text-white': isUserAnswerCorrect(i),
-              'bg-red-500 text-white': selectedAnswers[i] !== undefined && !isUserAnswerCorrect(i),
-              'bg-gray-200': selectedAnswers[i] === undefined
-            }"
-            class="aspect-square rounded-lg flex items-center justify-center font-medium hover:opacity-80 transition-opacity"
-          >
-            {{ i + 1 }}
+      <!-- Question Navigator sidebar -->
+      <div class="w-full lg:w-56">
+        <div class="rounded-2xl p-4 border sticky top-4"
+          [ngClass]="isDarkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-100 shadow-sm'">
+          <h3 class="text-sm font-semibold mb-3 pb-3 border-b"
+            [ngClass]="isDarkMode ? 'text-gray-300 border-gray-700' : 'text-gray-700 border-gray-100'">
+            Navigasi Soal
+          </h3>
+
+          <!-- Legend -->
+          <div class="flex flex-wrap gap-2 mb-3 text-xs"
+            [ngClass]="isDarkMode ? 'text-gray-400' : 'text-gray-500'">
+            <div class="flex items-center gap-1">
+              <div class="w-3 h-3 rounded bg-emerald-500"></div><span>Benar</span>
+            </div>
+            <div class="flex items-center gap-1">
+              <div class="w-3 h-3 rounded bg-red-500"></div><span>Salah</span>
+            </div>
+            <div class="flex items-center gap-1">
+              <div class="w-3 h-3 rounded bg-gray-400"></div><span>Kosong</span>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-5 gap-1.5 mb-4">
+            <button
+              *ngFor="let question of questionList; let i = index"
+              (click)="goToQuestion(i)"
+              class="aspect-square rounded-lg flex items-center justify-center text-xs font-semibold transition-colors duration-150 hover:opacity-80"
+              [ngClass]="currentQuestion === i
+                ? 'bg-indigo-600 text-white ring-2 ring-indigo-400 ring-offset-1'
+                : isUserAnswerCorrect(i)
+                ? 'bg-emerald-500 text-white'
+                : (selectedAnswers[i] !== undefined && selectedAnswers[i] !== null)
+                ? 'bg-red-500 text-white'
+                : (isDarkMode ? 'bg-gray-600 text-gray-300' : 'bg-gray-200 text-gray-600')">
+              {{ i + 1 }}
+            </button>
+          </div>
+
+          <!-- Back to home -->
+          <button (click)="goToHome()"
+            class="w-full py-2.5 rounded-xl text-sm font-semibold transition-colors duration-200 border flex items-center justify-center gap-2"
+            [ngClass]="isDarkMode
+              ? 'bg-gray-700 text-gray-200 border-gray-600 hover:bg-gray-600'
+              : 'bg-white text-gray-700 border-gray-200 hover:bg-gray-50'">
+            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
+            </svg>
+            Beranda
           </button>
         </div>
       </div>
-    </div>
-
-    <!-- Back Button -->
-    <div class="mt-6">
-      <button 
-        (click)="goToHome()" 
-        class="w-full px-4 py-3 text-base font-medium rounded-lg transition-colors duration-200"
-        [ngClass]="isDarkMode ? 
-          'bg-gray-700 text-white hover:bg-gray-600' : 
-          'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'"
-      >
-        <span class="flex items-center justify-center">
-          <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-          </svg>
-          Kembali ke Beranda
-        </span>
-      </button>
     </div>
   </div>
 </div>

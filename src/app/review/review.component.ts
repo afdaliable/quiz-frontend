@@ -33,7 +33,7 @@ export class ReviewComponent implements OnInit {
   public currentQuestion: number = 0;
   public selectedAnswers: number[] = [];
   public selectedPaket: PaketSoal | null = null;
-  public showExplanation: boolean = false;
+  public showExplanation: boolean = true;
   currentUser: any;
   points: number = 0;
   correctAnswers: number = 0;
@@ -97,21 +97,21 @@ export class ReviewComponent implements OnInit {
   goToQuestion(index: number): void {
     if (index >= 0 && index < this.questionList.length) {
       this.currentQuestion = index;
-      this.showExplanation = false;
+      this.showExplanation = true;
     }
   }
 
   prevQuestion(): void {
     if (this.currentQuestion > 0) {
       this.currentQuestion--;
-      this.showExplanation = false;
+      this.showExplanation = true;
     }
   }
 
   nextQuestion(): void {
     if (this.currentQuestion < this.questionList.length - 1) {
       this.currentQuestion++;
-      this.showExplanation = false;
+      this.showExplanation = true;
     }
   }
 
