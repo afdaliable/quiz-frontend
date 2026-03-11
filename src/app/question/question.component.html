@@ -1,3 +1,61 @@
+<!-- End Quiz Confirmation Modal -->
+<div *ngIf="showEndModal"
+  class="fixed inset-0 z-50 flex items-center justify-center px-4"
+  (click)="cancelEndQuiz()">
+  <div class="absolute inset-0 bg-black/50"></div>
+  <div class="relative w-full max-w-sm rounded-2xl shadow-xl p-6"
+    [ngClass]="isDarkMode ? 'bg-gray-800' : 'bg-white'"
+    (click)="$event.stopPropagation()">
+
+    <!-- Icon -->
+    <div class="flex items-center justify-center w-12 h-12 rounded-xl mb-4 mx-auto"
+      [ngClass]="isDarkMode ? 'bg-amber-900/30' : 'bg-amber-50'">
+      <svg class="w-6 h-6 text-amber-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+          d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>
+      </svg>
+    </div>
+
+    <!-- Title -->
+    <h3 class="text-base font-bold text-center mb-2"
+      [ngClass]="isDarkMode ? 'text-white' : 'text-gray-900'">
+      Yakin ingin mengakhiri kuis?
+    </h3>
+
+    <!-- Info -->
+    <p class="text-sm text-center mb-1"
+      [ngClass]="isDarkMode ? 'text-gray-300' : 'text-gray-600'">
+      Kamu baru menjawab
+      <strong>{{ getAnsweredQuestionsCount() }} dari {{ questionList.length }}</strong> soal.
+    </p>
+    <p class="text-sm text-center mb-6 font-semibold"
+      [ngClass]="isDarkMode ? 'text-red-400' : 'text-red-600'">
+      {{ getUnansweredQuestionsCount() }} soal masih belum dijawab.
+    </p>
+
+    <!-- Buttons -->
+    <div class="flex gap-3">
+      <button
+        (click)="cancelEndQuiz()"
+        autofocus
+        class="flex-1 py-2.5 rounded-xl text-sm font-semibold transition-colors duration-200"
+        [ngClass]="isDarkMode
+          ? 'bg-indigo-600 hover:bg-indigo-500 text-white'
+          : 'bg-indigo-600 hover:bg-indigo-700 text-white'">
+        Lanjutkan Kuis
+      </button>
+      <button
+        (click)="confirmEndNow()"
+        class="flex-1 py-2.5 rounded-xl text-sm font-semibold transition-colors duration-200"
+        [ngClass]="isDarkMode
+          ? 'bg-red-900/40 hover:bg-red-900/60 text-red-400 border border-red-800'
+          : 'bg-red-50 hover:bg-red-100 text-red-600 border border-red-200'">
+        Akhiri Sekarang
+      </button>
+    </div>
+  </div>
+</div>
+
 <!-- Toast notification -->
 <div *ngIf="showToast"
   class="toast-enter fixed top-4 left-1/2 -translate-x-1/2 z-50 flex items-center gap-2 px-5 py-3 rounded-xl shadow-lg text-sm font-semibold text-white bg-orange-500 cursor-pointer"
