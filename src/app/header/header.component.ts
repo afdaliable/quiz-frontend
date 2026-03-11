@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, HostListener } from '@angular/core';
 import { Router } from '@angular/router';
 import { ThemeService } from '../services/theme.service';
 import { UserService } from '../services/user.service';
@@ -14,7 +14,16 @@ export class HeaderComponent implements OnInit, OnDestroy {
   isDarkMode: boolean = false;
   currentUser: any;
   isAuthenticated: boolean = false;
+  showUserMenu: boolean = false;
   private userSubscription: Subscription | null = null;
+
+  @HostListener('document:click', ['$event'])
+  onDocumentClick(event: MouseEvent): void {
+    const target = event.target as HTMLElement;
+    if (!target.closest('.user-menu-container')) {
+      this.showUserMenu = false;
+    }
+  }
 
   constructor(
     private themeService: ThemeService,
@@ -44,6 +53,10 @@ export class HeaderComponent implements OnInit, OnDestroy {
     if (this.userSubscription) {
       this.userSubscription.unsubscribe();
     }
+  }
+
+  toggleUserMenu(): void {
+    this.showUserMenu = !this.showUserMenu;
   }
 
   toggleTheme(): void {

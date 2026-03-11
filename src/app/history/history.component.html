@@ -1,0 +1,123 @@
+<div class="min-h-screen transition-colors duration-200" [ngClass]="isDarkMode ? 'bg-gray-900' : 'bg-gray-50'">
+  <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+
+    <!-- Header -->
+    <div class="mb-6">
+      <h1 class="text-2xl font-bold transition-colors duration-200"
+        [ngClass]="isDarkMode ? 'text-white' : 'text-gray-900'">
+        Riwayat Kuis
+      </h1>
+      <p class="mt-1 text-sm" [ngClass]="isDarkMode ? 'text-gray-400' : 'text-gray-500'">
+        Semua kuis yang pernah kamu kerjakan
+      </p>
+    </div>
+
+    <!-- Loading skeleton -->
+    <div *ngIf="isLoading" class="space-y-3">
+      <div *ngFor="let i of [1,2,3,4,5]"
+        class="rounded-2xl h-24 animate-pulse"
+        [ngClass]="isDarkMode ? 'bg-gray-800' : 'bg-gray-200'">
+      </div>
+    </div>
+
+    <!-- Empty state -->
+    <div *ngIf="!isLoading && history.length === 0"
+      class="flex flex-col items-center justify-center py-20 text-center">
+      <div class="text-5xl mb-4">📚</div>
+      <h3 class="text-lg font-semibold mb-2"
+        [ngClass]="isDarkMode ? 'text-gray-200' : 'text-gray-800'">
+        Belum ada riwayat kuis
+      </h3>
+      <p class="text-sm mb-6 max-w-xs"
+        [ngClass]="isDarkMode ? 'text-gray-400' : 'text-gray-500'">
+        Kerjakan kuis pertamamu dan hasilnya akan muncul di sini.
+      </p>
+      <a routerLink="/home"
+        class="px-5 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold transition-colors">
+        Mulai Belajar
+      </a>
+    </div>
+
+    <!-- History list -->
+    <div *ngIf="!isLoading && history.length > 0" class="space-y-3">
+      <div *ngFor="let entry of history"
+        class="rounded-2xl p-4 sm:p-5 border transition-colors duration-200"
+        [ngClass]="isDarkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-100 shadow-sm'">
+
+        <div class="flex items-start justify-between gap-4">
+          <!-- Left: info -->
+          <div class="min-w-0 flex-1">
+            <div class="flex items-center gap-2 mb-1">
+              <span class="px-2 py-0.5 rounded-md text-xs font-semibold"
+                [ngClass]="isDarkMode ? 'bg-indigo-500/20 text-indigo-300' : 'bg-indigo-50 text-indigo-600'">
+                {{ entry.category }}
+              </span>
+              <span class="text-xs" [ngClass]="isDarkMode ? 'text-gray-500' : 'text-gray-400'">
+                {{ formatDate(entry.completed_at) }}
+              </span>
+            </div>
+            <h3 class="font-semibold text-sm sm:text-base truncate"
+              [ngClass]="isDarkMode ? 'text-gray-100' : 'text-gray-800'">
+              {{ entry.package_name }}
+            </h3>
+            <div class="flex items-center gap-3 mt-2 text-xs"
+              [ngClass]="isDarkMode ? 'text-gray-400' : 'text-gray-500'">
+              <span class="flex items-center gap-1">
+                <svg class="w-3.5 h-3.5 text-emerald-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7" />
+                </svg>
+                {{ entry.correct }} benar
+              </span>
+              <span class="flex items-center gap-1">
+                <svg class="w-3.5 h-3.5 text-rose-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+                {{ entry.wrong }} salah
+              </span>
+              <span class="flex items-center gap-1">
+                <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                {{ formatDuration(entry.duration_seconds) }}
+              </span>
+            </div>
+          </div>
+
+          <!-- Right: score -->
+          <div class="flex-shrink-0 flex flex-col items-center justify-center w-16 h-16 rounded-xl"
+            [ngClass]="scoreBg(entry.score)">
+            <span class="text-xl font-bold leading-none" [ngClass]="scoreColor(entry.score)">
+              {{ entry.score }}
+            </span>
+            <span class="text-xs mt-0.5" [ngClass]="isDarkMode ? 'text-gray-500' : 'text-gray-400'">/ 100</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Pagination -->
+      <div *ngIf="totalPages > 1"
+        class="flex items-center justify-between pt-4">
+        <span class="text-xs" [ngClass]="isDarkMode ? 'text-gray-400' : 'text-gray-500'">
+          Hal. {{ page }} / {{ totalPages }} &nbsp;·&nbsp; {{ total }} total
+        </span>
+        <div class="flex gap-2">
+          <button (click)="prevPage()" [disabled]="page <= 1"
+            class="px-4 py-2 rounded-xl text-sm font-semibold transition-colors"
+            [ngClass]="page <= 1
+              ? 'opacity-40 cursor-not-allowed ' + (isDarkMode ? 'bg-gray-800 text-gray-500' : 'bg-gray-100 text-gray-400')
+              : (isDarkMode ? 'bg-gray-700 text-white hover:bg-gray-600' : 'bg-white border border-gray-200 text-gray-700 hover:bg-gray-50')">
+            ← Sebelumnya
+          </button>
+          <button (click)="nextPage()" [disabled]="page >= totalPages"
+            class="px-4 py-2 rounded-xl text-sm font-semibold transition-colors"
+            [ngClass]="page >= totalPages
+              ? 'opacity-40 cursor-not-allowed ' + (isDarkMode ? 'bg-gray-800 text-gray-500' : 'bg-gray-100 text-gray-400')
+              : 'bg-indigo-600 text-white hover:bg-indigo-700'">
+            Selanjutnya →
+          </button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>

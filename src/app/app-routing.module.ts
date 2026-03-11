@@ -15,6 +15,7 @@ import { InvalidSessionComponent } from './invalid-session/invalid-session.compo
 import { PremiumPlansComponent } from './premium/premium-plans.component';
 import { PaymentCallbackComponent } from './premium/payment-callback.component';
 import { LicenseActivationComponent } from './premium/license-activation.component';
+import { HistoryComponent } from './history/history.component';
 
 const routes: Routes = [
   {
@@ -58,6 +59,11 @@ const routes: Routes = [
   {
     path: 'account',
     component: AccountComponent,
+    canActivate: [AuthGuard]
+  },
+  {
+    path: 'history',
+    component: HistoryComponent,
     canActivate: [AuthGuard]
   },
   {
