@@ -331,6 +331,8 @@ export class QuestionComponent implements OnInit, OnDestroy {
   calculateScore() {
     this.correctAnswer = 0;
     this.incorrectAnswer = 0;
+    const wrongNumbers: number[] = [];
+
     this.questionList.forEach((question: any, index: number) => {
       const selectedAnswer = this.selectedAnswers[index];
       if (selectedAnswer !== null && selectedAnswer !== undefined) {
@@ -338,6 +340,7 @@ export class QuestionComponent implements OnInit, OnDestroy {
           this.correctAnswer++;
         } else {
           this.incorrectAnswer++;
+          wrongNumbers.push(index + 1);
         }
       }
     });
@@ -346,6 +349,8 @@ export class QuestionComponent implements OnInit, OnDestroy {
     this.points = Math.round(
       (this.correctAnswer / this.questionList.length) * 100
     );
+
+    localStorage.setItem('wrongQuestions', JSON.stringify(wrongNumbers));
   }
 
   startCounter() {
