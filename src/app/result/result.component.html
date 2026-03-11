@@ -1,3 +1,14 @@
+<!-- Celebration confetti (score >= 80) -->
+<ng-container *ngIf="celebrationActive">
+  <div *ngFor="let i of [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20]"
+    class="confetti-piece"
+    [style.left.%]="(i * 17 + 3) % 100"
+    [style.animation-duration]="((i % 4) + 2) + 's,' + ((i % 3) + 1) + 's'"
+    [style.animation-delay]="(i * 0.15) + 's,' + '0s'"
+    [style.background-color]="['#f59e0b','#10b981','#6366f1','#ef4444','#8b5cf6','#ec4899'][i % 6]">
+  </div>
+</ng-container>
+
 <div class="min-h-screen transition-colors duration-200" [ngClass]="isDarkMode ? 'bg-gray-900' : 'bg-gray-50'">
   <div class="max-w-2xl mx-auto px-4 sm:px-6 py-8">
 
@@ -37,11 +48,9 @@
         <div class="flex flex-col items-center py-6">
           <div class="relative w-44 h-44">
             <svg class="w-full h-full -rotate-90" viewBox="0 0 100 100">
-              <!-- Background ring -->
               <circle cx="50" cy="50" r="40" fill="none"
                 [ngClass]="isDarkMode ? 'stroke-gray-700' : 'stroke-gray-100'"
                 stroke-width="8" />
-              <!-- Score ring -->
               <circle cx="50" cy="50" r="40" fill="none"
                 [ngClass]="points >= 80 ? 'stroke-emerald-500' : points >= 60 ? 'stroke-amber-500' : 'stroke-rose-500'"
                 stroke-width="8"
@@ -49,13 +58,12 @@
                 [style.stroke-dashoffset]="251.2 - (points / 100) * 251.2"
                 stroke-linecap="round" />
             </svg>
-            <!-- Center label -->
             <div class="absolute inset-0 flex flex-col items-center justify-center">
               <span class="text-4xl font-bold"
                 [ngClass]="points >= 80 ? 'text-emerald-500' : points >= 60 ? 'text-amber-500' : 'text-rose-500'">
                 {{ points }}
               </span>
-              <span class="text-lg font-semibold" [ngClass]="isDarkMode ? 'text-gray-400' : 'text-gray-400'">/ 100</span>
+              <span class="text-lg font-semibold text-gray-400">/ 100</span>
             </div>
           </div>
 
@@ -68,6 +76,12 @@
               : (isDarkMode ? 'bg-rose-900/40 text-rose-400' : 'bg-rose-50 text-rose-700')">
             {{ points >= 80 ? 'Luar Biasa!' : points >= 60 ? 'Cukup Baik' : 'Perlu Belajar Lagi' }}
           </div>
+
+          <!-- Motivation message -->
+          <p class="mt-3 text-sm text-center font-medium"
+            [ngClass]="isDarkMode ? 'text-gray-300' : 'text-gray-600'">
+            {{ motivationMessage }}
+          </p>
         </div>
 
         <!-- Stats grid -->
@@ -92,7 +106,7 @@
           </div>
         </div>
 
-        <!-- Progress bars for correct/incorrect -->
+        <!-- Progress bars -->
         <div class="space-y-3 mb-8">
           <div>
             <div class="flex justify-between text-xs mb-1"
@@ -130,8 +144,44 @@
           </div>
         </div>
 
+        <!-- Saran Belajar (wrong question hints) -->
+        <div *ngIf="wrongQuestions.length > 0" class="mb-6 p-4 rounded-xl border-l-4 border-rose-400"
+          [ngClass]="isDarkMode ? 'bg-rose-900/20' : 'bg-rose-50'">
+          <h3 class="text-sm font-semibold mb-2 flex items-center gap-2"
+            [ngClass]="isDarkMode ? 'text-rose-300' : 'text-rose-700'">
+            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M12 9v2m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+            Saran Belajar
+          </h3>
+          <p class="text-xs mb-2" [ngClass]="isDarkMode ? 'text-rose-400' : 'text-rose-600'">
+            Coba review soal-soal berikut:
+          </p>
+          <div class="flex flex-wrap gap-1.5">
+            <span *ngFor="let n of wrongQuestionsPreview"
+              class="px-2 py-0.5 rounded text-xs font-semibold"
+              [ngClass]="isDarkMode ? 'bg-rose-900/50 text-rose-300' : 'bg-rose-100 text-rose-700'">
+              #{{ n }}
+            </span>
+            <span *ngIf="remainingWrongCount > 0"
+              class="px-2 py-0.5 rounded text-xs font-semibold"
+              [ngClass]="isDarkMode ? 'bg-gray-700 text-gray-400' : 'bg-gray-100 text-gray-500'">
+              +{{ remainingWrongCount }} lainnya
+            </span>
+          </div>
+        </div>
+
         <!-- Action Buttons -->
         <div class="flex flex-col sm:flex-row gap-3">
+          <button (click)="retryQuiz()"
+            class="flex-1 py-3 px-4 rounded-xl font-semibold text-sm bg-emerald-600 hover:bg-emerald-700 text-white transition-colors duration-200 flex items-center justify-center gap-2">
+            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+            </svg>
+            Coba Lagi
+          </button>
           <button (click)="reviewAnswers()"
             class="flex-1 py-3 px-4 rounded-xl font-semibold text-sm bg-indigo-600 hover:bg-indigo-700 text-white transition-colors duration-200 flex items-center justify-center gap-2">
             <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -148,9 +198,10 @@
             <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
             </svg>
-            Kembali ke Beranda
+            Beranda
           </button>
         </div>
+
       </div>
     </div>
   </div>
