@@ -12,7 +12,7 @@ import { QuizSessionService, QuizSession } from '../services/quiz-session.servic
 @Component({
   selector: 'app-question',
   templateUrl: './question.component.html',
-  styleUrls: ['./question.component.scss'],
+  styleUrls: ['./question.component.css'],
 })
 export class QuestionComponent implements OnInit, OnDestroy {
   public name: string = '';
@@ -47,6 +47,12 @@ export class QuestionComponent implements OnInit, OnDestroy {
   currentAnswerIsCorrect: boolean = false;
   correctAnswerIndex: number | null = null;
   answerExplanation: string = '';
+
+  // Timer visual warning
+  showToast: boolean = false;
+  toastMessage: string = '';
+  private toast60Shown: boolean = false;
+  private toastTimer: any;
 
   // Quiz session management properties
   currentSession: QuizSession | null = null;
@@ -120,6 +126,9 @@ export class QuestionComponent implements OnInit, OnDestroy {
     }
     if (this.autoSaveInterval) {
       clearInterval(this.autoSaveInterval);
+    }
+    if (this.toastTimer) {
+      clearTimeout(this.toastTimer);
     }
     
     // Save final progress before leaving
@@ -414,11 +423,33 @@ export class QuestionComponent implements OnInit, OnDestroy {
       this.interval$ = interval(1000).subscribe(() => {
         if (this.remainingTime > 0) {
           this.remainingTime--;
+          if (this.remainingTime === 60 && !this.toast60Shown) {
+            this.toast60Shown = true;
+            this.triggerToast('⚠️ Waktu tersisa 1 menit!');
+          }
         } else {
           this.stopTimer();
           this.isQuizCompleted = true;
         }
       });
+    }
+  }
+
+  triggerToast(message: string): void {
+    if (this.toastTimer) {
+      clearTimeout(this.toastTimer);
+    }
+    this.toastMessage = message;
+    this.showToast = true;
+    this.toastTimer = setTimeout(() => {
+      this.showToast = false;
+    }, 4000);
+  }
+
+  dismissToast(): void {
+    this.showToast = false;
+    if (this.toastTimer) {
+      clearTimeout(this.toastTimer);
     }
   }
 
