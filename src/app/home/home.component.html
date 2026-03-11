@@ -213,12 +213,29 @@
       <!-- Empty state -->
       <div *ngIf="filteredPaketSoalList.length === 0"
         class="col-span-full flex flex-col items-center justify-center py-16 text-center">
-        <svg class="w-12 h-12 mb-4" [ngClass]="isDarkMode ? 'text-gray-600' : 'text-gray-300'"
-          fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-        </svg>
-        <p class="font-medium mb-1" [ngClass]="isDarkMode ? 'text-gray-400' : 'text-gray-500'">Tidak ada paket soal</p>
-        <p class="text-sm" [ngClass]="isDarkMode ? 'text-gray-600' : 'text-gray-400'">Coba ubah filter atau kata kunci pencarian</p>
+        <!-- Ilustrasi buku -->
+        <div class="w-20 h-20 rounded-2xl flex items-center justify-center mb-5 text-4xl"
+          [ngClass]="isDarkMode ? 'bg-gray-800' : 'bg-gray-100'">
+          📚
+        </div>
+        <h3 class="text-base font-semibold mb-2"
+          [ngClass]="isDarkMode ? 'text-gray-300' : 'text-gray-700'">
+          Paket soal tidak ditemukan
+        </h3>
+        <p class="text-sm mb-6 max-w-xs"
+          [ngClass]="isDarkMode ? 'text-gray-500' : 'text-gray-400'">
+          Coba kata kunci lain atau pilih kategori yang berbeda
+        </p>
+        <button (click)="resetFilters()"
+          class="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold transition-colors duration-200"
+          [ngClass]="isDarkMode
+            ? 'bg-indigo-600 hover:bg-indigo-500 text-white'
+            : 'bg-indigo-600 hover:bg-indigo-700 text-white'">
+          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+          </svg>
+          Lihat Semua Paket
+        </button>
       </div>
     </div>
   </div>

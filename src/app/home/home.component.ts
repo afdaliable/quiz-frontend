@@ -335,4 +335,10 @@ export class HomeComponent implements OnInit, OnDestroy {
   countForCategory(categoryName: string): number {
     return this.paketSoalList.filter(p => p.kategori_soal === categoryName).length;
   }
+
+  resetFilters(): void {
+    this.searchTerm = '';
+    this.selectedCategory = '';
+    this.filteredPaketSoalList = [...this.paketSoalList];
+  }
 }
