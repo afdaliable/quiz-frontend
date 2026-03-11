@@ -319,4 +319,16 @@ export class HomeComponent implements OnInit, OnDestroy {
     this.showPremiumModal = false;
     this.selectedPremiumQuiz = null;
   }
+
+  estimasiDurasi(jumlahSoal: number): string {
+    const menit = Math.round((jumlahSoal * 36) / 60);
+    return `±${menit} menit`;
+  }
+
+  isNewPaket(paket: PaketSoal): boolean {
+    if (!paket.created_at) return false;
+    const created = new Date(paket.created_at).getTime();
+    const sevenDaysAgo = Date.now() - 7 * 24 * 60 * 60 * 1000;
+    return created >= sevenDaysAgo;
+  }
 }
