@@ -12,6 +12,8 @@ export class HistoryComponent implements OnInit {
   isDarkMode = false;
   isLoading = true;
   history: QuizHistoryEntry[] = [];
+  filteredHistory: QuizHistoryEntry[] = [];
+  searchTerm = '';
   total = 0;
   page = 1;
   limit = 20;
@@ -31,6 +33,7 @@ export class HistoryComponent implements OnInit {
     this.questionService.getQuizHistory(this.page, this.limit).subscribe({
       next: (res: QuizHistoryResponse) => {
         this.history = res.data;
+        this.filteredHistory = res.data;
         this.total = res.total;
         this.isLoading = false;
       },
@@ -67,10 +70,10 @@ export class HistoryComponent implements OnInit {
 
   formatDate(dateStr: string): string {
     const d = new Date(dateStr);
-    return d.toLocaleDateString('id-ID', {
-      day: 'numeric', month: 'short', year: 'numeric',
-      hour: '2-digit', minute: '2-digit'
-    });
+    const date = d.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' });
+    const h = d.getHours().toString().padStart(2, '0');
+    const m = d.getMinutes().toString().padStart(2, '0');
+    return `${date}, ${h}:${m}`;
   }
 
   scoreColor(score: number): string {
@@ -83,5 +86,23 @@ export class HistoryComponent implements OnInit {
     if (score >= 80) return this.isDarkMode ? 'bg-emerald-500/10' : 'bg-emerald-50';
     if (score >= 60) return this.isDarkMode ? 'bg-amber-500/10' : 'bg-amber-50';
     return this.isDarkMode ? 'bg-rose-500/10' : 'bg-rose-50';
+  }
+
+  filterHistory(): void {
+    const term = this.searchTerm.toLowerCase();
+    this.filteredHistory = this.history.filter(entry =>
+      entry.package_name.toLowerCase().includes(term) ||
+      entry.category.toLowerCase().includes(term)
+    );
+  }
+
+  get avgScore(): number {
+    if (!this.history.length) return 0;
+    return Math.round(this.history.reduce((sum, e) => sum + e.score, 0) / this.history.length);
+  }
+
+  get bestScore(): number {
+    if (!this.history.length) return 0;
+    return Math.max(...this.history.map(e => e.score));
   }
 }

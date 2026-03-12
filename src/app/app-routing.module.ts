@@ -16,6 +16,7 @@ import { PremiumPlansComponent } from './premium/premium-plans.component';
 import { PaymentCallbackComponent } from './premium/payment-callback.component';
 import { LicenseActivationComponent } from './premium/license-activation.component';
 import { HistoryComponent } from './history/history.component';
+import { NotFoundComponent } from './not-found/not-found.component';
 
 const routes: Routes = [
   {
@@ -100,7 +101,7 @@ const routes: Routes = [
   },
   {
     path: '**',
-    redirectTo: 'home'
+    component: NotFoundComponent
   }
 ];
 

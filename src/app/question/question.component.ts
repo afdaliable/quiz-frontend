@@ -579,20 +579,24 @@ export class QuestionComponent implements OnInit, OnDestroy {
 
   getQuestionButtonClass(index: number): string {
     if (this.isDarkMode) {
-      if (this.currentQuestion === index) {
-        return 'bg-blue-600 text-white';
+      if (this.answeredQuestions[index] && this.currentQuestion === index) {
+        return 'bg-green-600 text-white ring-2 ring-blue-400 ring-offset-1';
       } else if (this.answeredQuestions[index]) {
         return 'bg-green-600 text-white';
+      } else if (this.currentQuestion === index) {
+        return 'bg-blue-600 text-white';
       } else if (this.markedQuestions[index]) {
         return 'bg-yellow-500 text-white';
       } else {
         return 'bg-gray-700 text-gray-200';
       }
     } else {
-      if (this.currentQuestion === index) {
-        return 'bg-blue-500 text-white';
+      if (this.answeredQuestions[index] && this.currentQuestion === index) {
+        return 'bg-green-500 text-white ring-2 ring-blue-400 ring-offset-1';
       } else if (this.answeredQuestions[index]) {
         return 'bg-green-500 text-white';
+      } else if (this.currentQuestion === index) {
+        return 'bg-blue-500 text-white';
       } else if (this.markedQuestions[index]) {
         return 'bg-yellow-500 text-white';
       } else {

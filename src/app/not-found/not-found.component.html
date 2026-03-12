@@ -1,0 +1,26 @@
+<div class="min-h-screen flex flex-col items-center justify-center px-4 transition-colors duration-200"
+  [ngClass]="isDarkMode ? 'bg-gray-900' : 'bg-gray-50'">
+
+  <!-- Illustration -->
+  <div class="text-7xl mb-6 select-none">🗺️</div>
+
+  <!-- Error code -->
+  <p class="text-8xl font-black tracking-tighter mb-2"
+    [ngClass]="isDarkMode ? 'text-gray-700' : 'text-gray-200'">
+    404
+  </p>
+
+  <h1 class="text-xl font-bold mb-2"
+    [ngClass]="isDarkMode ? 'text-white' : 'text-gray-800'">
+    Halaman tidak ditemukan
+  </h1>
+  <p class="text-sm text-center max-w-xs mb-8"
+    [ngClass]="isDarkMode ? 'text-gray-400' : 'text-gray-500'">
+    Halaman yang kamu cari tidak ada atau sudah dipindahkan.
+  </p>
+
+  <a routerLink="/home"
+    class="px-6 py-3 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-sm transition-colors shadow-md">
+    Kembali ke Beranda
+  </a>
+</div>

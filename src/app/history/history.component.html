@@ -12,6 +12,47 @@
       </p>
     </div>
 
+    <!-- Stats bar -->
+    <div *ngIf="!isLoading && history.length > 0"
+      class="grid grid-cols-3 gap-3 mb-5">
+      <div class="rounded-xl p-3 text-center"
+        [ngClass]="isDarkMode ? 'bg-gray-800' : 'bg-white border border-gray-100 shadow-sm'">
+        <div class="text-2xl font-bold" [ngClass]="isDarkMode ? 'text-white' : 'text-gray-800'">{{ total }}</div>
+        <div class="text-xs mt-0.5" [ngClass]="isDarkMode ? 'text-gray-400' : 'text-gray-500'">Total Kuis</div>
+      </div>
+      <div class="rounded-xl p-3 text-center"
+        [ngClass]="isDarkMode ? 'bg-gray-800' : 'bg-white border border-gray-100 shadow-sm'">
+        <div class="text-2xl font-bold" [ngClass]="scoreColor(avgScore)">{{ avgScore }}</div>
+        <div class="text-xs mt-0.5" [ngClass]="isDarkMode ? 'text-gray-400' : 'text-gray-500'">Rata-rata Skor</div>
+      </div>
+      <div class="rounded-xl p-3 text-center"
+        [ngClass]="isDarkMode ? 'bg-gray-800' : 'bg-white border border-gray-100 shadow-sm'">
+        <div class="text-2xl font-bold" [ngClass]="scoreColor(bestScore)">{{ bestScore }}</div>
+        <div class="text-xs mt-0.5" [ngClass]="isDarkMode ? 'text-gray-400' : 'text-gray-500'">Skor Terbaik</div>
+      </div>
+    </div>
+
+    <!-- Search input -->
+    <div *ngIf="!isLoading && history.length > 0" class="mb-4">
+      <div class="relative">
+        <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 pointer-events-none"
+          [ngClass]="isDarkMode ? 'text-gray-500' : 'text-gray-400'"
+          fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M21 21l-4.35-4.35M17 11A6 6 0 1 1 5 11a6 6 0 0 1 12 0z" />
+        </svg>
+        <input
+          type="text"
+          [(ngModel)]="searchTerm"
+          (input)="filterHistory()"
+          placeholder="Cari nama paket atau kategori..."
+          class="w-full pl-9 pr-4 py-2.5 rounded-xl text-sm border focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-colors"
+          [ngClass]="isDarkMode
+            ? 'bg-gray-800 border-gray-700 text-gray-100 placeholder-gray-500'
+            : 'bg-white border-gray-200 text-gray-800 placeholder-gray-400'">
+      </div>
+    </div>
+
     <!-- Loading skeleton -->
     <div *ngIf="isLoading" class="space-y-3">
       <div *ngFor="let i of [1,2,3,4,5]"
@@ -38,13 +79,24 @@
       </a>
     </div>
 
-    <!-- History list -->
-    <div *ngIf="!isLoading && history.length > 0" class="space-y-3">
-      <div *ngFor="let entry of history"
-        class="rounded-2xl p-4 sm:p-5 border transition-colors duration-200"
-        [ngClass]="isDarkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-100 shadow-sm'">
+    <!-- No search results -->
+    <div *ngIf="!isLoading && history.length > 0 && filteredHistory.length === 0"
+      class="flex flex-col items-center justify-center py-12 text-center">
+      <div class="text-4xl mb-3">🔍</div>
+      <p class="text-sm" [ngClass]="isDarkMode ? 'text-gray-400' : 'text-gray-500'">
+        Tidak ada hasil untuk "<strong>{{ searchTerm }}</strong>"
+      </p>
+    </div>
 
-        <div class="flex items-start justify-between gap-4">
+    <!-- History list -->
+    <div *ngIf="!isLoading && filteredHistory.length > 0" class="space-y-3">
+      <div *ngFor="let entry of filteredHistory"
+        class="rounded-2xl p-4 sm:p-5 border transition-all duration-200 cursor-pointer group"
+        [ngClass]="isDarkMode
+          ? 'bg-gray-800 border-gray-700 hover:border-indigo-500/50 hover:bg-gray-750'
+          : 'bg-white border-gray-100 shadow-sm hover:border-indigo-200 hover:shadow-md'">
+
+        <div class="flex items-center justify-between gap-4">
           <!-- Left: info -->
           <div class="min-w-0 flex-1">
             <div class="flex items-center gap-2 mb-1">
@@ -83,13 +135,20 @@
             </div>
           </div>
 
-          <!-- Right: score -->
-          <div class="flex-shrink-0 flex flex-col items-center justify-center w-16 h-16 rounded-xl"
-            [ngClass]="scoreBg(entry.score)">
-            <span class="text-xl font-bold leading-none" [ngClass]="scoreColor(entry.score)">
-              {{ entry.score }}
-            </span>
-            <span class="text-xs mt-0.5" [ngClass]="isDarkMode ? 'text-gray-500' : 'text-gray-400'">/ 100</span>
+          <!-- Right: score + chevron -->
+          <div class="flex items-center gap-3 flex-shrink-0">
+            <div class="flex flex-col items-center justify-center w-14 h-14 rounded-xl"
+              [ngClass]="scoreBg(entry.score)">
+              <span class="text-lg font-bold leading-none" [ngClass]="scoreColor(entry.score)">
+                {{ entry.score }}
+              </span>
+              <span class="text-xs mt-0.5" [ngClass]="isDarkMode ? 'text-gray-500' : 'text-gray-400'">/ 100</span>
+            </div>
+            <svg class="w-4 h-4 transition-transform group-hover:translate-x-0.5"
+              [ngClass]="isDarkMode ? 'text-gray-600' : 'text-gray-300'"
+              fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+            </svg>
           </div>
         </div>
       </div>

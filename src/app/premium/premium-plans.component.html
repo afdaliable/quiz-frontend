@@ -101,6 +101,12 @@
             {{ plan.name }}
           </h2>
 
+          <!-- Tagline -->
+          <p *ngIf="getPlanTagline(plan.name)" class="text-xs mb-3 leading-relaxed"
+            [ngClass]="isDarkMode ? 'text-gray-400' : 'text-gray-500'">
+            {{ getPlanTagline(plan.name) }}
+          </p>
+
           <!-- Price -->
           <p class="text-3xl font-extrabold mb-0.5"
             [ngClass]="isDarkMode ? 'text-white' : 'text-gray-900'">

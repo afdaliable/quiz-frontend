@@ -28,6 +28,13 @@ const PLAN_BADGES: Record<string, { label: string; color: string }> = {
   ultimate: { label: '♾️ Seumur Hidup',   color: 'bg-purple-600 text-white' },
 };
 
+const PLAN_TAGLINES: Record<string, string> = {
+  silver:   'Cocok untuk pemula yang baru mulai belajar',
+  gold:     'Pilihan terpopuler untuk hasil optimal',
+  platinum: 'Untuk belajar intensif tanpa batas',
+  ultimate: 'Akses penuh seumur hidup, bayar sekali',
+};
+
 @Component({
   selector: 'app-premium-plans',
   templateUrl: './premium-plans.component.html',
@@ -146,6 +153,10 @@ export class PremiumPlansComponent implements OnInit {
 
   getPlanBadge(planName: string): { label: string; color: string } | null {
     return PLAN_BADGES[planName?.toLowerCase()] ?? null;
+  }
+
+  getPlanTagline(planName: string): string {
+    return PLAN_TAGLINES[planName?.toLowerCase()] ?? '';
   }
 
   isPopularPlan(planName: string): boolean {
