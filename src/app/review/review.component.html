@@ -50,8 +50,9 @@
               [innerHTML]="questionList[currentQuestion].questionText">
             </p>
 
-            <!-- Options -->
-            <div class="space-y-2.5">
+            <!-- Options: Multiple Choice (default) -->
+            <div *ngIf="questionList[currentQuestion].question_type !== 'true_false'"
+              class="space-y-2.5">
               <div
                 *ngFor="let option of questionList[currentQuestion].options; let i = index"
                 class="flex items-start gap-3 p-4 rounded-xl border-2 transition-colors duration-150"
@@ -83,6 +84,30 @@
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>
                 </svg>
               </div>
+            </div>
+
+            <!-- Options: True / False -->
+            <div *ngIf="questionList[currentQuestion].question_type === 'true_false'"
+              class="grid grid-cols-2 gap-4">
+              <ng-container *ngFor="let opt of questionList[currentQuestion].options; let i = index">
+                <div class="flex flex-col items-center justify-center gap-3 py-8 rounded-2xl border-2 font-bold text-base"
+                  [ngClass]="opt.correct
+                    ? (isDarkMode ? 'bg-emerald-500/20 border-emerald-500/40 text-emerald-200' : 'bg-emerald-50 border-emerald-400 text-emerald-900')
+                    : (selectedAnswers[currentQuestion] === i && !opt.correct)
+                    ? (isDarkMode ? 'bg-red-500/20 border-red-500/40 text-red-200' : 'bg-red-50 border-red-400 text-red-900')
+                    : (isDarkMode ? 'bg-gray-700/50 border-gray-600 text-gray-400' : 'bg-gray-50 border-gray-200 text-gray-500')">
+                  <svg class="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path *ngIf="i === 0" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>
+                    <path *ngIf="i === 1" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/>
+                  </svg>
+                  {{ i === 0 ? 'Benar' : 'Salah' }}
+                  <svg *ngIf="opt.correct" class="w-4 h-4"
+                    [ngClass]="isDarkMode ? 'text-emerald-400' : 'text-emerald-600'"
+                    fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                  </svg>
+                </div>
+              </ng-container>
             </div>
 
             <!-- Penjelasan (auto-tampil, bisa disembunyikan) -->

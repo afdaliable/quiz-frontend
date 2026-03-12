@@ -7,6 +7,7 @@ import { ThemeService } from '../services/theme.service';
 interface Question {
   id: number;
   questionText: string;
+  question_type: string;
   options: {
     text: string;
     correct: boolean;

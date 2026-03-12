@@ -13,11 +13,12 @@ interface ApiResponse {
   kumpulan_soal: {
     id: number;
     soal: string;
-    opt1: string;
-    opt2: string;
-    opt3: string;
-    opt4: string;
-    opt5: string;
+    question_type?: string;
+    opt1: string | null;
+    opt2: string | null;
+    opt3: string | null;
+    opt4: string | null;
+    opt5: string | null;
     correct_answer: string;
     solution: string;
   }[];
@@ -26,6 +27,7 @@ interface ApiResponse {
 export interface Question {
   id: number;
   questionText: string;
+  question_type: string;
   options: {
     text: string;
     correct: boolean;
@@ -142,18 +144,27 @@ export class QuestionService {
           }
           
           // Transform questions to match the expected format
-          return questions.map((q: any) => ({
-            id: q.id,
-            questionText: q.soal,
-            options: [
+          return questions.map((q: any) => {
+            const questionType: string = q.question_type || 'multiple_choice';
+            const allOptions = [
               { text: q.opt1, correct: q.correct_answer === 'opt1' },
               { text: q.opt2, correct: q.correct_answer === 'opt2' },
               { text: q.opt3, correct: q.correct_answer === 'opt3' },
               { text: q.opt4, correct: q.correct_answer === 'opt4' },
               { text: q.opt5, correct: q.correct_answer === 'opt5' },
-            ],
-            solution: q.solution,
-          }));
+            ];
+            // Filter out null / empty options
+            const options = allOptions.filter(
+              o => o.text != null && String(o.text).trim() !== ''
+            );
+            return {
+              id: q.id,
+              questionText: q.soal,
+              question_type: questionType,
+              options,
+              solution: q.solution,
+            };
+          });
         }),
         catchError(error => {
           console.error('Error fetching questions:', error);

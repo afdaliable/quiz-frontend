@@ -159,8 +159,9 @@
             [innerHTML]="questionList[currentQuestion]?.questionText">
           </p>
 
-          <!-- Options -->
-          <div class="space-y-3" role="radiogroup" aria-label="Pilihan jawaban">
+          <!-- Options: Multiple Choice (default) -->
+          <div *ngIf="questionList[currentQuestion]?.question_type !== 'true_false'"
+            class="space-y-3" role="radiogroup" aria-label="Pilihan jawaban">
             <div *ngFor="let option of questionList[currentQuestion]?.options; let i = index"
               (click)="answer(currentQuestion, i)"
               (keydown.enter)="answer(currentQuestion, i)"
@@ -186,6 +187,43 @@
               </span>
               <span class="text-sm leading-relaxed" aria-hidden="true" [innerHTML]="option.text"></span>
             </div>
+          </div>
+
+          <!-- Options: True / False -->
+          <div *ngIf="questionList[currentQuestion]?.question_type === 'true_false'"
+            class="grid grid-cols-2 gap-4" role="radiogroup" aria-label="Pilihan jawaban">
+            <!-- Benar (index 0) -->
+            <button
+              (click)="answer(currentQuestion, 0)"
+              role="radio"
+              [attr.aria-checked]="selectedAnswers[currentQuestion] === 0"
+              class="flex flex-col items-center justify-center gap-3 py-8 rounded-2xl font-bold text-base border-2 transition-all duration-150"
+              [ngClass]="selectedAnswers[currentQuestion] === 0
+                ? 'bg-emerald-500 border-emerald-500 text-white shadow-lg'
+                : (isDarkMode
+                    ? 'bg-gray-800 border-gray-600 text-gray-200 hover:border-emerald-500 hover:bg-emerald-900/20'
+                    : 'bg-white border-gray-200 text-gray-700 hover:border-emerald-400 hover:bg-emerald-50')">
+              <svg class="w-9 h-9" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>
+              </svg>
+              Benar
+            </button>
+            <!-- Salah (index 1) -->
+            <button
+              (click)="answer(currentQuestion, 1)"
+              role="radio"
+              [attr.aria-checked]="selectedAnswers[currentQuestion] === 1"
+              class="flex flex-col items-center justify-center gap-3 py-8 rounded-2xl font-bold text-base border-2 transition-all duration-150"
+              [ngClass]="selectedAnswers[currentQuestion] === 1
+                ? 'bg-rose-500 border-rose-500 text-white shadow-lg'
+                : (isDarkMode
+                    ? 'bg-gray-800 border-gray-600 text-gray-200 hover:border-rose-500 hover:bg-rose-900/20'
+                    : 'bg-white border-gray-200 text-gray-700 hover:border-rose-400 hover:bg-rose-50')">
+              <svg class="w-9 h-9" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/>
+              </svg>
+              Salah
+            </button>
           </div>
 
           <!-- Review mode controls -->
