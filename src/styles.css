@@ -3,6 +3,26 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Global navigation progress bar animation */
+@keyframes progress-bar {
+  0%   { transform: translateX(-100%); }
+  50%  { transform: translateX(-10%); }
+  100% { transform: translateX(0%); }
+}
+.animate-progress-bar {
+  animation: progress-bar 1.5s ease-in-out infinite;
+}
+
+/* Skeleton loading animation */
+@keyframes skeleton-pulse {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.4; }
+}
+.skeleton {
+  animation: skeleton-pulse 1.5s ease-in-out infinite;
+  border-radius: 0.5rem;
+}
+
 @layer base {
   body {
     font-family: 'Inter', system-ui, -apple-system, sans-serif;

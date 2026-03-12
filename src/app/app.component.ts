@@ -1,6 +1,6 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { UserService } from './services/user.service';
-import { Router, NavigationEnd } from '@angular/router';
+import { Router, NavigationEnd, NavigationStart, NavigationCancel, NavigationError } from '@angular/router';
 import { Observable, filter, Subscription } from 'rxjs';
 import { AuthService } from './services/auth.service';
 
@@ -16,6 +16,7 @@ export class AppComponent implements OnInit, OnDestroy {
   private isRedirecting = false;
   private subscriptions: Subscription[] = [];
   showSessionInvalidModal = false;
+  isNavigating = false;
 
   constructor(
     private userService: UserService,
@@ -26,13 +27,18 @@ export class AppComponent implements OnInit, OnDestroy {
   ngOnInit() {
     this.user$ = this.authService.user$;
 
-    // Track current URL to prevent redirection loops
-    const routerSub = this.router.events.pipe(
-      filter(event => event instanceof NavigationEnd)
-    ).subscribe((event: any) => {
-      this.currentUrl = event.url;
-      this.isRedirecting = false; // Reset redirection flag after navigation completes
-      console.log('Navigation completed to:', this.currentUrl);
+    // Track navigation for loading indicator + URL tracking
+    const routerSub = this.router.events.subscribe((event: any) => {
+      if (event instanceof NavigationStart) {
+        this.isNavigating = true;
+      } else if (event instanceof NavigationEnd) {
+        this.currentUrl = event.url;
+        this.isRedirecting = false;
+        this.isNavigating = false;
+        console.log('Navigation completed to:', this.currentUrl);
+      } else if (event instanceof NavigationCancel || event instanceof NavigationError) {
+        this.isNavigating = false;
+      }
     });
     this.subscriptions.push(routerSub);
 

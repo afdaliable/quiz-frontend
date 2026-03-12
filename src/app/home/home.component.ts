@@ -25,6 +25,7 @@ export class HomeComponent implements OnInit, OnDestroy {
   sortDirection: 'asc' | 'desc' = 'asc';
   isDarkMode: boolean = false;
   isCategoriesCollapsed: boolean = true;
+  isLoading: boolean = false;
   private userSubscription: Subscription | null = null;
   
   // Premium related properties
@@ -103,14 +104,17 @@ export class HomeComponent implements OnInit, OnDestroy {
 
   loadPaketSoal(): void {
     console.log('Loading paket soal...');
+    this.isLoading = true;
     this.questionService.getListPaketSoal().subscribe({
       next: (data: PaketSoal[]) => {
         console.log('Paket soal loaded:', data);
         this.paketSoalList = data;
         this.filteredPaketSoalList = data;
+        this.isLoading = false;
       },
       error: (error) => {
         console.error('Error in home component:', error);
+        this.isLoading = false;
         if (error.status === 401) {
           // Let the interceptor handle 401 errors
           console.error('Unauthorized error in home component');

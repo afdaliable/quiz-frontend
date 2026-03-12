@@ -145,14 +145,11 @@
         <div class="rounded-2xl p-6 sm:p-8 transition-colors duration-200 border"
           [ngClass]="isDarkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-100 shadow-sm'">
 
-          <!-- Question number badge -->
-          <div class="flex items-center gap-2 mb-5">
-            <span class="px-3 py-1 rounded-lg text-sm font-semibold bg-indigo-600 text-white">
-              Soal {{ currentQuestion + 1 }}
-            </span>
-            <span *ngIf="markedQuestions[currentQuestion]"
-              class="px-2.5 py-1 rounded-lg text-xs font-semibold bg-amber-100 text-amber-700">
-              Ditandai
+          <!-- Marked badge only (nomor soal sudah ada di header progress) -->
+          <div *ngIf="markedQuestions[currentQuestion]" class="mb-4">
+            <span class="px-2.5 py-1 rounded-lg text-xs font-semibold"
+              [ngClass]="isDarkMode ? 'bg-amber-900/30 text-amber-400' : 'bg-amber-100 text-amber-700'">
+              ⭐ Ditandai
             </span>
           </div>
 
@@ -238,7 +235,7 @@
               aria-label="Soal sebelumnya"
               class="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold transition-colors duration-200"
               [ngClass]="currentQuestion === 0
-                ? 'opacity-40 cursor-not-allowed ' + (isDarkMode ? 'bg-gray-800 text-gray-400' : 'bg-gray-100 text-gray-400')
+                ? 'opacity-30 cursor-not-allowed pointer-events-none ' + (isDarkMode ? 'bg-gray-700 text-gray-500' : 'bg-gray-200 text-gray-400')
                 : (isDarkMode ? 'bg-gray-700 text-white hover:bg-gray-600' : 'bg-gray-100 text-gray-700 hover:bg-gray-200')">
               <svg class="w-4 h-4" aria-hidden="true" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
@@ -250,7 +247,7 @@
               aria-label="Soal selanjutnya"
               class="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold transition-colors duration-200"
               [ngClass]="currentQuestion === questionList.length - 1
-                ? 'opacity-40 cursor-not-allowed ' + (isDarkMode ? 'bg-gray-800 text-gray-400' : 'bg-gray-100 text-gray-400')
+                ? 'opacity-30 cursor-not-allowed pointer-events-none ' + (isDarkMode ? 'bg-gray-700 text-gray-500' : 'bg-gray-200 text-gray-400')
                 : 'bg-indigo-600 text-white hover:bg-indigo-700'">
               Selanjutnya
               <svg class="w-4 h-4" aria-hidden="true" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -319,5 +316,22 @@
         </div>
       </div>
     </div>
+  </div>
+
+  <!-- Keyboard shortcut hint — auto-hide setelah 5 detik -->
+  <div *ngIf="showKeyboardHint"
+    class="fixed bottom-5 left-1/2 -translate-x-1/2 z-40 flex items-center gap-3 px-5 py-3 rounded-xl shadow-lg text-xs font-medium border backdrop-blur-sm"
+    [ngClass]="isDarkMode
+      ? 'bg-gray-800/95 border-gray-700 text-gray-300'
+      : 'bg-white/95 border-gray-200 text-gray-600'">
+    <svg class="w-4 h-4 flex-shrink-0" [ngClass]="isDarkMode ? 'text-indigo-400' : 'text-indigo-500'" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+    </svg>
+    <span>
+      <kbd class="px-1.5 py-0.5 rounded bg-gray-100 text-gray-700 font-mono text-[10px]">1–5</kbd> pilih jawaban ·
+      <kbd class="px-1.5 py-0.5 rounded bg-gray-100 text-gray-700 font-mono text-[10px]">←→</kbd> navigasi ·
+      <kbd class="px-1.5 py-0.5 rounded bg-gray-100 text-gray-700 font-mono text-[10px]">T</kbd> tandai
+    </span>
+    <button (click)="showKeyboardHint = false" class="ml-1 opacity-50 hover:opacity-100">✕</button>
   </div>
 </div>
