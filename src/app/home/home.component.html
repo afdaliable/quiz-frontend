@@ -44,21 +44,23 @@
             {{ paketSoalList.length }}
           </span>
         </button>
-        <button
-          *ngFor="let category of categories"
-          (click)="filterByCategory(category.nama_kategori)"
-          class="flex-shrink-0 flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-semibold transition-all duration-200 whitespace-nowrap"
-          [ngClass]="selectedCategory === category.nama_kategori
-            ? 'bg-indigo-600 text-white shadow-md shadow-indigo-200'
-            : (isDarkMode ? 'bg-gray-800 text-gray-300 hover:bg-gray-700 border border-gray-700' : 'bg-white text-gray-600 hover:bg-gray-50 border border-gray-200')">
-          {{ category.nama_kategori }}
-          <span class="text-xs px-1.5 py-0.5 rounded-full font-medium leading-none"
+        <ng-container *ngFor="let category of categories">
+          <button
+            *ngIf="countForCategory(category.nama_kategori) > 0"
+            (click)="filterByCategory(category.nama_kategori)"
+            class="flex-shrink-0 flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-semibold transition-all duration-200 whitespace-nowrap"
             [ngClass]="selectedCategory === category.nama_kategori
-              ? 'bg-white/20 text-white'
-              : (isDarkMode ? 'bg-gray-700 text-gray-400' : 'bg-gray-100 text-gray-500')">
-            {{ countForCategory(category.nama_kategori) }}
-          </span>
-        </button>
+              ? 'bg-indigo-600 text-white shadow-md shadow-indigo-200'
+              : (isDarkMode ? 'bg-gray-800 text-gray-300 hover:bg-gray-700 border border-gray-700' : 'bg-white text-gray-600 hover:bg-gray-50 border border-gray-200')">
+            {{ category.nama_kategori }}
+            <span class="text-xs px-1.5 py-0.5 rounded-full font-medium leading-none"
+              [ngClass]="selectedCategory === category.nama_kategori
+                ? 'bg-white/20 text-white'
+                : (isDarkMode ? 'bg-gray-700 text-gray-400' : 'bg-gray-100 text-gray-500')">
+              {{ countForCategory(category.nama_kategori) }}
+            </span>
+          </button>
+        </ng-container>
       </div>
     </div>
 
