@@ -135,11 +135,11 @@ export class QuestionComponent implements OnInit, OnDestroy {
     if (this.showEndModal) return;
 
     switch (event.key) {
-      case '1': case 'a': case 'A': this.answer(this.currentQuestion, 0); break;
-      case '2': case 'b': case 'B': this.answer(this.currentQuestion, 1); break;
-      case '3': case 'c': case 'C': this.answer(this.currentQuestion, 2); break;
-      case '4': case 'd': case 'D': this.answer(this.currentQuestion, 3); break;
-      case '5': case 'e': case 'E': this.answer(this.currentQuestion, 4); break;
+      case '1': case 'a': case 'A': this.answerByKey(0); break;
+      case '2': case 'b': case 'B': this.answerByKey(1); break;
+      case '3': case 'c': case 'C': this.answerByKey(2); break;
+      case '4': case 'd': case 'D': this.answerByKey(3); break;
+      case '5': case 'e': case 'E': this.answerByKey(4); break;
       case 'ArrowRight':
         if (this.currentQuestion < this.questionList.length - 1) this.nextQuestion();
         break;
@@ -355,6 +355,13 @@ export class QuestionComponent implements OnInit, OnDestroy {
     this.resetAnswerCheck();
   }
 
+  answerByKey(optionIndex: number): void {
+    const options = this.questionList[this.currentQuestion]?.options;
+    if (options && optionIndex < options.length) {
+      this.answer(this.currentQuestion, optionIndex);
+    }
+  }
+
   answer(currentQno: number, option: number) {
     this.selectedAnswers[currentQno] = option;
     this.answeredQuestions[currentQno] = true;
@@ -381,7 +388,7 @@ export class QuestionComponent implements OnInit, OnDestroy {
     this.questionList.forEach((question: any, index: number) => {
       const selectedAnswer = this.selectedAnswers[index];
       if (selectedAnswer !== null && selectedAnswer !== undefined) {
-        if (question.options[selectedAnswer].correct) {
+        if (question.options[selectedAnswer]?.correct) {
           this.correctAnswer++;
         } else {
           this.incorrectAnswer++;
