@@ -125,8 +125,26 @@
       <span *ngIf="selectedCategory">· Kategori: <strong class="text-indigo-500">{{ selectedCategory }}</strong></span>
     </p>
 
+    <!-- Skeleton loading grid -->
+    <div *ngIf="isLoading" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div *ngFor="let i of [1,2,3,4,5,6]"
+        class="rounded-2xl p-5 border"
+        [ngClass]="isDarkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-100'">
+        <div class="flex justify-between mb-3">
+          <div class="skeleton h-6 w-24" [ngClass]="isDarkMode ? 'bg-gray-700' : 'bg-gray-200'"></div>
+          <div class="skeleton h-6 w-12" [ngClass]="isDarkMode ? 'bg-gray-700' : 'bg-gray-200'"></div>
+        </div>
+        <div class="skeleton h-5 w-4/5 mb-2" [ngClass]="isDarkMode ? 'bg-gray-700' : 'bg-gray-200'"></div>
+        <div class="skeleton h-4 w-3/5 mb-4" [ngClass]="isDarkMode ? 'bg-gray-700' : 'bg-gray-200'"></div>
+        <div class="flex gap-3">
+          <div class="skeleton h-4 w-16" [ngClass]="isDarkMode ? 'bg-gray-700' : 'bg-gray-200'"></div>
+          <div class="skeleton h-4 w-16" [ngClass]="isDarkMode ? 'bg-gray-700' : 'bg-gray-200'"></div>
+        </div>
+      </div>
+    </div>
+
     <!-- Paket Soal Grid -->
-    <div id="quiz-list" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+    <div *ngIf="!isLoading" id="quiz-list" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
       <div
         *ngFor="let paket of filteredPaketSoalList"
         (click)="selectPaketSoal(paket)"

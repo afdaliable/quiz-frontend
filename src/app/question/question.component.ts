@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, HostListener } from '@angular/core';
 import { interval } from 'rxjs';
 import { QuestionService } from '../services/question.service';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -62,6 +62,10 @@ export class QuestionComponent implements OnInit, OnDestroy {
   autoSaveInterval: any;
   sessionInitialized: boolean = false;
 
+  // Keyboard shortcut hint
+  showKeyboardHint: boolean = false;
+  private keyboardHintTimer: any;
+
   constructor(
     private questionService: QuestionService,
     private route: ActivatedRoute,
@@ -122,6 +126,30 @@ export class QuestionComponent implements OnInit, OnDestroy {
     }
   }
 
+  @HostListener('document:keydown', ['$event'])
+  handleKeyboardEvent(event: KeyboardEvent): void {
+    // Disable shortcuts when user is typing in an input
+    const target = event.target as HTMLElement;
+    if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA') return;
+    // Disable if modal is open
+    if (this.showEndModal) return;
+
+    switch (event.key) {
+      case '1': case 'a': case 'A': this.answer(this.currentQuestion, 0); break;
+      case '2': case 'b': case 'B': this.answer(this.currentQuestion, 1); break;
+      case '3': case 'c': case 'C': this.answer(this.currentQuestion, 2); break;
+      case '4': case 'd': case 'D': this.answer(this.currentQuestion, 3); break;
+      case '5': case 'e': case 'E': this.answer(this.currentQuestion, 4); break;
+      case 'ArrowRight':
+        if (this.currentQuestion < this.questionList.length - 1) this.nextQuestion();
+        break;
+      case 'ArrowLeft':
+        if (this.currentQuestion > 0) this.prevQuestion();
+        break;
+      case 't': case 'T': this.toggleMarkQuestion(); break;
+    }
+  }
+
   ngOnDestroy(): void {
     // Clean up intervals
     if (this.interval$) {
@@ -132,6 +160,9 @@ export class QuestionComponent implements OnInit, OnDestroy {
     }
     if (this.toastTimer) {
       clearTimeout(this.toastTimer);
+    }
+    if (this.keyboardHintTimer) {
+      clearTimeout(this.keyboardHintTimer);
     }
     
     // Save final progress before leaving
@@ -296,6 +327,11 @@ export class QuestionComponent implements OnInit, OnDestroy {
         next: () => {
           this.startTimer();
           this.getProgressPercent();
+          // Show keyboard hint once at quiz start
+          this.showKeyboardHint = true;
+          this.keyboardHintTimer = setTimeout(() => {
+            this.showKeyboardHint = false;
+          }, 5000);
         },
         error: (error) => {
           console.error('Error loading questions:', error);

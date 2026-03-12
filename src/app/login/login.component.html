@@ -1,7 +1,7 @@
 <div class="min-h-screen flex transition-colors duration-200" [ngClass]="isDarkMode ? 'bg-gray-900' : 'bg-gray-50'">
 
   <!-- Left branding panel — hidden on mobile -->
-  <div class="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-indigo-600 via-indigo-700 to-violet-700 flex-col justify-between p-12 relative overflow-hidden">
+  <div class="hidden lg:flex lg:w-2/5 bg-gradient-to-br from-indigo-600 via-indigo-700 to-violet-700 flex-col justify-between p-12 relative overflow-hidden">
     <!-- Background decoration -->
     <div class="absolute inset-0 opacity-10">
       <div class="absolute top-20 left-10 w-64 h-64 rounded-full bg-white blur-3xl"></div>
@@ -55,16 +55,32 @@
           <span class="text-sm">Akses gratis & paket premium terjangkau</span>
         </div>
       </div>
+
+      <!-- Social proof stats -->
+      <div class="flex flex-wrap gap-3 pt-2">
+        <div class="flex items-center gap-1.5 bg-white/10 rounded-lg px-3 py-2">
+          <span class="text-base">🎓</span>
+          <span class="text-white text-sm font-semibold">1.200+ pengguna aktif</span>
+        </div>
+        <div class="flex items-center gap-1.5 bg-white/10 rounded-lg px-3 py-2">
+          <span class="text-base">📚</span>
+          <span class="text-white text-sm font-semibold">16+ paket soal</span>
+        </div>
+        <div class="flex items-center gap-1.5 bg-white/10 rounded-lg px-3 py-2">
+          <span class="text-base">⭐</span>
+          <span class="text-white text-sm font-semibold">Gratis selamanya</span>
+        </div>
+      </div>
     </div>
 
     <!-- Footer note -->
-    <p class="relative text-indigo-300 text-sm">
-      © 2026 QuizKu · Hak Cipta Dilindungi
+    <p class="relative text-indigo-400 text-xs">
+      © 2026 QuizKu
     </p>
   </div>
 
   <!-- Right login panel -->
-  <div class="w-full lg:w-1/2 flex items-center justify-center p-6 sm:p-12">
+  <div class="w-full lg:w-3/5 flex items-center justify-center p-6 sm:p-12">
     <div class="w-full max-w-md">
 
       <!-- Mobile brand -->

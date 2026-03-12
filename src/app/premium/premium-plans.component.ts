@@ -62,6 +62,35 @@ export class PremiumPlansComponent implements OnInit {
     { icon: '🔵', name: 'Dana' },
   ];
 
+  readonly faqItems = [
+    {
+      q: 'Kapan akses premium aktif setelah pembayaran?',
+      a: 'Langsung aktif otomatis setelah pembayaran terverifikasi oleh sistem. Biasanya dalam hitungan detik hingga menit.',
+    },
+    {
+      q: 'Apakah bisa cancel langganan?',
+      a: 'Paket premium berbasis durasi (bukan berlangganan bulanan berulang), sehingga tidak perlu cancel. Akses aktif hingga masa berlaku habis.',
+    },
+    {
+      q: 'Apa yang terjadi setelah masa langganan habis?',
+      a: 'Akun kembali ke mode gratis secara otomatis. Semua progress dan riwayat kuis tetap tersimpan.',
+    },
+    {
+      q: 'Apakah ada refund jika terjadi masalah?',
+      a: 'Hubungi support kami dalam 24 jam setelah pembayaran jika terjadi masalah teknis. Kami akan membantu dengan cepat.',
+    },
+    {
+      q: 'Bagaimana cara aktivasi setelah bayar?',
+      a: 'Tidak perlu aktivasi manual. Sistem akan otomatis memperbarui akses kamu setelah pembayaran terkonfirmasi. Coba refresh halaman jika belum aktif.',
+    },
+  ];
+
+  openFaqIndex: number | null = null;
+
+  toggleFaq(index: number): void {
+    this.openFaqIndex = this.openFaqIndex === index ? null : index;
+  }
+
   constructor(
     private premiumService: PremiumService,
     private router: Router,
