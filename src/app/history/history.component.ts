@@ -1,4 +1,5 @@
 import { Component, OnInit } from '@angular/core';
+import { Router } from '@angular/router';
 import { ThemeService } from '../services/theme.service';
 import { QuestionService } from '../services/question.service';
 import { QuizHistoryEntry, QuizHistoryResponse } from '../models/quiz-history.model';
@@ -20,7 +21,8 @@ export class HistoryComponent implements OnInit {
 
   constructor(
     private themeService: ThemeService,
-    private questionService: QuestionService
+    private questionService: QuestionService,
+    private router: Router
   ) {}
 
   ngOnInit(): void {
@@ -104,5 +106,10 @@ export class HistoryComponent implements OnInit {
   get bestScore(): number {
     if (!this.history.length) return 0;
     return Math.max(...this.history.map(e => e.score));
+  }
+
+  goToReview(entryId: string): void {
+    localStorage.setItem('attemptId', entryId);
+    this.router.navigate(['/review']);
   }
 }

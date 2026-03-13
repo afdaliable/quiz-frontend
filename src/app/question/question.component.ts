@@ -487,6 +487,8 @@ export class QuestionComponent implements OnInit, OnDestroy {
         } else {
           this.stopTimer();
           this.isQuizCompleted = true;
+          this.triggerToast('⏱️ Waktu habis!');
+          this.endQuiz();
         }
       });
     }

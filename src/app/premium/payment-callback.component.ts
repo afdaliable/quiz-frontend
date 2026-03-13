@@ -101,7 +101,7 @@ export class PaymentCallbackComponent implements OnInit {
       catchError(error => {
         console.error('Failed to refresh token:', error);
         this.status = 'error';
-        this.error = 'Your session has expired. Please log in again to check your payment status.';
+        this.error = 'Sesi kamu sudah kedaluwarsa. Silakan login lagi untuk mengecek status pembayaranmu.';
         this.isLoading = false;
         
         // Redirect to login after a delay
@@ -131,7 +131,7 @@ export class PaymentCallbackComponent implements OnInit {
       } else if (result) {
         console.log('Session restore returned but was not successful');
         this.status = 'error';
-        this.error = 'Unable to restore your session. Please log in again to check your payment status.';
+        this.error = 'Tidak dapat mengembalikan sesimu. Silakan login lagi untuk mengecek status pembayaranmu.';
         this.isLoading = false;
       }
     });
@@ -168,7 +168,7 @@ export class PaymentCallbackComponent implements OnInit {
             return of(null);
           } else {
             this.status = 'error';
-            this.error = 'Your session has expired. Please log in again to check your payment status.';
+            this.error = 'Sesi kamu sudah kedaluwarsa. Silakan login lagi untuk mengecek status pembayaranmu.';
             
             // Redirect to login after a delay
             timer(3000).subscribe(() => {

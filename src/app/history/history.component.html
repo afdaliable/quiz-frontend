@@ -91,6 +91,7 @@
     <!-- History list -->
     <div *ngIf="!isLoading && filteredHistory.length > 0" class="space-y-3">
       <div *ngFor="let entry of filteredHistory"
+        (click)="goToReview(entry.id)"
         class="rounded-2xl p-4 sm:p-5 border transition-all duration-200 cursor-pointer group"
         [ngClass]="isDarkMode
           ? 'bg-gray-800 border-gray-700 hover:border-indigo-500/50 hover:bg-gray-750'

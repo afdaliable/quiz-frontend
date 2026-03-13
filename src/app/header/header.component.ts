@@ -15,6 +15,7 @@ export class HeaderComponent implements OnInit, OnDestroy {
   currentUser: any;
   isAuthenticated: boolean = false;
   showUserMenu: boolean = false;
+  isPremium: boolean = false;
   private userSubscription: Subscription | null = null;
 
   @HostListener('document:click', ['$event'])
@@ -46,6 +47,9 @@ export class HeaderComponent implements OnInit, OnDestroy {
     this.userSubscription = this.authService.user$.subscribe(user => {
       this.isAuthenticated = !!user;
       this.currentUser = user;
+      if (user && user.account_status) {
+        this.updatePremiumStatus(user.account_status);
+      }
     });
   }
   
@@ -98,6 +102,10 @@ export class HeaderComponent implements OnInit, OnDestroy {
       return 'Logout';
     }
     return 'Login';
+  }
+
+  updatePremiumStatus(accountStatus: string): void {
+    this.isPremium = accountStatus === 'Premium';
   }
 
   getButtonRoute(): string {

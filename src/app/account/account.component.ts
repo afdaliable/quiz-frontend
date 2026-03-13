@@ -83,6 +83,15 @@ export class AccountComponent implements OnInit, OnDestroy {
     return Math.round((this.stats.total_correct / this.stats.total_questions) * 100);
   }
 
+  formatJoinDate(dateStr: string): string {
+    const d = new Date(dateStr);
+    return new Intl.DateTimeFormat('id-ID', {
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric'
+    }).format(d);
+  }
+
   signOut() {
     this.authService.logout();
     this.router.navigate(['/login']);
