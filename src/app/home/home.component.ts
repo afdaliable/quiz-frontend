@@ -10,18 +10,6 @@ import { PremiumService, PremiumPlan } from '../services/premium.service';
 import { Subscription } from 'rxjs';
 import { QuizHistoryEntry } from '../models/quiz-history.model';
 
-interface QuizHistoryEntry {
-  id: string;
-  package_name: string;
-  category: string;
-  score: number;
-  correct: number;
-  wrong: number;
-  total: number;
-  duration_seconds: number;
-  completed_at: string;
-}
-
 @Component({
   selector: 'app-home',
   templateUrl: './home.component.html',
