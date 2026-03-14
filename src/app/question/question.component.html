@@ -87,7 +87,8 @@
           </div>
         </div>
 
-        <!-- Timer -->
+        <!-- Timer (only show in exam mode) -->
+        <div *ngIf="quizMode === 'exam'">
         <div class="flex items-center gap-2 px-4 py-1.5 rounded-full font-semibold text-sm border transition-colors duration-500"
           role="timer"
           [attr.aria-label]="'Waktu tersisa ' + formatTime(remainingTime)"
@@ -101,6 +102,7 @@
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
           </svg>
           <span aria-hidden="true">{{ formatTime(remainingTime) }}</span>
+        </div>
         </div>
         <!-- Screen reader timer announcements -->
         <div aria-live="polite" aria-atomic="true" class="sr-only">
@@ -127,7 +129,7 @@
             <span class="hidden sm:inline">{{ markedQuestions[currentQuestion] ? '⭐ Ditandai' : 'Tandai' }}</span>
           </button>
 
-          <button (click)="confirmEndQuiz()"
+          <button *ngIf="quizMode === 'exam'" (click)="confirmEndQuiz()"
             aria-label="Akhiri ujian"
             class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-rose-600 hover:bg-rose-700 text-white transition-colors">
             Akhiri
@@ -353,7 +355,7 @@
             </div>
           </div>
 
-          <button (click)="confirmEndQuiz()"
+          <button *ngIf="quizMode === 'exam'" (click)="confirmEndQuiz()"
             class="w-full py-2.5 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-sm font-semibold transition-colors text-center">
             Akhiri Ujian
           </button>

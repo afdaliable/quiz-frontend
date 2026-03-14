@@ -25,6 +25,41 @@
     </div>
   </div>
 
+  <!-- Streak Banner -->
+  <div *ngIf="showStreakBanner && streakDays > 0"
+    class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-2">
+    <div class="bg-gradient-to-r from-orange-500 to-amber-500 rounded-2xl p-4 shadow-lg shadow-orange-200/50 relative">
+      <!-- Dismiss button -->
+      <button (click)="dismissStreakBanner()"
+        class="absolute top-2 right-2 p-1.5 rounded-lg text-white/70 hover:text-white hover:bg-white/10 transition-colors"
+        aria-label="Tutup banner">
+        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+        </svg>
+      </button>
+
+      <div class="flex items-center gap-4">
+        <!-- Fire emoji + streak count -->
+        <div class="flex-shrink-0 text-4xl">{{ getStreakEmoji() }}</div>
+
+        <div class="flex-1 min-w-0">
+          <p class="text-white font-bold text-base leading-tight">
+            {{ streakDays }} Hari Belajar Berturut-turut!
+          </p>
+          <p class="text-white/90 text-sm mt-0.5">
+            {{ getStreakMessage() }}
+          </p>
+        </div>
+
+        <!-- CTA button -->
+        <button (click)="filterByCategory(null)"
+          class="flex-shrink-0 px-5 py-2.5 rounded-xl bg-white text-orange-600 font-semibold text-sm shadow-md hover:shadow-lg hover:-translate-y-0.5 transition-all">
+          Lanjutkan Belajar
+        </button>
+      </div>
+    </div>
+  </div>
+
   <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
 
     <!-- Category Pills (horizontal scroll) -->
@@ -61,6 +96,72 @@
             </span>
           </button>
         </ng-container>
+      </div>
+    </div>
+
+    <!-- Continue Learning Card -->
+    <div *ngIf="showContinueLearning && latestHistory"
+      class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-4">
+      <div
+        (click)="selectHistoryPackage(latestHistory)"
+        class="group rounded-2xl p-5 cursor-pointer transition-all duration-200 border hover:-translate-y-1 hover:shadow-xl relative"
+        [ngClass]="isDarkMode
+          ? 'bg-gradient-to-br from-violet-900/50 to-purple-900/30 border-violet-700 hover:border-violet-500'
+          : 'bg-gradient-to-br from-indigo-50 to-purple-50 border-indigo-200 hover:border-indigo-400'">
+        <!-- Ribbon badge -->
+        <div class="absolute -top-1 -right-1 px-3 py-1 rounded-lg text-xs font-bold"
+          [ngClass]="isDarkMode ? 'bg-violet-500 text-white' : 'bg-indigo-500 text-white'">
+          Lanjutkan Belajar
+        </div>
+
+        <div class="flex items-start gap-4">
+          <!-- Icon -->
+          <div class="flex-shrink-0 w-14 h-14 rounded-2xl flex items-center justify-center text-3xl"
+            [ngClass]="isDarkMode ? 'bg-violet-800' : 'bg-indigo-100'">
+            📚
+          </div>
+
+          <div class="flex-1 min-w-0">
+            <!-- Label -->
+            <p class="text-xs font-semibold mb-1"
+              [ngClass]="isDarkMode ? 'text-violet-300' : 'text-indigo-600'">
+              QUIZ TERAKHIR
+            </p>
+
+            <!-- Package name -->
+            <h3 class="text-base font-bold mb-2 leading-snug"
+              [ngClass]="isDarkMode ? 'text-white' : 'text-gray-900'">
+              {{ latestHistory.package_name }}
+            </h3>
+
+            <!-- Score + Category + Time -->
+            <div class="flex flex-wrap gap-4 text-sm">
+              <span class="flex items-center gap-1"
+                [ngClass]="isDarkMode ? 'text-gray-400' : 'text-gray-600'">
+                <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2l-4-4m6 2l4 4m-6-6a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                {{ latestHistory.category }}
+              </span>
+              <span class="flex items-center gap-1 font-semibold"
+                [ngClass]="latestHistory.score >= 80 ? 'text-emerald-500' : latestHistory.score >= 60 ? 'text-amber-500' : 'text-rose-500'">
+                <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2l-4-4m6 2l4 4m-6-6a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                Skor: {{ latestHistory.score }}/100
+              </span>
+            </div>
+          </div>
+
+          <!-- Arrow icon -->
+          <div class="flex-shrink-0">
+            <svg class="w-6 h-6 transition-transform duration-200 group-hover:translate-x-1"
+              [ngClass]="isDarkMode ? 'text-violet-400' : 'text-indigo-500'"
+              fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+            </svg>
+          </div>
+        </div>
       </div>
     </div>
 

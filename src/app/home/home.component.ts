@@ -8,6 +8,19 @@ import { ThemeService } from '../services/theme.service'; // Ensure this path is
 import { AuthService } from '../services/auth.service';
 import { PremiumService, PremiumPlan } from '../services/premium.service';
 import { Subscription } from 'rxjs';
+import { QuizHistoryEntry } from '../models/quiz-history.model';
+
+interface QuizHistoryEntry {
+  id: string;
+  package_name: string;
+  category: string;
+  score: number;
+  correct: number;
+  wrong: number;
+  total: number;
+  duration_seconds: number;
+  completed_at: string;
+}
 
 @Component({
   selector: 'app-home',
@@ -27,7 +40,16 @@ export class HomeComponent implements OnInit, OnDestroy {
   isCategoriesCollapsed: boolean = true;
   isLoading: boolean = false;
   private userSubscription: Subscription | null = null;
-  
+
+  // Streak banner properties
+  streakDays: number = 0;
+  showStreakBanner: boolean = false;
+  streakDismissedAt: number | null = null;
+
+  // Continue Learning properties
+  latestHistory: QuizHistoryEntry | null = null;
+  showContinueLearning: boolean = false;
+
   // Premium related properties
   showPremiumModal: boolean = false;
   selectedPremiumQuiz: PaketSoal | null = null;
@@ -44,6 +66,12 @@ export class HomeComponent implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit(): void {
+    // Check for dismissed streak banner
+    const dismissedAt = localStorage.getItem('streakBannerDismissed');
+    if (dismissedAt) {
+      this.streakDismissedAt = parseInt(dismissedAt);
+    }
+
     // Check if we have an auth token
     const token = this.authService.getToken();
     
@@ -53,7 +81,9 @@ export class HomeComponent implements OnInit, OnDestroy {
       this.isLoggedIn = true;
       this.loadCategories();
       this.loadPaketSoal();
-      
+      this.loadUserStats();
+      this.loadLatestHistory();
+
       // Add a longer delay before checking premium status to ensure session is fully established
       setTimeout(() => {
         this.checkPremiumStatus();
@@ -75,7 +105,9 @@ export class HomeComponent implements OnInit, OnDestroy {
       if (this.isLoggedIn) {
         this.loadCategories();
         this.loadPaketSoal();
-        
+        this.loadUserStats();
+        this.loadLatestHistory();
+
         // Add a longer delay before checking premium status to ensure session is fully established
         setTimeout(() => {
           this.checkPremiumStatus();
@@ -98,6 +130,43 @@ export class HomeComponent implements OnInit, OnDestroy {
       },
       error: (error) => {
         console.error('Error loading categories:', error);
+      }
+    });
+  }
+
+  loadLatestHistory(): void {
+    this.questionService.getQuizHistory(1, 1).subscribe({
+      next: (res) => {
+        if (res.data && res.data.length > 0) {
+          this.latestHistory = res.data[0];
+          this.showContinueLearning = true;
+        } else {
+          this.showContinueLearning = false;
+        }
+      },
+      error: (error) => {
+        console.error('Error loading latest history:', error);
+        this.showContinueLearning = false;
+      }
+    });
+  }
+
+  loadUserStats(): void {
+    this.userService.getUserStats().subscribe({
+      next: (stats) => {
+        this.streakDays = stats.learning_streak_days || 0;
+
+        // Show banner if streak >= 3 and not dismissed recently (within last 24 hours)
+        const now = Date.now();
+        const twentyFourHoursAgo = now - (24 * 60 * 60 * 1000);
+
+        if (this.streakDays >= 3 &&
+            (!this.streakDismissedAt || this.streakDismissedAt < twentyFourHoursAgo)) {
+          this.showStreakBanner = true;
+        }
+      },
+      error: (error) => {
+        console.error('Error loading user stats:', error);
       }
     });
   }
@@ -344,5 +413,40 @@ export class HomeComponent implements OnInit, OnDestroy {
     this.searchTerm = '';
     this.selectedCategory = '';
     this.filteredPaketSoalList = [...this.paketSoalList];
+  }
+
+  dismissStreakBanner(): void {
+    this.showStreakBanner = false;
+    localStorage.setItem('streakBannerDismissed', Date.now().toString());
+  }
+
+  getStreakMessage(): string {
+    if (this.streakDays >= 30) return 'Luar biasa! Konsistensi luar biasa!';
+    if (this.streakDays >= 14) return 'Hebat! Terus belajar!';
+    if (this.streakDays >= 7) return 'Mantap! Kamu di jalur yang benar!';
+    if (this.streakDays >= 3) return 'Hebat! Pertahankan streak ini!';
+    return '';
+  }
+
+  getStreakEmoji(): string {
+    if (this.streakDays >= 30) return '🏆';
+    if (this.streakDays >= 14) return '🔥';
+    if (this.streakDays >= 7) return '💪';
+    return '🔥';
+  }
+
+  selectHistoryPackage(entry: QuizHistoryEntry): void {
+    // Find the matching package in the paketSoalList
+    const matchedPackage = this.paketSoalList.find(paket =>
+      paket.nama_paket_soal === entry.package_name &&
+      paket.kategori_soal === entry.category
+    );
+
+    if (matchedPackage) {
+      this.selectPaketSoal(matchedPackage);
+    } else {
+      console.error('Package not found:', entry);
+      alert('Paket soal tidak ditemukan. Silakan pilih paket lain.');
+    }
   }
 }

@@ -42,6 +42,7 @@ export class QuestionComponent implements OnInit, OnDestroy {
   currentUser: any;
   isDarkMode: boolean = false;
   isReviewMode: boolean = false;
+  quizMode: 'exam' | 'study' = 'exam';
   showExplanation: boolean = false;
   isAnswerChecked: boolean = false;
   currentAnswerIsCorrect: boolean = false;
@@ -84,6 +85,7 @@ export class QuestionComponent implements OnInit, OnDestroy {
     this.totalTime = parseInt(localStorage.getItem('durasi')!) * 60;
     this.remainingTime = this.totalTime;
     this.isReviewMode = localStorage.getItem('isReviewMode') === 'true';
+    this.quizMode = (localStorage.getItem('quizMode') as 'exam' | 'study') || 'exam';
 
     try {
       const selectedPaketStr = localStorage.getItem('selectedPaket');
@@ -325,7 +327,9 @@ export class QuestionComponent implements OnInit, OnDestroy {
       )
       .subscribe({
         next: () => {
-          this.startTimer();
+          if (this.quizMode === 'exam') {
+            this.startTimer();
+          }
           this.getProgressPercent();
           // Show keyboard hint once at quiz start
           this.showKeyboardHint = true;
@@ -365,16 +369,24 @@ export class QuestionComponent implements OnInit, OnDestroy {
   answer(currentQno: number, option: number) {
     this.selectedAnswers[currentQno] = option;
     this.answeredQuestions[currentQno] = true;
-    
+
     // Save to localStorage (legacy support)
     this.saveUserAnswers();
-    
+
     // Save to session (new feature)
     if (this.currentSession) {
       this.saveProgressToSession();
     }
-    
-    if (this.isReviewMode) {
+
+    // In study mode, show immediate feedback
+    if (this.quizMode === 'study' && currentQno === this.currentQuestion) {
+      const currentQuestionObj = this.questionList[currentQno];
+      this.correctAnswerIndex = currentQuestionObj.options.findIndex((opt: any) => opt.correct);
+      this.currentAnswerIsCorrect = currentQuestionObj.options[option].correct;
+      this.isAnswerChecked = true;
+      this.answerExplanation = currentQuestionObj.explanation || 'Tidak ada penjelasan tersedia untuk soal ini.';
+      this.showExplanation = true;
+    } else if (this.isReviewMode) {
       this.isAnswerChecked = false;
       this.showExplanation = false;
     }
@@ -550,23 +562,25 @@ export class QuestionComponent implements OnInit, OnDestroy {
     this.isQuizCompleted = true;
     this.stopCounter();
     this.calculateScore();
-    
-    // Save to localStorage (legacy support)
-    localStorage.setItem('totalQuestions', this.questionList.length.toString());
-    localStorage.setItem(
-      'answeredQuestions',
-      this.getAnsweredQuestionsCount().toString()
-    );
-    localStorage.setItem('points', this.points.toString());
-    localStorage.setItem('correctAnswers', this.correctAnswer.toString());
-    localStorage.setItem(
-      'incorrectAnswers',
-      (this.questionList.length - this.correctAnswer).toString()
-    );
+
+    // Save to localStorage (legacy support) - only in exam mode
+    if (this.quizMode === 'exam') {
+      localStorage.setItem('totalQuestions', this.questionList.length.toString());
+      localStorage.setItem(
+        'answeredQuestions',
+        this.getAnsweredQuestionsCount().toString()
+      );
+      localStorage.setItem('points', this.points.toString());
+      localStorage.setItem('correctAnswers', this.correctAnswer.toString());
+      localStorage.setItem(
+        'incorrectAnswers',
+        (this.questionList.length - this.correctAnswer).toString()
+      );
+    }
     this.saveUserAnswers();
-    
-    // Complete session (new feature)
-    if (this.currentSession) {
+
+    // Complete session (new feature) - only in exam mode
+    if (this.quizMode === 'exam' && this.currentSession) {
       this.quizSessionService.completeQuizSession(this.currentSession.id, {
         answers: this.selectedAnswers,
         time_remaining: this.remainingTime
@@ -585,7 +599,7 @@ export class QuestionComponent implements OnInit, OnDestroy {
         }
       });
     } else {
-      // Original behavior if no session
+      // Original behavior if no session or in study mode
       console.log('Navigating to result page...');
       this.router.navigate(['/result']);
     }
