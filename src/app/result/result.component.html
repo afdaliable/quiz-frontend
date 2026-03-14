@@ -13,7 +13,7 @@
   <div class="max-w-2xl mx-auto px-4 sm:px-6 py-8">
 
     <!-- Card -->
-    <div class="rounded-2xl shadow-xl overflow-hidden transition-colors duration-200"
+    <div #resultCard class="rounded-2xl shadow-xl overflow-hidden transition-colors duration-200"
       [ngClass]="isDarkMode ? 'bg-gray-800' : 'bg-white'">
 
       <!-- Top gradient strip -->
@@ -174,6 +174,18 @@
 
         <!-- Action Buttons -->
         <div class="flex flex-col sm:flex-row gap-3">
+          <button (click)="shareResult()"
+            class="flex-1 py-3 px-4 rounded-xl font-semibold text-sm bg-indigo-600 hover:bg-indigo-700 text-white transition-colors duration-200 flex items-center justify-center gap-2">
+            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M4.4v1.929a13.29a13.29 0 14.53-16.47l16.47-4.478 0 8.32L19 12l2-2m0 0l7-7 7M3 7.768z" />
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M3.75 13.17L5 2 5.5 2.5 5.5z" />
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M16 8l2.086-13.29a13.29 0 14.53 16.47l16.47-4.478 0 8.32L19 12l2-2m0 0l7-7 7M3 7.768z" />
+              Bagikan Hasil
+            </svg>
+          </button>
           <button (click)="retryQuiz()"
             class="flex-1 py-3 px-4 rounded-xl font-semibold text-sm bg-emerald-600 hover:bg-emerald-700 text-white transition-colors duration-200 flex items-center justify-center gap-2">
             <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">

@@ -1,7 +1,8 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ElementRef, ViewChild } from '@angular/core';
 import { Router } from '@angular/router';
 import { UserService } from '../services/user.service';
 import { ThemeService } from '../services/theme.service';
+import html2canvas from 'html2canvas';
 
 interface PaketSoal {
   id_nama_paket_soal: number;
@@ -28,6 +29,7 @@ export class ResultComponent implements OnInit {
   incorrectAnswers: number = 0;
   currentUser: any;
   isDarkMode: boolean = false;
+  @ViewChild('resultCard', { static: false }) resultCard!: ElementRef;
 
   motivationMessage: string = '';
   wrongQuestions: number[] = [];
@@ -105,5 +107,34 @@ export class ResultComponent implements OnInit {
 
   goToHome(): void {
     this.router.navigate(['/home']);
+  }
+
+  async shareResult(): Promise<void> {
+    try {
+      const canvas = await html2canvas(this.resultCard.nativeElement, {
+        backgroundColor: null,
+        scale: 2
+      });
+
+      const imageUrl = canvas.toDataURL('image/png');
+
+      // Web Share API (mobile)
+      if (navigator.share && navigator.canShare) {
+        const blob = await (await fetch(imageUrl)).blob();
+        await navigator.share({
+          files: [new File([blob], 'hasil-kuis.png', { type: 'image/png' })],
+          title: 'Hasil Kuis QuizKu'
+        });
+      } else {
+        // Fallback: download gambar
+        const link = document.createElement('a');
+        link.download = 'hasil-kuis.png';
+        link.href = imageUrl;
+        link.click();
+      }
+    } catch (error) {
+      console.error('Gagal membagikan hasil:', error);
+      alert('Gagal membagikan hasil. Silakan coba lagi.');
+    }
   }
 }
