@@ -81,8 +81,8 @@
           </span>
         </div>
 
-        <!-- Duration Selection -->
-        <div>
+        <!-- Duration Selection (only in exam mode) -->
+        <div *ngIf="quizMode === 'exam'">
           <label
             class="block text-sm font-semibold mb-1.5"
             [ngClass]="isDarkMode ? 'text-gray-200' : 'text-gray-700'"
@@ -105,50 +105,82 @@
 
         <!-- Quiz Mode Selection -->
         <div>
-          <label
-            class="flex items-start gap-3 rounded-xl p-3 transition-colors duration-200 cursor-pointer"
-            [ngClass]="isDarkMode ? 'bg-gray-700/60' : 'bg-gray-50'"
-          >
-            <input type="radio" [(ngModel)]="quizMode" value="exam" name="quizMode" class="sr-only peer">
-            <div
-              class="w-10 h-6 rounded-full peer peer-focus:ring-2 peer-focus:ring-indigo-400
-                     after:content-[''] after:absolute after:top-[2px] after:left-[2px]
-                     after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all
-                     peer-checked:after:translate-x-4 peer-checked:bg-indigo-600
-                     bg-gray-300"
-            ></div>
+          <label class="block text-sm font-semibold mb-2"
+            [ngClass]="isDarkMode ? 'text-gray-200' : 'text-gray-700'">
+            Mode
           </label>
-          <div>
-            <p class="text-sm font-semibold" [ngClass]="isDarkMode ? 'text-gray-100' : 'text-gray-800'">
-              Mode Ujian
-            </p>
-            <p class="text-xs mt-0.5" [ngClass]="isDarkMode ? 'text-gray-400' : 'text-gray-500'">
-              Ada timer, skor dihitung ke history
-            </p>
-          </div>
-        </div>
+          <div class="space-y-2">
+            <!-- Exam Mode -->
+            <label
+              class="flex items-center gap-3 rounded-xl p-3 transition-all duration-200 cursor-pointer border-2"
+              [ngClass]="quizMode === 'exam'
+                ? (isDarkMode ? 'bg-indigo-900/30 border-indigo-500' : 'bg-indigo-50 border-indigo-500')
+                : (isDarkMode ? 'bg-gray-700/60 border-transparent hover:border-gray-600' : 'bg-gray-50 border-transparent hover:border-gray-300')"
+            >
+              <input type="radio" [(ngModel)]="quizMode" value="exam" name="quizMode" class="sr-only">
+              <div class="flex-shrink-0 w-5 h-5 rounded-full border-2 flex items-center justify-center transition-colors"
+                [ngClass]="quizMode === 'exam'
+                  ? 'border-indigo-500'
+                  : (isDarkMode ? 'border-gray-500' : 'border-gray-300')">
+                <div *ngIf="quizMode === 'exam'" class="w-2.5 h-2.5 rounded-full bg-indigo-500"></div>
+              </div>
+              <div>
+                <p class="text-sm font-semibold" [ngClass]="isDarkMode ? 'text-gray-100' : 'text-gray-800'">
+                  Mode Ujian
+                </p>
+                <p class="text-xs mt-0.5" [ngClass]="isDarkMode ? 'text-gray-400' : 'text-gray-500'">
+                  Ada timer, skor dihitung ke history
+                </p>
+              </div>
+            </label>
 
-        <div>
-          <label
-            class="flex items-start gap-3 rounded-xl p-3 transition-colors duration-200 cursor-pointer"
-            [ngClass]="isDarkMode ? 'bg-gray-700/60' : 'bg-gray-50'"
-          >
-            <input type="radio" [(ngModel)]="quizMode" value="study" name="quizMode" class="sr-only peer">
-            <div
-              class="w-10 h-6 rounded-full peer peer-focus:ring-2 peer-focus:ring-indigo-400
-                     after:content-[''] after:absolute after:top-[2px] after:left-[2px]
-                     after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all
-                     peer-checked:after:translate-x-4 peer-checked:bg-indigo-600
-                     bg-gray-300"
-            ></div>
-          </label>
-          <div>
-            <p class="text-sm font-semibold" [ngClass]="isDarkMode ? 'text-gray-100' : 'text-gray-800'">
-              Mode Ujian
-            </p>
-            <p class="text-xs mt-0.5" [ngClass]="isDarkMode ? 'text-gray-400' : 'text-gray-500'">
-              Ada timer, skor dihitung ke history
-            </p>
+            <!-- Study Mode -->
+            <label
+              class="flex items-center gap-3 rounded-xl p-3 transition-all duration-200 cursor-pointer border-2"
+              [ngClass]="quizMode === 'study'
+                ? (isDarkMode ? 'bg-emerald-900/30 border-emerald-500' : 'bg-emerald-50 border-emerald-500')
+                : (isDarkMode ? 'bg-gray-700/60 border-transparent hover:border-gray-600' : 'bg-gray-50 border-transparent hover:border-gray-300')"
+            >
+              <input type="radio" [(ngModel)]="quizMode" value="study" name="quizMode" class="sr-only">
+              <div class="flex-shrink-0 w-5 h-5 rounded-full border-2 flex items-center justify-center transition-colors"
+                [ngClass]="quizMode === 'study'
+                  ? 'border-emerald-500'
+                  : (isDarkMode ? 'border-gray-500' : 'border-gray-300')">
+                <div *ngIf="quizMode === 'study'" class="w-2.5 h-2.5 rounded-full bg-emerald-500"></div>
+              </div>
+              <div>
+                <p class="text-sm font-semibold" [ngClass]="isDarkMode ? 'text-gray-100' : 'text-gray-800'">
+                  Mode Belajar
+                </p>
+                <p class="text-xs mt-0.5" [ngClass]="isDarkMode ? 'text-gray-400' : 'text-gray-500'">
+                  Tanpa timer, jawaban & pembahasan langsung muncul
+                </p>
+              </div>
+            </label>
+
+            <!-- Review Mode -->
+            <label
+              class="flex items-center gap-3 rounded-xl p-3 transition-all duration-200 cursor-pointer border-2"
+              [ngClass]="quizMode === 'review'
+                ? (isDarkMode ? 'bg-amber-900/30 border-amber-500' : 'bg-amber-50 border-amber-500')
+                : (isDarkMode ? 'bg-gray-700/60 border-transparent hover:border-gray-600' : 'bg-gray-50 border-transparent hover:border-gray-300')"
+            >
+              <input type="radio" [(ngModel)]="quizMode" value="review" name="quizMode" class="sr-only">
+              <div class="flex-shrink-0 w-5 h-5 rounded-full border-2 flex items-center justify-center transition-colors"
+                [ngClass]="quizMode === 'review'
+                  ? 'border-amber-500'
+                  : (isDarkMode ? 'border-gray-500' : 'border-gray-300')">
+                <div *ngIf="quizMode === 'review'" class="w-2.5 h-2.5 rounded-full bg-amber-500"></div>
+              </div>
+              <div>
+                <p class="text-sm font-semibold" [ngClass]="isDarkMode ? 'text-gray-100' : 'text-gray-800'">
+                  Mode Review
+                </p>
+                <p class="text-xs mt-0.5" [ngClass]="isDarkMode ? 'text-gray-400' : 'text-gray-500'">
+                  Cek jawaban per soal, lihat pembahasan
+                </p>
+              </div>
+            </label>
           </div>
         </div>
 
@@ -162,7 +194,7 @@
             ? 'bg-indigo-600 hover:bg-indigo-500'
             : 'bg-indigo-600 hover:bg-indigo-700'"
         >
-          Mulai Kuis
+          {{ quizMode === 'exam' ? 'Mulai Kuis' : quizMode === 'study' ? 'Mulai Belajar' : 'Mulai Review' }}
           <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 7l5 5m0 0l-5 5m5-5H6"/>
           </svg>

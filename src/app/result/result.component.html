@@ -1,5 +1,5 @@
-<!-- Celebration confetti (score >= 80) -->
-<ng-container *ngIf="celebrationActive">
+<!-- Celebration confetti (score >= 80, exam mode only) -->
+<ng-container *ngIf="celebrationActive && quizMode === 'exam'">
   <div *ngFor="let i of [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20]"
     class="confetti-piece"
     [style.left.%]="(i * 17 + 3) % 100"
@@ -36,7 +36,7 @@
           </div>
           <div>
             <h1 class="text-xl font-bold" [ngClass]="isDarkMode ? 'text-white' : 'text-gray-900'">
-              Hasil Quiz
+              {{ quizMode === 'exam' ? 'Hasil Quiz' : quizMode === 'study' ? 'Ringkasan Belajar' : 'Ringkasan Review' }}
             </h1>
             <p class="text-sm" [ngClass]="isDarkMode ? 'text-gray-400' : 'text-gray-500'">
               {{ selectedPaket?.kategori_soal }} · {{ selectedPaket?.nama_paket_soal }}
@@ -44,8 +44,8 @@
           </div>
         </div>
 
-        <!-- Score Circle -->
-        <div class="flex flex-col items-center py-6">
+        <!-- Score Circle (exam mode only) -->
+        <div *ngIf="quizMode === 'exam'" class="flex flex-col items-center py-6">
           <div class="relative w-44 h-44">
             <svg class="w-full h-full -rotate-90" viewBox="0 0 100 100">
               <circle cx="50" cy="50" r="40" fill="none"
@@ -174,7 +174,7 @@
 
         <!-- Action Buttons -->
         <div class="flex flex-col sm:flex-row gap-3">
-          <button (click)="shareResult()"
+          <button *ngIf="quizMode === 'exam'" (click)="shareResult()"
             class="flex-1 py-3 px-4 rounded-xl font-semibold text-sm bg-indigo-600 hover:bg-indigo-700 text-white transition-colors duration-200 flex items-center justify-center gap-2">
             <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"

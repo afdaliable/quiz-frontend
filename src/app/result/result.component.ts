@@ -29,6 +29,7 @@ export class ResultComponent implements OnInit {
   incorrectAnswers: number = 0;
   currentUser: any;
   isDarkMode: boolean = false;
+  quizMode: 'exam' | 'study' | 'review' = 'exam';
   @ViewChild('resultCard', { static: false }) resultCard!: ElementRef;
 
   motivationMessage: string = '';
@@ -58,6 +59,8 @@ export class ResultComponent implements OnInit {
     if (paketData) {
       this.selectedPaket = JSON.parse(paketData);
     }
+
+    this.quizMode = (localStorage.getItem('quizMode') as 'exam' | 'study' | 'review') || 'exam';
 
     this.totalQuestions = parseInt(localStorage.getItem('totalQuestions') || '0');
     this.answeredQuestions = parseInt(localStorage.getItem('answeredQuestions') || '0');

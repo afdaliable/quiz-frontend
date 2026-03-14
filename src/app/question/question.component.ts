@@ -42,7 +42,7 @@ export class QuestionComponent implements OnInit, OnDestroy {
   currentUser: any;
   isDarkMode: boolean = false;
   isReviewMode: boolean = false;
-  quizMode: 'exam' | 'study' = 'exam';
+  quizMode: 'exam' | 'study' | 'review' = 'exam';
   showExplanation: boolean = false;
   isAnswerChecked: boolean = false;
   currentAnswerIsCorrect: boolean = false;
@@ -85,7 +85,9 @@ export class QuestionComponent implements OnInit, OnDestroy {
     this.totalTime = parseInt(localStorage.getItem('durasi')!) * 60;
     this.remainingTime = this.totalTime;
     this.isReviewMode = localStorage.getItem('isReviewMode') === 'true';
-    this.quizMode = (localStorage.getItem('quizMode') as 'exam' | 'study') || 'exam';
+    this.quizMode = (localStorage.getItem('quizMode') as 'exam' | 'study' | 'review') || 'exam';
+    // Derive isReviewMode from quizMode for backward compatibility
+    this.isReviewMode = this.quizMode === 'review';
 
     try {
       const selectedPaketStr = localStorage.getItem('selectedPaket');
@@ -330,7 +332,14 @@ export class QuestionComponent implements OnInit, OnDestroy {
           if (this.quizMode === 'exam') {
             this.startTimer();
           }
+          // In study/review mode, no timer needed
           this.getProgressPercent();
+
+          // In study mode, auto-reveal correct answer for the first question
+          if (this.quizMode === 'study') {
+            this.revealStudyAnswer();
+          }
+
           // Show keyboard hint once at quiz start
           this.showKeyboardHint = true;
           this.keyboardHintTimer = setTimeout(() => {
@@ -348,10 +357,11 @@ export class QuestionComponent implements OnInit, OnDestroy {
       this.currentQuestion++;
       this.getProgressPercent();
       this.resetAnswerCheck();
-    } else {
+    } else if (this.quizMode === 'exam') {
       this.isQuizCompleted = true;
       this.stopTimer();
     }
+    // In study/review mode, don't auto-complete — user uses the end button
   }
 
   prevQuestion() {
@@ -378,15 +388,16 @@ export class QuestionComponent implements OnInit, OnDestroy {
       this.saveProgressToSession();
     }
 
-    // In study mode, show immediate feedback
+    // In study mode, show immediate full feedback (correct answer + explanation auto-open)
     if (this.quizMode === 'study' && currentQno === this.currentQuestion) {
       const currentQuestionObj = this.questionList[currentQno];
       this.correctAnswerIndex = currentQuestionObj.options.findIndex((opt: any) => opt.correct);
       this.currentAnswerIsCorrect = currentQuestionObj.options[option].correct;
       this.isAnswerChecked = true;
-      this.answerExplanation = currentQuestionObj.explanation || 'Tidak ada penjelasan tersedia untuk soal ini.';
+      this.answerExplanation = currentQuestionObj.explanation || currentQuestionObj.solution || 'Tidak ada penjelasan tersedia untuk soal ini.';
       this.showExplanation = true;
-    } else if (this.isReviewMode) {
+    } else if (this.quizMode === 'review') {
+      // Review mode: user manually checks answer via button
       this.isAnswerChecked = false;
       this.showExplanation = false;
     }
@@ -432,7 +443,9 @@ export class QuestionComponent implements OnInit, OnDestroy {
   }
 
   stopCounter() {
-    this.interval$.unsubscribe();
+    if (this.interval$) {
+      this.interval$.unsubscribe();
+    }
     this.counter = 0;
   }
 
@@ -563,20 +576,18 @@ export class QuestionComponent implements OnInit, OnDestroy {
     this.stopCounter();
     this.calculateScore();
 
-    // Save to localStorage (legacy support) - only in exam mode
-    if (this.quizMode === 'exam') {
-      localStorage.setItem('totalQuestions', this.questionList.length.toString());
-      localStorage.setItem(
-        'answeredQuestions',
-        this.getAnsweredQuestionsCount().toString()
-      );
-      localStorage.setItem('points', this.points.toString());
-      localStorage.setItem('correctAnswers', this.correctAnswer.toString());
-      localStorage.setItem(
-        'incorrectAnswers',
-        (this.questionList.length - this.correctAnswer).toString()
-      );
-    }
+    // Save to localStorage - for all modes so result page can display stats
+    localStorage.setItem('totalQuestions', this.questionList.length.toString());
+    localStorage.setItem(
+      'answeredQuestions',
+      this.getAnsweredQuestionsCount().toString()
+    );
+    localStorage.setItem('points', this.points.toString());
+    localStorage.setItem('correctAnswers', this.correctAnswer.toString());
+    localStorage.setItem(
+      'incorrectAnswers',
+      this.incorrectAnswer.toString()
+    );
     this.saveUserAnswers();
 
     // Complete session (new feature) - only in exam mode
@@ -696,5 +707,50 @@ export class QuestionComponent implements OnInit, OnDestroy {
   resetAnswerCheck() {
     this.isAnswerChecked = false;
     this.showExplanation = false;
+    this.correctAnswerIndex = null;
+    this.answerExplanation = '';
+
+    // In study mode, immediately reveal the new question's answer
+    if (this.quizMode === 'study') {
+      this.revealStudyAnswer();
+    }
+  }
+
+  /**
+   * Auto-reveal correct answer + explanation for the current question (study mode)
+   */
+  revealStudyAnswer(): void {
+    if (this.quizMode !== 'study' || !this.questionList[this.currentQuestion]) return;
+
+    const q = this.questionList[this.currentQuestion];
+    this.correctAnswerIndex = q.options.findIndex((opt: any) => opt.correct);
+    this.answerExplanation = q.explanation || q.solution || 'Tidak ada penjelasan tersedia untuk soal ini.';
+    this.isAnswerChecked = true;
+    this.showExplanation = true;
+    this.currentAnswerIsCorrect = true; // Showing the correct answer
+  }
+
+  getEndButtonLabel(): string {
+    switch (this.quizMode) {
+      case 'study': return 'Akhiri Belajar';
+      case 'review': return 'Akhiri Review';
+      default: return 'Akhiri Kuis';
+    }
+  }
+
+  getEndModalTitle(): string {
+    switch (this.quizMode) {
+      case 'study': return 'Yakin ingin mengakhiri belajar?';
+      case 'review': return 'Yakin ingin mengakhiri review?';
+      default: return 'Yakin ingin mengakhiri kuis?';
+    }
+  }
+
+  getContinueButtonLabel(): string {
+    switch (this.quizMode) {
+      case 'study': return 'Lanjutkan Belajar';
+      case 'review': return 'Lanjutkan Review';
+      default: return 'Lanjutkan Kuis';
+    }
   }
 }

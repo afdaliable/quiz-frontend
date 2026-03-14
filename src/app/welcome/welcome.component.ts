@@ -35,8 +35,7 @@ export class WelcomeComponent implements OnInit, OnDestroy {
   user: any;
   isDarkMode: boolean = false;
   isAuthenticated: boolean = false;
-  quizMode: 'exam' | 'study' = 'exam';
-  isReviewMode: boolean = false;
+  quizMode: 'exam' | 'study' | 'review' = 'exam';
   estimasiDetikPerSoal: number = 0;
 
   categoryHeaderClass: string = DEFAULT_CONFIG.headerClass;
@@ -71,6 +70,10 @@ export class WelcomeComponent implements OnInit, OnDestroy {
       this.recalcEstimasi();
     }
 
+    // Reset quizMode to default so stale localStorage from prior sessions doesn't interfere
+    localStorage.removeItem('quizMode');
+    localStorage.removeItem('isReviewMode');
+
     this.themeService.darkMode$.subscribe(isDark => (this.isDarkMode = isDark));
   }
 
@@ -98,7 +101,7 @@ export class WelcomeComponent implements OnInit, OnDestroy {
       }
 
       localStorage.setItem('durasi', this.selectedDurasi.toString());
-      localStorage.setItem('isReviewMode', this.isReviewMode.toString());
+      localStorage.setItem('isReviewMode', (this.quizMode === 'review').toString());
       localStorage.setItem('quizMode', this.quizMode);
       this.router.navigate(['/question']);
     } else {

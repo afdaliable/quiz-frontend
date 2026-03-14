@@ -19,7 +19,7 @@
     <!-- Title -->
     <h3 class="text-base font-bold text-center mb-2"
       [ngClass]="isDarkMode ? 'text-white' : 'text-gray-900'">
-      Yakin ingin mengakhiri kuis?
+      {{ getEndModalTitle() }}
     </h3>
 
     <!-- Info -->
@@ -42,7 +42,7 @@
         [ngClass]="isDarkMode
           ? 'bg-indigo-600 hover:bg-indigo-500 text-white'
           : 'bg-indigo-600 hover:bg-indigo-700 text-white'">
-        Lanjutkan Kuis
+        {{ getContinueButtonLabel() }}
       </button>
       <button
         (click)="confirmEndNow()"
@@ -88,8 +88,8 @@
         </div>
 
         <!-- Timer (only show in exam mode) -->
-        <div *ngIf="quizMode === 'exam'">
-        <div class="flex items-center gap-2 px-4 py-1.5 rounded-full font-semibold text-sm border transition-colors duration-500"
+        <div *ngIf="quizMode === 'exam'"
+          class="flex items-center gap-2 px-4 py-1.5 rounded-full font-semibold text-sm border transition-colors duration-500"
           role="timer"
           [attr.aria-label]="'Waktu tersisa ' + formatTime(remainingTime)"
           [class.timer-critical]="remainingTime <= 30"
@@ -103,6 +103,14 @@
           </svg>
           <span aria-hidden="true">{{ formatTime(remainingTime) }}</span>
         </div>
+
+        <!-- Mode badge (study/review) -->
+        <div *ngIf="quizMode !== 'exam'"
+          class="px-3 py-1.5 rounded-full text-xs font-semibold"
+          [ngClass]="quizMode === 'study'
+            ? (isDarkMode ? 'bg-emerald-900/40 text-emerald-400' : 'bg-emerald-100 text-emerald-700')
+            : (isDarkMode ? 'bg-amber-900/40 text-amber-400' : 'bg-amber-100 text-amber-700')">
+          {{ quizMode === 'study' ? '📖 Belajar' : '🔍 Review' }}
         </div>
         <!-- Screen reader timer announcements -->
         <div aria-live="polite" aria-atomic="true" class="sr-only">
@@ -129,10 +137,15 @@
             <span class="hidden sm:inline">{{ markedQuestions[currentQuestion] ? '⭐ Ditandai' : 'Tandai' }}</span>
           </button>
 
-          <button *ngIf="quizMode === 'exam'" (click)="confirmEndQuiz()"
-            aria-label="Akhiri ujian"
-            class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-rose-600 hover:bg-rose-700 text-white transition-colors">
-            Akhiri
+          <button (click)="confirmEndQuiz()"
+            [attr.aria-label]="getEndButtonLabel()"
+            class="px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors"
+            [ngClass]="quizMode === 'exam'
+              ? 'bg-rose-600 hover:bg-rose-700 text-white'
+              : quizMode === 'study'
+              ? 'bg-emerald-600 hover:bg-emerald-700 text-white'
+              : 'bg-amber-600 hover:bg-amber-700 text-white'">
+            {{ getEndButtonLabel() }}
           </button>
         </div>
       </div>
@@ -175,10 +188,11 @@
               class="group flex items-start gap-3 p-4 rounded-xl cursor-pointer transition-all duration-150 border"
               [ngClass]="{
                 'bg-indigo-600 border-indigo-600 text-white': selectedAnswers[currentQuestion] === i && !isAnswerChecked,
-                'bg-emerald-500 border-emerald-500 text-white': isReviewMode && isAnswerChecked && selectedAnswers[currentQuestion] === i && currentAnswerIsCorrect,
-                'bg-rose-500 border-rose-500 text-white': isReviewMode && isAnswerChecked && selectedAnswers[currentQuestion] === i && !currentAnswerIsCorrect,
-                'border-gray-200 hover:border-indigo-300 hover:bg-indigo-50': !isDarkMode && selectedAnswers[currentQuestion] !== i,
-                'border-gray-700 hover:border-indigo-500 hover:bg-indigo-900/20': isDarkMode && selectedAnswers[currentQuestion] !== i
+                'bg-emerald-500 border-emerald-500 text-white': isAnswerChecked && selectedAnswers[currentQuestion] === i && currentAnswerIsCorrect,
+                'bg-rose-500 border-rose-500 text-white': isAnswerChecked && selectedAnswers[currentQuestion] === i && !currentAnswerIsCorrect,
+                'bg-emerald-500/20 border-emerald-500': isAnswerChecked && correctAnswerIndex === i && selectedAnswers[currentQuestion] !== i,
+                'border-gray-200 hover:border-indigo-300 hover:bg-indigo-50': !isDarkMode && selectedAnswers[currentQuestion] !== i && !(isAnswerChecked && correctAnswerIndex === i),
+                'border-gray-700 hover:border-indigo-500 hover:bg-indigo-900/20': isDarkMode && selectedAnswers[currentQuestion] !== i && !(isAnswerChecked && correctAnswerIndex === i)
               }">
               <!-- Option letter -->
               <span aria-hidden="true" class="flex-shrink-0 w-7 h-7 rounded-lg flex items-center justify-center text-xs font-bold transition-colors"
@@ -228,12 +242,35 @@
             </button>
           </div>
 
-          <!-- Review mode controls -->
-          <div *ngIf="isReviewMode" class="mt-6 space-y-4">
+          <!-- Study mode: immediate feedback (auto-shown after answering) -->
+          <div *ngIf="quizMode === 'study' && isAnswerChecked" class="mt-6 space-y-3">
+            <div class="flex items-center justify-center gap-2 text-base font-semibold"
+              [ngClass]="currentAnswerIsCorrect ? 'text-emerald-500' : 'text-rose-500'">
+              <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path *ngIf="currentAnswerIsCorrect" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7" />
+                <path *ngIf="!currentAnswerIsCorrect" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+              {{ currentAnswerIsCorrect ? 'Jawaban Benar!' : 'Jawaban Salah!' }}
+            </div>
+
+            <!-- Explanation auto-opened -->
+            <div class="p-4 rounded-xl border-l-4 border-emerald-500"
+              [ngClass]="isDarkMode ? 'bg-emerald-900/20' : 'bg-emerald-50'">
+              <h4 class="text-sm font-semibold mb-2"
+                [ngClass]="isDarkMode ? 'text-emerald-300' : 'text-emerald-700'">Pembahasan:</h4>
+              <p class="text-sm leading-relaxed"
+                [ngClass]="isDarkMode ? 'text-gray-300' : 'text-gray-700'"
+                [innerHTML]="questionList[currentQuestion]?.solution || questionList[currentQuestion]?.explanation || 'Tidak ada pembahasan untuk soal ini.'">
+              </p>
+            </div>
+          </div>
+
+          <!-- Review mode controls (manual check per question) -->
+          <div *ngIf="quizMode === 'review'" class="mt-6 space-y-4">
             <div class="flex justify-center">
-              <button *ngIf="!isAnswerChecked && selectedAnswers[currentQuestion] !== undefined"
+              <button *ngIf="!isAnswerChecked && selectedAnswers[currentQuestion] !== null && selectedAnswers[currentQuestion] !== undefined"
                 (click)="checkAnswer()"
-                class="px-6 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold transition-colors">
+                class="px-6 py-2.5 rounded-xl bg-amber-600 hover:bg-amber-700 text-white text-sm font-semibold transition-colors">
                 Cek Jawaban
               </button>
             </div>
@@ -256,13 +293,13 @@
                 </button>
               </div>
 
-              <div *ngIf="showExplanation" class="p-4 rounded-xl border-l-4 border-indigo-500"
-                [ngClass]="isDarkMode ? 'bg-indigo-900/20' : 'bg-indigo-50'">
+              <div *ngIf="showExplanation" class="p-4 rounded-xl border-l-4 border-amber-500"
+                [ngClass]="isDarkMode ? 'bg-amber-900/20' : 'bg-amber-50'">
                 <h4 class="text-sm font-semibold mb-2"
-                  [ngClass]="isDarkMode ? 'text-indigo-300' : 'text-indigo-700'">Pembahasan:</h4>
+                  [ngClass]="isDarkMode ? 'text-amber-300' : 'text-amber-700'">Pembahasan:</h4>
                 <p class="text-sm leading-relaxed"
-                  [ngClass]="isDarkMode ? 'text-gray-300' : 'text-gray-700'">
-                  {{ questionList[currentQuestion]?.solution || 'Tidak ada pembahasan untuk soal ini.' }}
+                  [ngClass]="isDarkMode ? 'text-gray-300' : 'text-gray-700'"
+                  [innerHTML]="questionList[currentQuestion]?.solution || questionList[currentQuestion]?.explanation || 'Tidak ada pembahasan untuk soal ini.'">
                 </p>
               </div>
             </div>
@@ -289,7 +326,7 @@
               [ngClass]="currentQuestion === questionList.length - 1
                 ? 'opacity-30 cursor-not-allowed pointer-events-none ' + (isDarkMode ? 'bg-gray-700 text-gray-500' : 'bg-gray-200 text-gray-400')
                 : 'bg-indigo-600 text-white hover:bg-indigo-700'">
-              Selanjutnya
+              {{ quizMode === 'exam' ? 'Selanjutnya' : 'Soal Berikutnya' }}
               <svg class="w-4 h-4" aria-hidden="true" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
               </svg>
@@ -355,9 +392,12 @@
             </div>
           </div>
 
-          <button *ngIf="quizMode === 'exam'" (click)="confirmEndQuiz()"
-            class="w-full py-2.5 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-sm font-semibold transition-colors text-center">
-            Akhiri Ujian
+          <button (click)="confirmEndQuiz()"
+            class="w-full py-2.5 rounded-xl text-white text-sm font-semibold transition-colors text-center"
+            [ngClass]="quizMode === 'exam'
+              ? 'bg-rose-600 hover:bg-rose-700'
+              : 'bg-amber-600 hover:bg-amber-700'">
+            {{ getEndButtonLabel() }}
           </button>
         </div>
       </div>
