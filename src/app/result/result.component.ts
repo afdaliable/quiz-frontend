@@ -119,12 +119,21 @@ export class ResultComponent implements OnInit {
       const imageUrl = canvas.toDataURL('image/png');
 
       // Web Share API (mobile)
-      if (navigator.share && navigator.canShare) {
+      if (navigator.share) {
         const blob = await (await fetch(imageUrl)).blob();
-        await navigator.share({
-          files: [new File([blob], 'hasil-kuis.png', { type: 'image/png' })],
-          title: 'Hasil Kuis QuizKu'
-        });
+        try {
+          await navigator.share({
+            files: [new File([blob], 'hasil-kuis.png', { type: 'image/png' })],
+            title: 'Hasil Kuis QuizKu'
+          });
+        } catch (shareError) {
+          // Fallback to download if share is not supported or cancelled
+          console.log('Share failed or cancelled, falling back to download:', shareError);
+          const link = document.createElement('a');
+          link.download = 'hasil-kuis.png';
+          link.href = imageUrl;
+          link.click();
+        }
       } else {
         // Fallback: download gambar
         const link = document.createElement('a');
