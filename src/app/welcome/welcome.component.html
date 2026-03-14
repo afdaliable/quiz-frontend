@@ -103,13 +103,37 @@
           </select>
         </div>
 
-        <!-- Review Mode Toggle -->
-        <div
-          class="flex items-start gap-3 rounded-xl p-3 transition-colors duration-200"
-          [ngClass]="isDarkMode ? 'bg-gray-700/60' : 'bg-gray-50'"
-        >
-          <label class="relative inline-flex items-center cursor-pointer mt-0.5 flex-shrink-0">
-            <input type="checkbox" [(ngModel)]="isReviewMode" name="reviewMode" class="sr-only peer">
+        <!-- Quiz Mode Selection -->
+        <div>
+          <label
+            class="flex items-start gap-3 rounded-xl p-3 transition-colors duration-200 cursor-pointer"
+            [ngClass]="isDarkMode ? 'bg-gray-700/60' : 'bg-gray-50'"
+          >
+            <input type="radio" [(ngModel)]="quizMode" value="exam" name="quizMode" class="sr-only peer">
+            <div
+              class="w-10 h-6 rounded-full peer peer-focus:ring-2 peer-focus:ring-indigo-400
+                     after:content-[''] after:absolute after:top-[2px] after:left-[2px]
+                     after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all
+                     peer-checked:after:translate-x-4 peer-checked:bg-indigo-600
+                     bg-gray-300"
+            ></div>
+          </label>
+          <div>
+            <p class="text-sm font-semibold" [ngClass]="isDarkMode ? 'text-gray-100' : 'text-gray-800'">
+              Mode Ujian
+            </p>
+            <p class="text-xs mt-0.5" [ngClass]="isDarkMode ? 'text-gray-400' : 'text-gray-500'">
+              Ada timer, skor dihitung ke history
+            </p>
+          </div>
+        </div>
+
+        <div>
+          <label
+            class="flex items-start gap-3 rounded-xl p-3 transition-colors duration-200 cursor-pointer"
+            [ngClass]="isDarkMode ? 'bg-gray-700/60' : 'bg-gray-50'"
+          >
+            <input type="radio" [(ngModel)]="quizMode" value="study" name="quizMode" class="sr-only peer">
             <div
               class="w-10 h-6 rounded-full peer peer-focus:ring-2 peer-focus:ring-indigo-400
                      after:content-[''] after:absolute after:top-[2px] after:left-[2px]
