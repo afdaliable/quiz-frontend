@@ -1,7 +1,7 @@
 <div class="min-h-screen transition-colors duration-200" [ngClass]="isDarkMode ? 'bg-gray-900' : 'bg-gray-50'">
   <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
 
-    <!-- Header review — warna teal agar berbeda dari header kuis aktif (indigo) -->
+    <!-- Header review -->
     <div class="rounded-2xl overflow-hidden shadow-md mb-6"
       [ngClass]="isDarkMode ? 'bg-gray-800' : 'bg-white'">
       <div class="bg-gradient-to-r from-teal-600 to-teal-700 px-6 py-4">
@@ -28,7 +28,7 @@
           <div class="rounded-2xl shadow-md p-6 border"
             [ngClass]="isDarkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-100'">
 
-            <!-- Question header -->
+            <!-- Question header — bookmark button DIHAPUS dari sini (dipindah ke nav panel) -->
             <div class="flex items-center gap-2 mb-4">
               <span class="px-3 py-1 rounded-lg text-sm font-bold bg-indigo-600 text-white">
                 Soal {{ currentQuestion + 1 }}
@@ -67,7 +67,6 @@
                   : (isDarkMode
                       ? 'bg-gray-700/50 border-gray-600 text-gray-300'
                       : 'bg-gray-50 border-gray-200 text-gray-700')">
-                <!-- Letter badge -->
                 <span class="flex-shrink-0 w-7 h-7 rounded-lg flex items-center justify-center text-xs font-bold"
                   [ngClass]="option.correct
                     ? (isDarkMode ? 'bg-emerald-500/40 text-emerald-200' : 'bg-emerald-200 text-emerald-800')
@@ -77,7 +76,6 @@
                   {{ ['A','B','C','D','E'][i] }}
                 </span>
                 <span class="text-sm leading-relaxed">{{ option.text }}</span>
-                <!-- Correct marker -->
                 <svg *ngIf="option.correct" class="ml-auto flex-shrink-0 w-4 h-4 mt-0.5"
                   [ngClass]="isDarkMode ? 'text-emerald-400' : 'text-emerald-600'"
                   fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -110,7 +108,7 @@
               </ng-container>
             </div>
 
-            <!-- Penjelasan (auto-tampil, bisa disembunyikan) -->
+            <!-- Penjelasan -->
             <div class="mt-6">
               <button
                 (click)="toggleExplanation()"
@@ -167,7 +165,7 @@
         </div>
       </div>
 
-      <!-- Question Navigator sidebar -->
+      <!-- Navigation Panel sidebar -->
       <div class="w-full lg:w-56">
         <div class="rounded-2xl p-4 border sticky top-4"
           [ngClass]="isDarkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-100 shadow-sm'">
@@ -190,11 +188,12 @@
             </div>
           </div>
 
+          <!-- Question grid dengan bookmark indicator -->
           <div class="grid grid-cols-5 gap-1.5 mb-4">
             <button
               *ngFor="let question of questionList; let i = index"
               (click)="goToQuestion(i)"
-              class="aspect-square rounded-lg flex items-center justify-center text-xs font-semibold transition-colors duration-150 hover:opacity-80"
+              class="relative aspect-square rounded-lg flex items-center justify-center text-xs font-semibold transition-colors duration-150 hover:opacity-80"
               [ngClass]="currentQuestion === i
                 ? 'bg-indigo-600 text-white ring-2 ring-indigo-400 ring-offset-1'
                 : isUserAnswerCorrect(i)
@@ -203,12 +202,18 @@
                 ? 'bg-red-500 text-white'
                 : (isDarkMode ? 'bg-gray-600 text-gray-300' : 'bg-gray-200 text-gray-600')">
               {{ i + 1 }}
+              <!-- Bookmark indicator dot -->
+              <span
+                *ngIf="isQuestionBookmarked(i)"
+                class="absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full bg-amber-400 ring-1 ring-white shadow-sm"
+                title="Di-bookmark">
+              </span>
             </button>
           </div>
 
-          <!-- Back to home -->
+          <!-- Beranda button -->
           <button (click)="goToHome()"
-            class="w-full py-2.5 rounded-xl text-sm font-semibold transition-colors duration-200 border flex items-center justify-center gap-2"
+            class="w-full py-2.5 rounded-xl text-sm font-semibold transition-colors duration-200 border flex items-center justify-center gap-2 mb-2"
             [ngClass]="isDarkMode
               ? 'bg-gray-700 text-gray-200 border-gray-600 hover:bg-gray-600'
               : 'bg-white text-gray-700 border-gray-200 hover:bg-gray-50'">
@@ -217,8 +222,69 @@
             </svg>
             Beranda
           </button>
+
+          <!-- ★ Bookmark toggle untuk soal aktif (menggantikan "Soal Tersimpan" static link) -->
+          <button
+            (click)="toggleCurrentBookmark()"
+            [disabled]="bookmarkLoading"
+            class="w-full py-2.5 rounded-xl text-sm font-semibold border flex items-center justify-center gap-2 transition-all duration-200 mb-2"
+            [ngClass]="isCurrentQuestionBookmarked
+              ? (isDarkMode
+                  ? 'bg-amber-500/20 text-amber-400 border-amber-500/40 hover:bg-amber-500/30 scale-[1.01]'
+                  : 'bg-amber-100 text-amber-700 border-amber-300 hover:bg-amber-200 scale-[1.01]')
+              : (isDarkMode
+                  ? 'bg-gray-700 text-gray-300 border-gray-600 hover:bg-gray-600 hover:text-amber-400'
+                  : 'bg-white text-gray-600 border-gray-200 hover:bg-amber-50 hover:text-amber-600 hover:border-amber-200')">
+            <!-- Spinner saat loading -->
+            <svg *ngIf="bookmarkLoading" class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4l3-3-3-3v4a8 8 0 00-8 8h4z"/>
+            </svg>
+            <!-- Bookmark icon: filled jika sudah di-bookmark -->
+            <svg *ngIf="!bookmarkLoading" class="w-4 h-4 transition-transform duration-200"
+              [class.scale-110]="isCurrentQuestionBookmarked"
+              [attr.fill]="isCurrentQuestionBookmarked ? 'currentColor' : 'none'"
+              viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round"
+                d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"/>
+            </svg>
+            {{ isCurrentQuestionBookmarked ? 'Tersimpan ✓' : 'Bookmark Soal' }}
+          </button>
+
+          <!-- Link ke halaman semua bookmark -->
+          <a routerLink="/bookmarks"
+            class="w-full py-2 rounded-xl text-xs font-medium transition-colors duration-200 flex items-center justify-center gap-1.5"
+            [ngClass]="isDarkMode ? 'text-gray-400 hover:text-amber-400' : 'text-gray-400 hover:text-amber-600'">
+            <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 10h16M4 14h8"/>
+            </svg>
+            Lihat semua soal tersimpan
+          </a>
         </div>
       </div>
+    </div>
+  </div>
+
+  <!-- Toast notification -->
+  <div
+    class="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 transition-all duration-300 ease-out"
+    [class.opacity-0]="!toastVisible"
+    [class.opacity-100]="toastVisible"
+    [class.translate-y-0]="toastVisible"
+    [class.translate-y-4]="!toastVisible"
+    [class.pointer-events-none]="!toastVisible">
+    <div class="flex items-center gap-3 px-5 py-3 rounded-2xl shadow-lg text-sm font-medium"
+      [ngClass]="toastSuccess
+        ? (isDarkMode ? 'bg-emerald-800 text-emerald-100' : 'bg-emerald-600 text-white')
+        : (isDarkMode ? 'bg-red-800 text-red-100' : 'bg-red-600 text-white')">
+      <!-- Icon -->
+      <svg *ngIf="toastSuccess" class="w-4 h-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>
+      </svg>
+      <svg *ngIf="!toastSuccess" class="w-4 h-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/>
+      </svg>
+      {{ toastMessage }}
     </div>
   </div>
 </div>

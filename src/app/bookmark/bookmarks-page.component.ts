@@ -114,7 +114,7 @@ export class BookmarksPageComponent implements OnInit, OnDestroy {
    * Remove from bookmarks
    */
   removeFromBookmarks(question: BookmarkQuestion): void {
-    this.bookMarkService.removeBookmark(question.id).subscribe({
+    this.bookMarkService.removeBookmark(String(question.question_id)).subscribe({
       next: () => {
         this.loadBookmarks();
       },
