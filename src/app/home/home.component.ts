@@ -9,6 +9,7 @@ import { AuthService } from '../services/auth.service';
 import { PremiumService, PremiumPlan } from '../services/premium.service';
 import { Subscription } from 'rxjs';
 import { QuizHistoryEntry } from '../models/quiz-history.model';
+import { QuizSessionService } from '../services/quiz-session.service';
 
 @Component({
   selector: 'app-home',
@@ -44,13 +45,20 @@ export class HomeComponent implements OnInit, OnDestroy {
   availablePlans: PremiumPlan[] = [];
   hasPremiumAccess: boolean = false;
 
+  // Random quiz modal
+  showRandomModal: boolean = false;
+  randomCount: number = 10;
+  randomCategory: string = '';
+  isStartingRandom: boolean = false;
+
   constructor(
     private questionService: QuestionService,
     private router: Router,
     private userService: UserService,
     private themeService: ThemeService,
     private authService: AuthService,
-    private premiumService: PremiumService
+    private premiumService: PremiumService,
+    private quizSessionService: QuizSessionService
   ) {}
 
   ngOnInit(): void {
@@ -421,6 +429,40 @@ export class HomeComponent implements OnInit, OnDestroy {
     if (this.streakDays >= 14) return '🔥';
     if (this.streakDays >= 7) return '💪';
     return '🔥';
+  }
+
+  openRandomModal(): void {
+    this.showRandomModal = true;
+  }
+
+  closeRandomModal(): void {
+    this.showRandomModal = false;
+    this.isStartingRandom = false;
+  }
+
+  startRandomSession(): void {
+    if (this.isStartingRandom) return;
+    this.isStartingRandom = true;
+
+    const request = {
+      count: this.randomCount,
+      ...(this.randomCategory ? { category: this.randomCategory } : {})
+    };
+
+    this.quizSessionService.startRandomSession(request).subscribe({
+      next: (response) => {
+        localStorage.setItem('randomSessionData', JSON.stringify(response));
+        localStorage.setItem('durasi', String(Math.ceil(response.total_time / 60)));
+        localStorage.setItem('quizMode', 'exam');
+        this.closeRandomModal();
+        this.router.navigate(['/question']);
+      },
+      error: (error) => {
+        console.error('Error starting random session:', error);
+        this.isStartingRandom = false;
+        alert('Gagal memulai latihan random. Silakan coba lagi.');
+      }
+    });
   }
 
   selectHistoryPackage(entry: QuizHistoryEntry): void {

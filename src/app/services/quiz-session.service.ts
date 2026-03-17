@@ -8,9 +8,11 @@ import { Router } from '@angular/router';
 export interface QuizSession {
   id: string;
   user_id: string;
-  paket_soal_id: number;
+  paket_soal_id: number | null;
   kategori_soal: string;
   nama_paket_soal: string;
+  session_type?: string;
+  question_ids?: number[];
   current_question: number;
   answers: (number | null)[];
   marked_questions: boolean[];
@@ -22,6 +24,21 @@ export interface QuizSession {
   incorrect_answers: number;
   created_at: string;
   updated_at: string;
+}
+
+export interface StartRandomSessionRequest {
+  count: number;
+  category?: string;
+}
+
+export interface StartRandomSessionResponse {
+  session_id: string;
+  session_type: string;
+  nama_paket_soal: string;
+  kategori_soal: string;
+  total_time: number;
+  total_questions: number;
+  questions: any[];
 }
 
 export interface CreateQuizSessionRequest {
@@ -202,6 +219,20 @@ export class QuizSessionService {
     return this.http.delete<void>(url, this.getHttpOptions())
       .pipe(
         tap(() => console.log('Quiz session deleted:', sessionId)),
+        catchError(this.handleError)
+      );
+  }
+
+  /**
+   * Start a random quiz session
+   */
+  startRandomSession(request: StartRandomSessionRequest): Observable<StartRandomSessionResponse> {
+    const url = this.getApiUrl('quiz-session/start-random');
+    console.log('Starting random session:', request);
+
+    return this.http.post<StartRandomSessionResponse>(url, request, this.getHttpOptions())
+      .pipe(
+        tap(response => console.log('Random session started:', response)),
         catchError(this.handleError)
       );
   }

@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
+import { take } from 'rxjs/operators';
 import { ThemeService } from '../services/theme.service';
 import { AuthService } from '../services/auth.service';
 
@@ -46,7 +47,7 @@ export class AuthCallbackComponent implements OnInit {
     }
     
     // Check for error parameter
-    this.route.queryParams.subscribe(params => {
+    this.route.queryParams.pipe(take(1)).subscribe(params => {
       if (params['error']) {
         console.log('Auth error detected:', params['error']);
         this.errorMessage = 'Authentication was canceled or failed. Please try again.';

@@ -165,6 +165,47 @@
       </div>
     </div>
 
+    <!-- Latihan Random Card -->
+    <div class="mb-6">
+      <div
+        (click)="openRandomModal()"
+        class="group rounded-2xl p-5 cursor-pointer transition-all duration-200 border hover:-translate-y-1 hover:shadow-xl relative overflow-hidden"
+        [ngClass]="isDarkMode
+          ? 'bg-gradient-to-br from-violet-900/60 to-indigo-900/40 border-violet-700 hover:border-violet-500'
+          : 'bg-gradient-to-br from-violet-50 to-indigo-50 border-violet-200 hover:border-violet-400'">
+
+        <!-- Decorative dots -->
+        <div class="absolute top-0 right-0 w-32 h-32 opacity-10 pointer-events-none">
+          <div class="text-8xl select-none">🎲</div>
+        </div>
+
+        <div class="flex items-center gap-4">
+          <div class="flex-shrink-0 w-12 h-12 rounded-2xl flex items-center justify-center text-2xl"
+            [ngClass]="isDarkMode ? 'bg-violet-800' : 'bg-violet-100'">
+            🎲
+          </div>
+          <div class="flex-1 min-w-0">
+            <p class="text-xs font-bold mb-0.5 uppercase tracking-wide"
+              [ngClass]="isDarkMode ? 'text-violet-300' : 'text-violet-600'">
+              LATIHAN RANDOM
+            </p>
+            <h3 class="text-base font-bold leading-snug"
+              [ngClass]="isDarkMode ? 'text-white' : 'text-gray-900'">
+              Uji kemampuan dengan soal acak
+            </h3>
+            <p class="text-xs mt-0.5"
+              [ngClass]="isDarkMode ? 'text-gray-400' : 'text-gray-500'">
+              10, 20, atau 30 soal dari semua kategori
+            </p>
+          </div>
+          <div class="flex-shrink-0 px-4 py-2 rounded-xl text-sm font-semibold transition-all group-hover:scale-105"
+            [ngClass]="isDarkMode ? 'bg-violet-600 text-white' : 'bg-violet-600 text-white'">
+            Mulai
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- Search + Sort row -->
     <div class="flex gap-3 items-center mb-6">
       <div class="flex-1 relative">
@@ -363,6 +404,80 @@
           Lihat Semua Paket
         </button>
       </div>
+    </div>
+  </div>
+
+  <!-- Random Quiz Modal -->
+  <div *ngIf="showRandomModal"
+    class="fixed inset-0 z-50 flex items-center justify-center p-4"
+    (click)="closeRandomModal()">
+    <!-- Backdrop -->
+    <div class="absolute inset-0 bg-black/50 backdrop-blur-sm"></div>
+
+    <!-- Modal -->
+    <div class="relative w-full max-w-sm rounded-3xl shadow-2xl p-6"
+      [ngClass]="isDarkMode ? 'bg-gray-900 border border-gray-700' : 'bg-white'"
+      (click)="$event.stopPropagation()">
+
+      <!-- Header -->
+      <div class="flex items-center gap-3 mb-5">
+        <div class="w-10 h-10 rounded-2xl flex items-center justify-center text-xl"
+          [ngClass]="isDarkMode ? 'bg-violet-800' : 'bg-violet-100'">🎲</div>
+        <div>
+          <h3 class="text-base font-bold"
+            [ngClass]="isDarkMode ? 'text-white' : 'text-gray-900'">Latihan Random</h3>
+          <p class="text-xs"
+            [ngClass]="isDarkMode ? 'text-gray-400' : 'text-gray-500'">Pilih jumlah soal dan kategori</p>
+        </div>
+        <button (click)="closeRandomModal()"
+          class="ml-auto p-1.5 rounded-lg transition-colors"
+          [ngClass]="isDarkMode ? 'text-gray-400 hover:bg-gray-800' : 'text-gray-400 hover:bg-gray-100'">
+          <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+          </svg>
+        </button>
+      </div>
+
+      <!-- Jumlah soal -->
+      <div class="mb-4">
+        <p class="text-xs font-semibold mb-2"
+          [ngClass]="isDarkMode ? 'text-gray-300' : 'text-gray-600'">JUMLAH SOAL</p>
+        <div class="grid grid-cols-3 gap-2">
+          <button *ngFor="let n of [10, 20, 30]"
+            (click)="randomCount = n"
+            class="py-2.5 rounded-xl text-sm font-bold border-2 transition-all"
+            [ngClass]="randomCount === n
+              ? 'border-violet-500 bg-violet-600 text-white'
+              : (isDarkMode ? 'border-gray-700 bg-gray-800 text-gray-300 hover:border-violet-500' : 'border-gray-200 bg-white text-gray-700 hover:border-violet-400')">
+            {{ n }}
+          </button>
+        </div>
+      </div>
+
+      <!-- Kategori -->
+      <div class="mb-6">
+        <p class="text-xs font-semibold mb-2"
+          [ngClass]="isDarkMode ? 'text-gray-300' : 'text-gray-600'">KATEGORI (opsional)</p>
+        <select [(ngModel)]="randomCategory"
+          class="w-full px-3 py-2.5 rounded-xl text-sm border focus:outline-none focus:ring-2 focus:ring-violet-500 transition-colors"
+          [ngClass]="isDarkMode ? 'bg-gray-800 border-gray-700 text-gray-100' : 'bg-white border-gray-200 text-gray-800'">
+          <option value="">Semua Kategori</option>
+          <option *ngFor="let cat of categories" [value]="cat.nama_kategori">{{ cat.nama_kategori }}</option>
+        </select>
+      </div>
+
+      <!-- Start button -->
+      <button (click)="startRandomSession()" [disabled]="isStartingRandom"
+        class="w-full py-3 rounded-xl text-sm font-bold transition-all flex items-center justify-center gap-2"
+        [ngClass]="isStartingRandom
+          ? 'bg-violet-400 cursor-not-allowed text-white'
+          : 'bg-violet-600 hover:bg-violet-700 text-white shadow-lg shadow-violet-200'">
+        <svg *ngIf="isStartingRandom" class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+        </svg>
+        {{ isStartingRandom ? 'Memuat soal...' : 'Mulai Latihan' }}
+      </button>
     </div>
   </div>
 

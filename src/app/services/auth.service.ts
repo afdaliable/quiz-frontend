@@ -394,6 +394,11 @@ export class AuthService {
   }
 
   initializeUserState(): void {
+    // Skip validation if we're on the auth callback page — avoid race with exchangeCodeForToken
+    if (typeof window !== 'undefined' && window.location.pathname.includes('/auth/callback')) {
+      return;
+    }
+
     const token = this.getToken();
     if (token) {
       const userStr = localStorage.getItem('user');
@@ -411,7 +416,6 @@ export class AuthService {
           }
 
           // Validate the session on initialization with a small delay
-          // to ensure the backend has time to recognize the token
           setTimeout(() => {
             console.log('Validating session on initialization');
             this.validateSession().subscribe({
@@ -430,7 +434,7 @@ export class AuthService {
                 }
               }
             });
-          }, 500); // 500ms delay
+          }, 1500); // increased delay to avoid race with token exchange
         } catch (e) {
           console.error('Error parsing user data', e);
           this.clearLocalStorage(); // Clear invalid data

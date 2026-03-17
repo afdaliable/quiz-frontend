@@ -89,12 +89,41 @@ export class QuestionComponent implements OnInit, OnDestroy {
     // Derive isReviewMode from quizMode for backward compatibility
     this.isReviewMode = this.quizMode === 'review';
 
+    this.themeService.darkMode$.subscribe(isDark => this.isDarkMode = isDark);
+
+    // Handle random session
+    const randomSessionDataStr = localStorage.getItem('randomSessionData');
+    if (randomSessionDataStr) {
+      localStorage.removeItem('randomSessionData');
+      try {
+        const randomData = JSON.parse(randomSessionDataStr);
+        this.selectedPaket = {
+          id: 0,
+          id_nama_paket_soal: 0,
+          kategori_soal: randomData.kategori_soal || 'Random',
+          nama_paket_soal: randomData.nama_paket_soal || 'Latihan Random',
+          jumlah_soal: randomData.total_questions,
+          is_premium: false,
+          created_at: new Date().toISOString()
+        } as any;
+        this.currentSession = { id: randomData.session_id, session_type: 'random' } as QuizSession;
+        this.sessionInitialized = true;
+        this.loadRandomQuestions(randomData.questions);
+        this.setupAutoSave();
+      } catch (error) {
+        console.error('Error loading random session:', error);
+        alert('Gagal memuat soal random. Silakan coba lagi.');
+        this.router.navigate(['/home']);
+      }
+      return;
+    }
+
     try {
       const selectedPaketStr = localStorage.getItem('selectedPaket');
       if (selectedPaketStr) {
         try {
           const selectedPaket = JSON.parse(selectedPaketStr);
-          
+
           // Validate the selected paket
           const hasValidId = selectedPaket.id || selectedPaket.id_nama_paket_soal;
           if (!hasValidId || !selectedPaket.nama_paket_soal || !selectedPaket.kategori_soal) {
@@ -103,16 +132,12 @@ export class QuestionComponent implements OnInit, OnDestroy {
             this.router.navigate(['/home']);
             return;
           }
-          
+
           this.selectedPaket = selectedPaket;
           console.log('Selected paket:', this.selectedPaket);
-          
+
           // Initialize quiz session first, then load questions
           this.initializeQuizSession();
-          
-          this.themeService.darkMode$.subscribe(
-            isDark => this.isDarkMode = isDark
-          );
         } catch (error) {
           console.error('Error parsing selectedPaket:', error);
           alert('Error loading quiz data. Please select a quiz again.');
@@ -128,6 +153,31 @@ export class QuestionComponent implements OnInit, OnDestroy {
       alert('An unexpected error occurred. Please try again.');
       this.router.navigate(['/home']);
     }
+  }
+
+  private loadRandomQuestions(questions: any[]): void {
+    this.questionList = questions.map((q: any) => ({
+      id: q.id,
+      question: q.soal,
+      options: [q.opt1, q.opt2, q.opt3, q.opt4, q.opt5]
+        .filter((o: any) => !!o)
+        .map((text: string) => ({ text, correct: false })),
+      explanation: q.solution || '',
+    }));
+
+    this.answeredQuestions = new Array(this.questionList.length).fill(false);
+    this.selectedAnswers = new Array(this.questionList.length).fill(null);
+    this.markedQuestions = new Array(this.questionList.length).fill(false);
+
+    if (this.quizMode === 'exam') {
+      this.startTimer();
+    }
+    this.getProgressPercent();
+
+    this.showKeyboardHint = true;
+    this.keyboardHintTimer = setTimeout(() => {
+      this.showKeyboardHint = false;
+    }, 5000);
   }
 
   @HostListener('document:keydown', ['$event'])
