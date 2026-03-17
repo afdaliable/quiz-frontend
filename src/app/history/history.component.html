@@ -105,6 +105,11 @@
                 [ngClass]="isDarkMode ? 'bg-indigo-500/20 text-indigo-300' : 'bg-indigo-50 text-indigo-600'">
                 {{ entry.category }}
               </span>
+              <span *ngIf="entry.session_type === 'random'"
+                class="px-2 py-0.5 rounded-md text-xs font-semibold"
+                [ngClass]="isDarkMode ? 'bg-violet-500/20 text-violet-300' : 'bg-violet-50 text-violet-600'">
+                🎲 Random
+              </span>
               <span class="text-xs" [ngClass]="isDarkMode ? 'text-gray-500' : 'text-gray-400'">
                 {{ formatDate(entry.completed_at) }}
               </span>
