@@ -53,7 +53,8 @@ import { BookmarksPageComponent } from './bookmark/bookmarks-page.component';
     InvalidSessionComponent,
     PaymentCallbackComponent,
     HistoryComponent,
-    NotFoundComponent
+    NotFoundComponent,
+    BookmarksPageComponent
   ],
   imports: [
     BrowserModule,

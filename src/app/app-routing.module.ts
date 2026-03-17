@@ -17,6 +17,7 @@ import { PaymentCallbackComponent } from './premium/payment-callback.component';
 import { LicenseActivationComponent } from './premium/license-activation.component';
 import { HistoryComponent } from './history/history.component';
 import { NotFoundComponent } from './not-found/not-found.component';
+import { BookmarksPageComponent } from './bookmark/bookmarks-page.component';
 
 const routes: Routes = [
   {
@@ -25,13 +26,13 @@ const routes: Routes = [
     pathMatch: 'full',
   },
   {
-    path: 'bookmarks',
-    redirectTo: 'home',
-    pathMatch: 'full',
-  },
-  {
     path: 'home',
     component: HomeComponent,
+  },
+  {
+    path: 'bookmarks',
+    component: BookmarksPageComponent,
+    canActivate: [AuthGuard]
   },
   {
     path: 'welcome',

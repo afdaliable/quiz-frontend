@@ -1,21 +1,8 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
-import { BookMarkService, Bookmark } from '../services/bookmark.service';
+import { BookMarkService, BookmarkQuestion } from '../services/bookmark.service';
 import { Subscription } from 'rxjs';
 import { ActivatedRoute, Router } from '@angular/router';
 import { ThemeService } from '../services/theme.service';
-
-interface QuestionData {
-  id: string;
-  questionText: string;
-  options: Array<{
-    text: string;
-    correct: boolean;
-  }>;
-  question_type: string;
-  solution: string;
-  category: string;
-  package_name: string;
-}
 
 @Component({
   selector: 'app-bookmarks-page',
@@ -23,8 +10,8 @@ interface QuestionData {
   styleUrls: ['./bookmarks-page.component.css']
 })
 export class BookmarksPageComponent implements OnInit, OnDestroy {
-  bookmarks: QuestionData[] = [];
-  filteredBookmarks: QuestionData[] = [];
+  bookmarks: BookmarkQuestion[] = [];
+  filteredBookmarks: BookmarkQuestion[] = [];
   selectedCategory: string = 'all';
   searchTerm: string = '';
   isDarkMode: boolean = false;
@@ -57,8 +44,8 @@ export class BookmarksPageComponent implements OnInit, OnDestroy {
 
   loadBookmarks(): void {
     this.isLoading = true;
-    this.bookMarkService.fetchAllBookmarks().subscribe({
-      next: (bookmarks: string[]) => {
+    this.bookMarkService.fetchAllBookmarkQuestions().subscribe({
+      next: (bookmarks: BookmarkQuestion[]) => {
         this.bookmarks = bookmarks;
         this.filteredBookmarks = bookmarks;
         this.isLoading = false;
@@ -98,7 +85,7 @@ export class BookmarksPageComponent implements OnInit, OnDestroy {
   /**
    * Select bookmarked question
    */
-  selectQuestion(question: QuestionData): void {
+  selectQuestion(question: BookmarkQuestion): void {
     // Store selected question for review
     localStorage.setItem('selectedBookmark', JSON.stringify(question));
     this.router.navigate(['/review'], {
@@ -126,9 +113,15 @@ export class BookmarksPageComponent implements OnInit, OnDestroy {
   /**
    * Remove from bookmarks
    */
-  removeFromBookmarks(question: QuestionData): void {
-    // Need to implement delete endpoint when available
-    console.log('Remove bookmark not yet implemented:', question.id);
+  removeFromBookmarks(question: BookmarkQuestion): void {
+    this.bookMarkService.removeBookmark(question.id).subscribe({
+      next: () => {
+        this.loadBookmarks();
+      },
+      error: (error) => {
+        console.error('Failed to remove bookmark:', error);
+      }
+    });
   }
 
   /**

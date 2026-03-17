@@ -1,7 +1,20 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { BehaviorSubject, Observable, of, tap } from 'rxjs';
+import { BehaviorSubject, Observable, of, tap, map } from 'rxjs';
 import { environment } from '../../environments/environment';
+
+export interface BookmarkQuestion {
+  id: string;
+  questionText: string;
+  options: Array<{
+    text: string;
+    correct: boolean;
+  }>;
+  question_type: string;
+  solution: string;
+  category: string;
+  package_name: string;
+}
 
 @Injectable({
   providedIn: 'root'
@@ -15,7 +28,7 @@ export class BookMarkService {
   }
 
   /**
-   * Get all bookmarks
+   * Get all bookmarks (question IDs)
    */
   getAllBookmarks(): Observable<string[]> {
     return this.bookmarks$;
@@ -32,10 +45,11 @@ export class BookMarkService {
    * Toggle bookmark status for a question
    */
   toggleBookmark(questionId: string): Observable<void> {
-    return this.http.post<any>(
+    return this.http.post<void>(
       environment.production ?
         `${environment.apiUrl}/bookmarks/${questionId}` :
-        `/api/bookmarks/${questionId}`
+        `/api/bookmarks/${questionId}`,
+      null
     ).pipe(
       tap(() => {
         this.loadBookmarks();
@@ -53,7 +67,7 @@ export class BookMarkService {
     // Fetch from server to sync
     this.fetchAllBookmarks().subscribe(serverBookmarks => {
       // Merge local and server bookmarks
-      const merged = [...new Set([...localBookmarks]), ...new Set(serverBookmarks)];
+      const merged = [...new Set([...localBookmarks, ...serverBookmarks])];
       this.bookmarksSubject.next(Array.from(merged));
     });
   }
@@ -66,6 +80,32 @@ export class BookMarkService {
       environment.production ?
         `${environment.apiUrl}/bookmarks` :
         '/api/bookmarks'
+    );
+  }
+
+  /**
+   * Fetch all bookmarked questions with full details
+   */
+  fetchAllBookmarkQuestions(): Observable<BookmarkQuestion[]> {
+    return this.http.get<BookmarkQuestion[]>(
+      environment.production ?
+        `${environment.apiUrl}/bookmarks/questions` :
+        '/api/bookmarks/questions'
+    );
+  }
+
+  /**
+   * Remove a bookmark
+   */
+  removeBookmark(questionId: string): Observable<void> {
+    return this.http.delete<void>(
+      environment.production ?
+        `${environment.apiUrl}/bookmarks/${questionId}` :
+        `/api/bookmarks/${questionId}`
+    ).pipe(
+      tap(() => {
+        this.loadBookmarks();
+      })
     );
   }
 

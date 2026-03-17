@@ -10,25 +10,5 @@
 }
 
 .category-badge {
-  @apply bg-indigo-900/30 text-indigo-300 to {
-    font-weight: 600;
-  }
-}
-
-.category-badge emerald-500 {
-  @apply bg-emerald-900/30 text-emerald-300 to {
-    font-weight: 600;
-  }
-}
-
-.category-badge amber-500 {
-  @apply bg-amber-900/30 text-amber-300 to {
-    font-weight: 600;
-  }
-}
-
-.category-badge blue-500 {
-  @apply bg-blue-900/30 text-blue-300 to {
-    font-weight: 600;
-  }
+  font-weight: 600;
 }
