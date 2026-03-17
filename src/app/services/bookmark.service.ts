@@ -3,7 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { BehaviorSubject, Observable, tap, map } from 'rxjs';
 import { environment } from '../../environments/environment';
 
-// Shape dari backend endpoint GET /api/bookmarks
+// Shape dari backend endpoint GET /api/bookmarks (AFD-85)
 interface BackendBookmarkedQuestion {
   id: string;
   question_id: number;
@@ -19,11 +19,21 @@ interface BackendBookmarkedQuestion {
   pelajaran: string | null;
   tag: string | null;
   question_type: string | null;
-  created_at: string;
+  bookmarked_at: string | null;
+  quiz_name: string;
+  question_number: number;
+}
+
+interface BookmarkListResponse {
+  bookmarks: BackendBookmarkedQuestion[];
+  total: number;
+  page: number;
+  limit: number;
+  total_pages: number;
 }
 
 export interface BookmarkQuestion {
-  id: string;           // bookmark UUID
+  id: string;           // UUID bookmark record
   question_id: number;  // integer question ID (dipakai untuk API call)
   questionText: string;
   options: Array<{
@@ -32,8 +42,10 @@ export interface BookmarkQuestion {
   }>;
   question_type: string;
   solution: string;
-  category: string;
-  package_name: string;
+  category: string;      // pelajaran
+  package_name: string;  // quiz_name
+  question_number: number;
+  bookmarked_at: string | null;
 }
 
 @Injectable({
@@ -44,7 +56,7 @@ export class BookMarkService {
   bookmarks$ = this.bookmarksSubject.asObservable();
 
   private get apiBase(): string {
-    return `${environment.apiUrl}/bookmarks`;
+    return environment.production ? `${environment.apiUrl}/bookmarks` : '/api/bookmarks';
   }
 
   constructor(private http: HttpClient) {
@@ -68,7 +80,7 @@ export class BookMarkService {
     );
   }
 
-  private loadBookmarks(): void {
+  loadBookmarks(): void {
     const localBookmarks = JSON.parse(localStorage.getItem('bookmarks') || '[]');
     this.fetchAllBookmarks().subscribe({
       next: (serverBookmarks) => {
@@ -82,14 +94,21 @@ export class BookMarkService {
   }
 
   fetchAllBookmarks(): Observable<string[]> {
-    return this.http.get<BackendBookmarkedQuestion[]>(this.apiBase).pipe(
-      map(questions => questions.map(q => String(q.question_id)))
+    return this.http.get<any>(`${this.apiBase}?limit=500`).pipe(
+      map(res => {
+        const list: BackendBookmarkedQuestion[] = Array.isArray(res) ? res : (res?.bookmarks ?? []);
+        return list.map(q => String(q.question_id));
+      })
     );
   }
 
-  fetchAllBookmarkQuestions(): Observable<BookmarkQuestion[]> {
-    return this.http.get<BackendBookmarkedQuestion[]>(this.apiBase).pipe(
-      map(questions => questions.map(q => this.mapToFrontend(q)))
+  fetchAllBookmarkQuestions(sortBy: string = 'created_at', sortOrder: string = 'desc'): Observable<BookmarkQuestion[]> {
+    const url = `${this.apiBase}?limit=500&sort_by=${sortBy}&sort_order=${sortOrder}`;
+    return this.http.get<any>(url).pipe(
+      map(res => {
+        const list: BackendBookmarkedQuestion[] = Array.isArray(res) ? res : (res?.bookmarks ?? []);
+        return list.map(q => this.mapToFrontend(q));
+      })
     );
   }
 
@@ -99,26 +118,34 @@ export class BookMarkService {
     );
   }
 
-  getBookmarkCount(): Observable<number> {
-    return this.bookmarks$.pipe(
-      map(bookmarks => bookmarks.length)
+  bulkDeleteBookmarks(questionIds: number[]): Observable<any> {
+    return this.http.delete<any>(`${this.apiBase}/bulk`, {
+      body: { question_ids: questionIds }
+    }).pipe(
+      tap(() => this.loadBookmarks())
     );
   }
 
+  getBookmarkCount(): Observable<number> {
+    return this.bookmarks$.pipe(map(b => b.length));
+  }
+
   private mapToFrontend(q: BackendBookmarkedQuestion): BookmarkQuestion {
-    const opts = [q.opt1, q.opt2, q.opt3, q.opt4, q.opt5].filter((o): o is string => o != null);
+    const optTexts = [q.opt1, q.opt2, q.opt3, q.opt4, q.opt5].filter((o): o is string => o != null);
+    const correctAnswer = (q.correct_answer ?? '').trim();
+
     return {
       id: q.id,
       question_id: q.question_id,
       questionText: q.soal,
-      options: opts.map(text => ({
-        text,
-        correct: text === q.correct_answer
-      })),
+      // correct_answer menyimpan teks jawaban, bukan huruf A/B/C
+      options: optTexts.map(text => ({ text, correct: text === correctAnswer })),
       question_type: q.question_type ?? 'multiple_choice',
       solution: q.solution ?? '',
       category: q.pelajaran ?? q.tag ?? '',
-      package_name: q.modul ?? ''
+      package_name: q.modul ?? q.quiz_name ?? '',  // modul lebih akurat untuk lokasi soal
+      question_number: q.question_number ?? 0,
+      bookmarked_at: q.bookmarked_at ?? null,
     };
   }
 }

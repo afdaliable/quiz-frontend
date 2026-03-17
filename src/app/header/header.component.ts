@@ -3,6 +3,7 @@ import { Router } from '@angular/router';
 import { ThemeService } from '../services/theme.service';
 import { UserService } from '../services/user.service';
 import { AuthService } from '../services/auth.service';
+import { BookMarkService } from '../services/bookmark.service';
 import { Subscription } from 'rxjs';
 
 @Component({
@@ -16,7 +17,9 @@ export class HeaderComponent implements OnInit, OnDestroy {
   isAuthenticated: boolean = false;
   showUserMenu: boolean = false;
   isPremium: boolean = false;
+  bookmarkCount: number = 0;
   private userSubscription: Subscription | null = null;
+  private bookmarkSubscription: Subscription | null = null;
 
   @HostListener('document:click', ['$event'])
   onDocumentClick(event: MouseEvent): void {
@@ -30,20 +33,18 @@ export class HeaderComponent implements OnInit, OnDestroy {
     private themeService: ThemeService,
     private userService: UserService,
     public router: Router,
-    private authService: AuthService
+    private authService: AuthService,
+    private bookMarkService: BookMarkService
   ) {}
 
   ngOnInit(): void {
-    // Subscribe to theme changes
     this.themeService.darkMode$.subscribe(
       isDark => this.isDarkMode = isDark
     );
-    
-    // Check if already logged in
+
     const token = this.authService.getToken();
     this.isAuthenticated = !!token;
-    
-    // Subscribe to user changes
+
     this.userSubscription = this.authService.user$.subscribe(user => {
       this.isAuthenticated = !!user;
       this.currentUser = user;
@@ -51,12 +52,15 @@ export class HeaderComponent implements OnInit, OnDestroy {
         this.updatePremiumStatus(user.account_status);
       }
     });
+
+    this.bookmarkSubscription = this.bookMarkService.getBookmarkCount().subscribe(
+      count => this.bookmarkCount = count
+    );
   }
-  
+
   ngOnDestroy(): void {
-    if (this.userSubscription) {
-      this.userSubscription.unsubscribe();
-    }
+    if (this.userSubscription) this.userSubscription.unsubscribe();
+    if (this.bookmarkSubscription) this.bookmarkSubscription.unsubscribe();
   }
 
   toggleUserMenu(): void {
