@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { Router } from '@angular/router';
 import { UserService } from '../services/user.service';
 import { QuestionService } from '../services/question.service';
@@ -30,7 +30,7 @@ interface PaketSoal {
   templateUrl: './review.component.html',
   styleUrls: ['./review.component.scss']
 })
-export class ReviewComponent implements OnInit {
+export class ReviewComponent implements OnInit, OnDestroy {
   public name: string = '';
   public questionList: Question[] = [];
   public currentQuestion: number = 0;
@@ -43,7 +43,16 @@ export class ReviewComponent implements OnInit {
   incorrectAnswers: number = 0;
   isDarkMode: boolean = false;
   bookmarkedQuestions: Set<string> = new Set();
+  bookmarkLoading: boolean = false;
+
+  // Toast state
+  toastMessage: string = '';
+  toastVisible: boolean = false;
+  toastSuccess: boolean = true;
+  private toastTimer: any = null;
+
   private bookmarkSubscription: Subscription | null = null;
+  private themeSubscription: Subscription | null = null;
 
   constructor(
     private questionService: QuestionService,
@@ -55,54 +64,39 @@ export class ReviewComponent implements OnInit {
 
   ngOnInit(): void {
     this.loadReviewData();
-    this.themeService.darkMode$.subscribe(
+    this.themeSubscription = this.themeService.darkMode$.subscribe(
       isDark => this.isDarkMode = isDark
     );
     this.loadBookmarks();
   }
 
   ngOnDestroy(): void {
-    if (this.bookmarkSubscription) {
-      this.bookmarkSubscription.unsubscribe();
-    }
+    if (this.bookmarkSubscription) this.bookmarkSubscription.unsubscribe();
+    if (this.themeSubscription) this.themeSubscription.unsubscribe();
+    if (this.toastTimer) clearTimeout(this.toastTimer);
   }
 
   loadReviewData(): void {
-    // Load user data
     const userData = localStorage.getItem('user');
-    if (userData) {
-      this.currentUser = JSON.parse(userData);
-    }
+    if (userData) this.currentUser = JSON.parse(userData);
 
-    // Load selected paket
     const paketData = localStorage.getItem('selectedPaket');
     if (paketData) {
       this.selectedPaket = JSON.parse(paketData);
       this.loadQuestions();
     }
 
-    // Load answers
     const answersData = localStorage.getItem('selectedAnswers');
-    if (answersData) {
-      this.selectedAnswers = JSON.parse(answersData);
-    }
+    if (answersData) this.selectedAnswers = JSON.parse(answersData);
   }
 
   loadQuestions(): void {
     if (this.selectedPaket) {
       this.questionService
-        .getQuestions(
-          this.selectedPaket.kategori_soal,
-          this.selectedPaket.nama_paket_soal
-        )
+        .getQuestions(this.selectedPaket.kategori_soal, this.selectedPaket.nama_paket_soal)
         .subscribe({
-          next: (questions: Question[]) => {
-            this.questionList = questions;
-            console.log('Questions loaded:', questions);
-          },
-          error: (error) => {
-            console.error('Error loading questions:', error);
-          }
+          next: (questions: Question[]) => { this.questionList = questions; },
+          error: (error) => { console.error('Error loading questions:', error); }
         });
     }
   }
@@ -141,9 +135,7 @@ export class ReviewComponent implements OnInit {
 
   getUserAnswer(questionIndex: number): string {
     const userAnswer = this.selectedAnswers[questionIndex];
-    return userAnswer !== undefined
-      ? ['A', 'B', 'C', 'D', 'E'][userAnswer]
-      : 'Tidak dijawab';
+    return userAnswer !== undefined ? ['A', 'B', 'C', 'D', 'E'][userAnswer] : 'Tidak dijawab';
   }
 
   goToHome(): void {
@@ -158,23 +150,49 @@ export class ReviewComponent implements OnInit {
     );
   }
 
-  toggleBookmark(question: Question): void {
+  /** Toggle bookmark untuk soal yang sedang aktif (dipanggil dari navigation panel) */
+  toggleCurrentBookmark(): void {
+    if (this.bookmarkLoading || !this.questionList[this.currentQuestion]) return;
+
+    const question = this.questionList[this.currentQuestion];
     const questionId = question.id.toString();
+    this.bookmarkLoading = true;
+
     this.bookMarkService.toggleBookmark(questionId).subscribe({
       next: () => {
-        if (this.bookmarkedQuestions.has(questionId)) {
+        const wasBookmarked = this.bookmarkedQuestions.has(questionId);
+        if (wasBookmarked) {
           this.bookmarkedQuestions.delete(questionId);
+          this.showToast('Bookmark dihapus', false);
         } else {
           this.bookmarkedQuestions.add(questionId);
+          this.showToast('Soal berhasil di-bookmark', true);
         }
+        this.bookmarkLoading = false;
       },
       error: (error) => {
         console.error('Failed to toggle bookmark:', error);
+        this.showToast('Gagal mengubah bookmark', false);
+        this.bookmarkLoading = false;
       }
     });
   }
 
-  isBookmarked(question: Question): boolean {
-    return this.bookmarkedQuestions.has(question.id.toString());
+  get isCurrentQuestionBookmarked(): boolean {
+    if (!this.questionList[this.currentQuestion]) return false;
+    return this.bookmarkedQuestions.has(this.questionList[this.currentQuestion].id.toString());
+  }
+
+  isQuestionBookmarked(index: number): boolean {
+    if (!this.questionList[index]) return false;
+    return this.bookmarkedQuestions.has(this.questionList[index].id.toString());
+  }
+
+  private showToast(message: string, success: boolean): void {
+    if (this.toastTimer) clearTimeout(this.toastTimer);
+    this.toastMessage = message;
+    this.toastSuccess = success;
+    this.toastVisible = true;
+    this.toastTimer = setTimeout(() => { this.toastVisible = false; }, 2500);
   }
 }
