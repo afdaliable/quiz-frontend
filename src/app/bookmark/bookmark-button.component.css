@@ -1,0 +1,11 @@
+.bookmark-button {
+  .bookmark-icon {
+    font-size: 1.25rem;
+    line-height: 1;
+  }
+
+  .loading {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+}

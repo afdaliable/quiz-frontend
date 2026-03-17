@@ -32,6 +32,7 @@ import { PremiumService } from './services/premium.service';
 import { PremiumAccessModalComponent } from './premium/premium-access-modal.component';
 import { HistoryComponent } from './history/history.component';
 import { NotFoundComponent } from './not-found/not-found.component';
+import { BookmarksPageComponent } from './bookmark/bookmarks-page.component';
 
 @NgModule({
   declarations: [

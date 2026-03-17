@@ -25,6 +25,11 @@ const routes: Routes = [
     pathMatch: 'full',
   },
   {
+    path: 'bookmarks',
+    redirectTo: 'home',
+    pathMatch: 'full',
+  },
+  {
     path: 'home',
     component: HomeComponent,
   },

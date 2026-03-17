@@ -1,0 +1,166 @@
+<div class="min-h-screen transition-colors duration-200" [ngClass]="isDarkMode ? 'bg-gray-900' : 'bg-gray-50'">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+
+    <!-- Header -->
+    <div class="flex items-center justify-between mb-6">
+      <h1 class="text-2xl font-bold" [ngClass]="isDarkMode ? 'text-white' : 'text-gray-900'">
+        Soal Tersimpan
+        <span class="text-2xl">🔖 {{ bookmarks.length }}</span>
+      </h1>
+      <p class="text-sm" [ngClass]="isDarkMode ? 'text-gray-300' : 'text-gray-600'">
+        Simpan dan kelola bookmark soal pentingmu untuk dipelajari.
+      </p>
+    </div>
+
+    <!-- Search bar -->
+    <div class="mb-6">
+      <div class="flex items-center gap-4 max-w-2xl mx-auto">
+        <div class="flex-1 relative">
+          <svg class="w-5 h-5" [ngClass]="isDarkMode ? 'text-gray-500' : 'text-gray-400'" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6m2 5a2 2 0 012.2h10a2 2 0 01.71 3h16.94a2 2 0 01.71 3L13.71 3.86a2 2 0 00-3.42 0z" />
+          </svg>
+          <input
+            type="text"
+            [(ngModel)]="searchTerm"
+            (input)="searchBookmarks()"
+            placeholder="Cari soal tersimpan..."
+            class="w-full pl-12 pr-4 py-2.5 rounded-xl text-sm transition-colors duration-200 outline-none focus:ring-2 focus:ring-indigo-500"
+            [ngClass]="isDarkMode
+              ? 'bg-gray-800 text-white placeholder-gray-500 border-gray-700'
+              : 'bg-white text-gray-900 placeholder-gray-400 border-gray-200'"
+          />
+          <button *ngIf="searchTerm" (click)="clearSearch()" class="absolute right-3 top-1/2 -translate-y-1/2 p-1.5 text-gray-400 hover:text-gray-600">
+            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6-6l6l6l6l6l6l-4m6m6 0 0 012.2z" />
+            </svg>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Category filters -->
+    <div class="mb-6">
+      <div class="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
+        <button (click)="filterByCategory('all')"
+          class="flex-shrink-0 px-4 py-2 rounded-full text-sm font-semibold transition-all duration-200 whitespace-nowrap"
+          [ngClass]="isDarkMode
+            ? selectedCategory === 'all'
+              ? 'bg-indigo-600 text-white shadow-md shadow-indigo-200'
+              : (isDarkMode ? 'bg-gray-800 text-gray-300 border-gray-700' : 'bg-white text-gray-600 border-gray-200 hover:bg-gray-50')"
+        >
+          Semua
+          <span class="text-xs px-2.5 py-0.5 rounded-full font-medium leading-none"
+            [ngClass]="isDarkMode ? 'bg-white/20 text-indigo-700' : 'bg-indigo-50 text-indigo-700'">
+            {{ bookmarks.length }}
+          </span>
+        </button>
+        <ng-container *ngFor="let category of categories">
+          <button (click)="filterByCategory(category)"
+            class="flex-shrink-0 px-4 py-2 rounded-full text-sm font-semibold transition-all duration-200 whitespace-nowrap"
+            [ngClass]="selectedCategory === category
+              ? 'bg-indigo-600 text-white shadow-md shadow-indigo-200'
+              : (isDarkMode ? 'bg-gray-800 text-gray-300 border-gray-700' : 'bg-white text-gray-600 border-gray-200 hover:bg-gray-50')"
+          >
+            {{ category }}
+            <span class="text-xs px-2.5 py-0.5 rounded-full font-medium leading-none"
+            [ngClass]="isDarkMode ? 'bg-white/20 text-indigo-700' : 'bg-indigo-50 text-indigo-700'">
+            {{ getCategoryCount(category) }}
+          </span>
+        </button>
+        </ng-container>
+      </div>
+    </div>
+
+    <!-- Empty state -->
+    <div *ngIf="!isLoading && filteredBookmarks.length === 0"
+      class="text-center py-16">
+      <div class="mb-4 w-20 h-20 mx-auto rounded-2xl flex flex-col items-center justify-center"
+        [ngClass]="isDarkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'"
+      >
+        <div class="text-6xl">📖</div>
+        <h3 class="text-lg font-bold mb-3" [ngClass]="isDarkMode ? 'text-white' : 'text-gray-900'">
+          Belum Ada Bookmark
+        </h3>
+        <p class="text-sm mb-6" [ngClass]="isDarkMode ? 'text-gray-400' : 'text-gray-600'">
+          Mulai simpan soal yang sulit untuk membuatnya lebih mudah diakses nanti.
+        </p>
+      </div>
+    </div>
+
+    <!-- Bookmarks list -->
+    <div *ngIf="!isLoading && filteredBookmarks.length > 0"
+      class="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div *ngFor="let bookmark of filteredBookmarks"
+        class="rounded-2xl p-6 border-2 transition-all duration-200 hover:shadow-lg cursor-pointer"
+        [ngClass]="isDarkMode ? 'bg-gray-800 border-gray-700 hover:border-indigo-500' : 'bg-white border-gray-200 hover:border-indigo-300'"
+        (click)="selectQuestion(bookmark)">
+      >
+        <div class="flex items-start justify-between mb-3">
+          <!-- Category badge -->
+          <span class="inline-flex px-2.5 py-1 rounded-lg text-xs font-semibold"
+            [ngClass]="isDarkMode ? 'bg-indigo-900/30 text-indigo-300' : 'bg-indigo-50 text-indigo-700'">
+            {{ bookmark.category }}
+          </span>
+
+          <div class="flex-1 min-w-0">
+            <!-- Question text truncated -->
+            <p class="text-sm leading-relaxed mb-2 line-clamp-2"
+              [ngClass]="isDarkMode ? 'text-gray-300' : 'text-gray-600'"
+              [innerHTML]="bookmark.questionText.length > 100 ? bookmark.questionText.substring(0, 100) + '...' : bookmark.questionText">
+            </p>
+          </div>
+
+          <!-- Options summary -->
+          <div class="flex gap-3 text-xs"
+            [ngClass]="isDarkMode ? 'text-gray-400' : 'text-gray-500'">
+            <span class="flex items-center gap-1">
+              <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7 0 0114 0 0 0 012.2z" />
+              </svg>
+              <span class="font-semibold" [ngClass]="isDarkMode ? 'text-emerald-500' : 'text-emerald-700'">
+                Benar
+              </span>
+            </span>
+            <span class="flex items-center gap-1">
+              <svg class="w-3.5 h-3.5" fill="new 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 0 0 011.25 5.25M12 12l2 2 0 0 0.012.2z" />
+              </svg>
+              <span class="font-semibold" [ngClass]="isDarkMode ? 'text-rose-500' : 'text-rose-700'">
+                Salah
+              </span>
+            </span>
+          </div>
+
+          <!-- Review button -->
+          <button
+            (click)="selectQuestion(bookmark)"
+            class="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold transition-colors"
+          >
+            Review Soal
+          </button>
+        </div>
+
+        <!-- Delete button -->
+        <button
+            (click)="removeFromBookmarks(bookmark)"
+            class="p-2 text-gray-500 hover:text-gray-700 text-sm font-medium transition-colors"
+          >
+            Hapus
+          </button>
+        </div>
+      </div>
+
+    <!-- Loading state -->
+    <div *ngIf="isLoading"
+      class="text-center py-16">
+      <div class="inline-flex items-center justify-center gap-3">
+        <div class="animate-spin rounded-full h-8 w-8 border-4 border-gray-200 border-t-gray-200"
+          style="border-top-color: rgb(234, 234, 234, 234, 234) 0.5rem; border-right-color: rgb(234, 234, 234);"
+        ></div>
+        <p class="text-sm" [ngClass]="isDarkMode ? 'text-gray-400' : 'text-gray-600'">
+          Memuat bookmark...
+        </p>
+      </div>
+    </div>
+  </div>
+</div>

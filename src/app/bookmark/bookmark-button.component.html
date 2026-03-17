@@ -1,0 +1,14 @@
+<button
+  (click)="onBookmarkClick()"
+  [disabled]="isLoading"
+  [attr.aria-label]="isBookmarked ? 'Hapus dari bookmark' : 'Tandai ke bookmark'"
+  [attr.aria-pressed]="isBookmarked"
+  class="flex items-center gap-2 px-3 py-2 rounded-xl text-sm font-semibold border-2 transition-all duration-200"
+  [class]="isBookmarked
+    ? 'bg-amber-500 text-amber-700 hover:bg-amber-600 border-amber-700'
+    : 'bg-emerald-500 text-emerald-700 hover:bg-emerald-600 border-emerald-700'
+  ]"
+>
+  <span [attr.aria-hidden]="true" class="text-lg">{{ get icon() }}</span>
+  <span>{{ get buttonLabel() }}</span>
+</button>
