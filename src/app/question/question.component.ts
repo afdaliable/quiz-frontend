@@ -156,14 +156,20 @@ export class QuestionComponent implements OnInit, OnDestroy {
   }
 
   private loadRandomQuestions(questions: any[]): void {
+    const optKeys = ['opt1', 'opt2', 'opt3', 'opt4', 'opt5'];
     this.questionList = questions.map((q: any) => ({
       id: q.id,
-      question: q.soal,
-      options: [q.opt1, q.opt2, q.opt3, q.opt4, q.opt5]
-        .filter((o: any) => !!o)
-        .map((text: string) => ({ text, correct: false })),
+      questionText: q.soal,
+      question_type: q.question_type || 'multiple_choice',
+      options: optKeys
+        .filter(key => !!q[key])
+        .map(key => ({ text: q[key], correct: key === q.correct_answer })),
       explanation: q.solution || '',
+      solution: q.solution || '',
     }));
+
+    // Simpan soal untuk keperluan review setelah kuis selesai
+    localStorage.setItem('randomReviewQuestions', JSON.stringify(this.questionList));
 
     this.answeredQuestions = new Array(this.questionList.length).fill(false);
     this.selectedAnswers = new Array(this.questionList.length).fill(null);

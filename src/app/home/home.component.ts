@@ -50,6 +50,7 @@ export class HomeComponent implements OnInit, OnDestroy {
   randomCount: number = 10;
   randomCategory: string = '';
   isStartingRandom: boolean = false;
+  randomModalError: string = '';
 
   constructor(
     private questionService: QuestionService,
@@ -438,11 +439,13 @@ export class HomeComponent implements OnInit, OnDestroy {
   closeRandomModal(): void {
     this.showRandomModal = false;
     this.isStartingRandom = false;
+    this.randomModalError = '';
   }
 
   startRandomSession(): void {
     if (this.isStartingRandom) return;
     this.isStartingRandom = true;
+    this.randomModalError = '';
 
     const request = {
       count: this.randomCount,
@@ -460,7 +463,14 @@ export class HomeComponent implements OnInit, OnDestroy {
       error: (error) => {
         console.error('Error starting random session:', error);
         this.isStartingRandom = false;
-        alert('Gagal memulai latihan random. Silakan coba lagi.');
+        const msg: string = error?.error?.message || error?.error?.error || '';
+        if (msg.toLowerCase().includes('no questions') ||
+            msg.toLowerCase().includes('tidak ada soal') ||
+            error?.status === 404) {
+          this.randomModalError = 'Tidak ada soal tersedia untuk kategori ini. Coba pilih kategori lain.';
+        } else {
+          this.randomModalError = 'Gagal memulai latihan. Silakan coba lagi.';
+        }
       }
     });
   }

@@ -83,7 +83,18 @@ export class ReviewComponent implements OnInit, OnDestroy {
     const paketData = localStorage.getItem('selectedPaket');
     if (paketData) {
       this.selectedPaket = JSON.parse(paketData);
-      this.loadQuestions();
+
+      // Untuk sesi random: gunakan soal yang sudah disimpan, bukan re-fetch dari API
+      const randomQuestionsStr = localStorage.getItem('randomReviewQuestions');
+      if (randomQuestionsStr) {
+        try {
+          this.questionList = JSON.parse(randomQuestionsStr);
+        } catch {
+          this.loadQuestions();
+        }
+      } else {
+        this.loadQuestions();
+      }
     }
 
     const answersData = localStorage.getItem('selectedAnswers');
