@@ -29,19 +29,34 @@
             [ngClass]="isDarkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-100'">
 
             <!-- Question header -->
-            <div class="flex items-center gap-2 mb-4">
-              <span class="px-3 py-1 rounded-lg text-sm font-bold bg-indigo-600 text-white">
-                Soal {{ currentQuestion + 1 }}
-              </span>
-              <span class="text-xs font-medium px-2 py-1 rounded-md"
-                [ngClass]="isUserAnswerCorrect(currentQuestion)
-                  ? (isDarkMode ? 'bg-emerald-900/40 text-emerald-400' : 'bg-emerald-50 text-emerald-700')
-                  : selectedAnswers[currentQuestion] !== undefined && selectedAnswers[currentQuestion] !== null
-                  ? (isDarkMode ? 'bg-red-900/40 text-red-400' : 'bg-red-50 text-red-700')
-                  : (isDarkMode ? 'bg-gray-700 text-gray-400' : 'bg-gray-100 text-gray-500')">
-                {{ isUserAnswerCorrect(currentQuestion) ? '✓ Benar' :
-                   (selectedAnswers[currentQuestion] !== undefined && selectedAnswers[currentQuestion] !== null) ? '✗ Salah' : 'Tidak dijawab' }}
-              </span>
+            <div class="flex items-center justify-between gap-2 mb-4">
+              <div class="flex items-center gap-2">
+                <span class="px-3 py-1 rounded-lg text-sm font-bold bg-indigo-600 text-white">
+                  Soal {{ currentQuestion + 1 }}
+                </span>
+                <span class="text-xs font-medium px-2 py-1 rounded-md"
+                  [ngClass]="isUserAnswerCorrect(currentQuestion)
+                    ? (isDarkMode ? 'bg-emerald-900/40 text-emerald-400' : 'bg-emerald-50 text-emerald-700')
+                    : selectedAnswers[currentQuestion] !== undefined && selectedAnswers[currentQuestion] !== null
+                    ? (isDarkMode ? 'bg-red-900/40 text-red-400' : 'bg-red-50 text-red-700')
+                    : (isDarkMode ? 'bg-gray-700 text-gray-400' : 'bg-gray-100 text-gray-500')">
+                  {{ isUserAnswerCorrect(currentQuestion) ? '✓ Benar' :
+                     (selectedAnswers[currentQuestion] !== undefined && selectedAnswers[currentQuestion] !== null) ? '✗ Salah' : 'Tidak dijawab' }}
+                </span>
+              </div>
+
+              <!-- Bookmark button -->
+              <button
+                (click)="toggleBookmark(questionList[currentQuestion])"
+                class="p-2 rounded-lg transition-all duration-200 hover:scale-110"
+                [ngClass]="isBookmarked(questionList[currentQuestion])
+                  ? (isDarkMode ? 'bg-amber-600/20 text-amber-500' : 'bg-amber-100 text-amber-600')
+                  : (isDarkMode ? 'bg-gray-700 text-gray-400 hover:bg-gray-600' : 'bg-gray-100 text-gray-500 hover:bg-gray-200')"
+                title="Simpan soal ini ke bookmark">
+                <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M5 5a2 2 0 012-2v14l7-3 7 3V7a2 2 0 012-2h2"/>
+                </svg>
+              </button>
             </div>
 
             <!-- Question text -->
@@ -208,7 +223,7 @@
 
           <!-- Back to home -->
           <button (click)="goToHome()"
-            class="w-full py-2.5 rounded-xl text-sm font-semibold transition-colors duration-200 border flex items-center justify-center gap-2"
+            class="w-full py-2.5 rounded-xl text-sm font-semibold transition-colors duration-200 border flex items-center justify-center gap-2 mb-2"
             [ngClass]="isDarkMode
               ? 'bg-gray-700 text-gray-200 border-gray-600 hover:bg-gray-600'
               : 'bg-white text-gray-700 border-gray-200 hover:bg-gray-50'">
@@ -217,6 +232,18 @@
             </svg>
             Beranda
           </button>
+
+          <!-- View bookmarks -->
+          <a routerLink="/bookmarks"
+            class="w-full py-2.5 rounded-xl text-sm font-semibold transition-colors duration-200 border flex items-center justify-center gap-2"
+            [ngClass]="isDarkMode
+              ? 'bg-amber-600/20 text-amber-400 border-amber-600/30 hover:bg-amber-600/30'
+              : 'bg-amber-50 text-amber-600 border-amber-200 hover:bg-amber-100'">
+            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M5 5a2 2 0 012-2v14l7-3 7 3V7a2 2 0 012-2h2"/>
+            </svg>
+            Soal Tersimpan
+          </a>
         </div>
       </div>
     </div>

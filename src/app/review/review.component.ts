@@ -3,6 +3,8 @@ import { Router } from '@angular/router';
 import { UserService } from '../services/user.service';
 import { QuestionService } from '../services/question.service';
 import { ThemeService } from '../services/theme.service';
+import { BookMarkService } from '../services/bookmark.service';
+import { Subscription } from 'rxjs';
 
 interface Question {
   id: number;
@@ -40,12 +42,15 @@ export class ReviewComponent implements OnInit {
   correctAnswers: number = 0;
   incorrectAnswers: number = 0;
   isDarkMode: boolean = false;
+  bookmarkedQuestions: Set<string> = new Set();
+  private bookmarkSubscription: Subscription | null = null;
 
   constructor(
     private questionService: QuestionService,
     private router: Router,
     private userService: UserService,
-    private themeService: ThemeService
+    private themeService: ThemeService,
+    private bookMarkService: BookMarkService
   ) {}
 
   ngOnInit(): void {
@@ -53,6 +58,13 @@ export class ReviewComponent implements OnInit {
     this.themeService.darkMode$.subscribe(
       isDark => this.isDarkMode = isDark
     );
+    this.loadBookmarks();
+  }
+
+  ngOnDestroy(): void {
+    if (this.bookmarkSubscription) {
+      this.bookmarkSubscription.unsubscribe();
+    }
   }
 
   loadReviewData(): void {
@@ -136,5 +148,33 @@ export class ReviewComponent implements OnInit {
 
   goToHome(): void {
     this.router.navigate(['/home']);
+  }
+
+  loadBookmarks(): void {
+    this.bookmarkSubscription = this.bookMarkService.getAllBookmarks().subscribe(
+      bookmarkIds => {
+        this.bookmarkedQuestions = new Set(bookmarkIds);
+      }
+    );
+  }
+
+  toggleBookmark(question: Question): void {
+    const questionId = question.id.toString();
+    this.bookMarkService.toggleBookmark(questionId).subscribe({
+      next: () => {
+        if (this.bookmarkedQuestions.has(questionId)) {
+          this.bookmarkedQuestions.delete(questionId);
+        } else {
+          this.bookmarkedQuestions.add(questionId);
+        }
+      },
+      error: (error) => {
+        console.error('Failed to toggle bookmark:', error);
+      }
+    });
+  }
+
+  isBookmarked(question: Question): boolean {
+    return this.bookmarkedQuestions.has(question.id.toString());
   }
 }
