@@ -60,7 +60,10 @@ export class BookMarkService {
   }
 
   constructor(private http: HttpClient) {
-    this.loadBookmarks();
+    // Jangan load saat tidak ada token (e.g. di halaman auth/callback)
+    if (localStorage.getItem('token')) {
+      this.loadBookmarks();
+    }
   }
 
   getAllBookmarks(): Observable<string[]> {

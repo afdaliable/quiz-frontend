@@ -41,8 +41,12 @@ export class AuthInterceptor implements HttpInterceptor {
     
     if (!token) {
       // For API requests that require authentication, redirect to login
-      if (request.url.includes(environment.apiUrl) && 
-          !request.url.includes('/public')) {
+      // Skip redirect if we're on the auth callback page (OAuth flow in progress)
+      const isOnCallbackPage = typeof window !== 'undefined' &&
+        window.location.pathname.includes('/auth/callback');
+      if (request.url.includes(environment.apiUrl) &&
+          !request.url.includes('/public') &&
+          !isOnCallbackPage) {
         console.log('No token found, redirecting to login');
         this.router.navigate(['/login']);
         return throwError(() => new Error('No authentication token found'));
