@@ -252,6 +252,30 @@ export class BookmarksPageComponent implements OnInit, OnDestroy {
     return `${Math.floor(diffDays / 30)} bulan lalu`;
   }
 
+  startQuizFromBookmarks(): void {
+    const source = this.filteredBookmarks.length > 0 ? this.filteredBookmarks : this.bookmarks;
+    if (source.length === 0) return;
+
+    const bookmarkQuizData = {
+      nama_paket_soal: this.selectedCategory !== 'all'
+        ? `Bookmark · ${this.selectedCategory}`
+        : 'Latihan Bookmark',
+      kategori_soal: this.selectedCategory !== 'all' ? this.selectedCategory : 'Bookmark',
+      questions: source.map(b => ({
+        id: b.question_id,
+        questionText: b.questionText,
+        options: b.options,
+        explanation: '',
+        question_type: 'multiple_choice'
+      }))
+    };
+
+    localStorage.setItem('bookmarkQuizData', JSON.stringify(bookmarkQuizData));
+    localStorage.setItem('quizMode', 'study');
+    localStorage.setItem('durasi', '0');
+    this.router.navigate(['/question']);
+  }
+
   selectQuestion(question: BookmarkQuestion): void {
     localStorage.setItem('selectedBookmark', JSON.stringify(question));
     this.router.navigate(['/review']);

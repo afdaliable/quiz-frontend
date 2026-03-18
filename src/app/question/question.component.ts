@@ -118,6 +118,31 @@ export class QuestionComponent implements OnInit, OnDestroy {
       return;
     }
 
+    // Handle bookmark quiz session
+    const bookmarkQuizDataStr = localStorage.getItem('bookmarkQuizData');
+    if (bookmarkQuizDataStr) {
+      localStorage.removeItem('bookmarkQuizData');
+      try {
+        const bookmarkData = JSON.parse(bookmarkQuizDataStr);
+        this.selectedPaket = {
+          id: 0,
+          id_nama_paket_soal: 0,
+          kategori_soal: bookmarkData.kategori_soal || 'Bookmark',
+          nama_paket_soal: bookmarkData.nama_paket_soal || 'Latihan Bookmark',
+          jumlah_soal: bookmarkData.questions.length,
+          is_premium: false,
+          created_at: new Date().toISOString()
+        } as any;
+        this.sessionInitialized = true;
+        this.loadBookmarkQuestions(bookmarkData.questions);
+      } catch (error) {
+        console.error('Error loading bookmark quiz:', error);
+        alert('Gagal memuat soal bookmark. Silakan coba lagi.');
+        this.router.navigate(['/bookmarks']);
+      }
+      return;
+    }
+
     try {
       const selectedPaketStr = localStorage.getItem('selectedPaket');
       if (selectedPaketStr) {
@@ -163,6 +188,29 @@ export class QuestionComponent implements OnInit, OnDestroy {
         .filter((o: any) => !!o)
         .map((text: string) => ({ text, correct: false })),
       explanation: q.solution || '',
+    }));
+
+    this.answeredQuestions = new Array(this.questionList.length).fill(false);
+    this.selectedAnswers = new Array(this.questionList.length).fill(null);
+    this.markedQuestions = new Array(this.questionList.length).fill(false);
+
+    if (this.quizMode === 'exam') {
+      this.startTimer();
+    }
+    this.getProgressPercent();
+
+    this.showKeyboardHint = true;
+    this.keyboardHintTimer = setTimeout(() => {
+      this.showKeyboardHint = false;
+    }, 5000);
+  }
+
+  private loadBookmarkQuestions(questions: any[]): void {
+    this.questionList = questions.map((q: any) => ({
+      id: q.id,
+      question: q.questionText,
+      options: q.options || [],
+      explanation: q.explanation || '',
     }));
 
     this.answeredQuestions = new Array(this.questionList.length).fill(false);
