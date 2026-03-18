@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, HostListener } from '@angular/core';
 import { BookMarkService, BookmarkQuestion } from '../services/bookmark.service';
 import { Subscription } from 'rxjs';
 import { Router } from '@angular/router';
@@ -16,6 +16,14 @@ export class BookmarksPageComponent implements OnInit, OnDestroy {
   isDarkMode: boolean = false;
   isLoading: boolean = false;
 
+  // Sort
+  sortBy: string = 'created_at';
+  sortOrder: string = 'desc';
+  showSortMenu: boolean = false;
+
+  // View
+  viewMode: 'grid' | 'list' = 'list';
+
   // Delete confirmation
   deleteTarget: BookmarkQuestion | null = null;
   isDeleting: boolean = false;
@@ -26,7 +34,11 @@ export class BookmarksPageComponent implements OnInit, OnDestroy {
   toastSuccess: boolean = true;
   private toastTimer: any = null;
 
-  // Fade-out animation tracking (single delete)
+  // Bulk select
+  selectedIds: Set<string> = new Set();
+  isBulkDeleting: boolean = false;
+
+  // Fade-out animation tracking
   fadingOutIds: Set<string> = new Set();
 
   private themeSubscription: Subscription | null = null;
@@ -47,9 +59,17 @@ export class BookmarksPageComponent implements OnInit, OnDestroy {
     if (this.toastTimer) clearTimeout(this.toastTimer);
   }
 
+  @HostListener('document:click', ['$event'])
+  onDocumentClick(event: MouseEvent): void {
+    const target = event.target as HTMLElement;
+    if (!target.closest('.sort-menu-container')) {
+      this.showSortMenu = false;
+    }
+  }
+
   loadBookmarks(): void {
     this.isLoading = true;
-    this.bookMarkService.fetchAllBookmarkQuestions().subscribe({
+    this.bookMarkService.fetchAllBookmarkQuestions(this.sortBy, this.sortOrder).subscribe({
       next: (bookmarks) => {
         this.bookmarks = bookmarks;
         this.applyFilter();
@@ -72,7 +92,20 @@ export class BookmarksPageComponent implements OnInit, OnDestroy {
 
   filterByCategory(category: string): void {
     this.selectedCategory = category;
+    this.selectedIds.clear();
     this.applyFilter();
+  }
+
+  setSortBy(sortBy: string, sortOrder: string): void {
+    this.sortBy = sortBy;
+    this.sortOrder = sortOrder;
+    this.showSortMenu = false;
+    this.loadBookmarks();
+  }
+
+  getSortLabel(): string {
+    if (this.sortBy === 'pelajaran') return 'Berdasarkan Subject';
+    return this.sortOrder === 'asc' ? 'Terlama' : 'Terbaru';
   }
 
   getCategories(): string[] {
@@ -86,6 +119,10 @@ export class BookmarksPageComponent implements OnInit, OnDestroy {
 
   getOptionLabel(index: number): string {
     return ['A', 'B', 'C', 'D', 'E'][index] || String(index + 1);
+  }
+
+  hasCorrectAnswer(bookmark: BookmarkQuestion): boolean {
+    return bookmark.options.some(o => o.correct);
   }
 
   // ── Delete ─────────────────────────────────────────────────────────────────
@@ -121,6 +158,60 @@ export class BookmarksPageComponent implements OnInit, OnDestroy {
           this.fadingOutIds.delete(qidStr);
           this.showToast('Gagal menghapus bookmark', false);
           this.isDeleting = false;
+        }
+      });
+    }, 280);
+  }
+
+  // ── Bulk Select ────────────────────────────────────────────────────────────
+
+  toggleSelect(questionId: number, event: Event): void {
+    event.stopPropagation();
+    const id = String(questionId);
+    if (this.selectedIds.has(id)) {
+      this.selectedIds.delete(id);
+    } else {
+      this.selectedIds.add(id);
+    }
+  }
+
+  toggleSelectAll(): void {
+    if (this.isAllSelected) {
+      this.selectedIds.clear();
+    } else {
+      this.selectedIds = new Set(this.filteredBookmarks.map(b => String(b.question_id)));
+    }
+  }
+
+  get isAllSelected(): boolean {
+    return this.filteredBookmarks.length > 0 && this.selectedIds.size === this.filteredBookmarks.length;
+  }
+
+  isSelected(question: BookmarkQuestion): boolean {
+    return this.selectedIds.has(String(question.question_id));
+  }
+
+  bulkDelete(): void {
+    if (this.selectedIds.size === 0 || this.isBulkDeleting) return;
+    const count = this.selectedIds.size;
+    const ids = Array.from(this.selectedIds).map(id => parseInt(id, 10));
+    this.isBulkDeleting = true;
+    this.selectedIds.forEach(id => this.fadingOutIds.add(id));
+
+    setTimeout(() => {
+      this.bookMarkService.bulkDeleteBookmarks(ids).subscribe({
+        next: () => {
+          this.bookmarks = this.bookmarks.filter(b => !ids.includes(b.question_id));
+          this.fadingOutIds.clear();
+          this.selectedIds.clear();
+          this.applyFilter();
+          this.showToast(`${count} bookmark berhasil dihapus`, true);
+          this.isBulkDeleting = false;
+        },
+        error: () => {
+          this.fadingOutIds.clear();
+          this.showToast('Gagal menghapus bookmark', false);
+          this.isBulkDeleting = false;
         }
       });
     }, 280);
