@@ -3,6 +3,7 @@ import { Router } from '@angular/router';
 import { UserService } from '../services/user.service';
 import { ThemeService } from '../services/theme.service';
 import { AuthService } from '../services/auth.service';
+import { QuestionService } from '../services/question.service';
 import { Subscription } from 'rxjs';
 import { PaketSoal } from '../models/paket-soal.model';
 
@@ -42,13 +43,19 @@ export class WelcomeComponent implements OnInit, OnDestroy {
   categoryIcon: string = DEFAULT_CONFIG.icon;
   userInitial: string = '?';
 
+  // Package stats
+  bestScore: number | null = null;
+  attemptCount: number = 0;
+  isLoadingStats: boolean = false;
+
   private userSubscription: Subscription | null = null;
 
   constructor(
     private router: Router,
     private userService: UserService,
     private themeService: ThemeService,
-    private authService: AuthService
+    private authService: AuthService,
+    private questionService: QuestionService
   ) {}
 
   ngOnInit(): void {
@@ -68,6 +75,7 @@ export class WelcomeComponent implements OnInit, OnDestroy {
       this.selectedPaket = JSON.parse(paketData);
       this.resolveCategoryConfig();
       this.recalcEstimasi();
+      this.loadPackageStats();
     }
 
     // Reset quizMode to default so stale localStorage from prior sessions doesn't interfere
@@ -108,6 +116,28 @@ export class WelcomeComponent implements OnInit, OnDestroy {
       console.error('No paket selected');
       alert('Please select a quiz package first.');
     }
+  }
+
+  private loadPackageStats(): void {
+    if (!this.selectedPaket?.nama_paket_soal) return;
+    this.isLoadingStats = true;
+    const packageName = this.selectedPaket.nama_paket_soal;
+
+    this.questionService.getQuizHistory(1, 200).subscribe({
+      next: (res) => {
+        const entries = (res.data || []).filter(
+          e => e.package_name === packageName && e.session_type !== 'study'
+        );
+        this.attemptCount = entries.length;
+        this.bestScore = entries.length > 0
+          ? Math.max(...entries.map(e => e.score))
+          : null;
+        this.isLoadingStats = false;
+      },
+      error: () => {
+        this.isLoadingStats = false;
+      }
+    });
   }
 
   private resolveCategoryConfig(): void {

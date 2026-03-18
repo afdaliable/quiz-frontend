@@ -65,6 +65,53 @@
         </div>
       </div>
 
+      <!-- Skor terbaik -->
+      <div class="px-6 py-3 border-t transition-colors duration-200"
+        [ngClass]="isDarkMode ? 'border-gray-700' : 'border-gray-100'">
+
+        <!-- Loading skeleton -->
+        <div *ngIf="isLoadingStats" class="flex items-center gap-2">
+          <div class="w-4 h-4 rounded-full animate-pulse"
+            [ngClass]="isDarkMode ? 'bg-gray-700' : 'bg-gray-200'"></div>
+          <div class="h-3 w-40 rounded animate-pulse"
+            [ngClass]="isDarkMode ? 'bg-gray-700' : 'bg-gray-200'"></div>
+        </div>
+
+        <!-- Pernah main -->
+        <div *ngIf="!isLoadingStats && bestScore !== null"
+          class="flex items-center justify-between">
+          <div class="flex items-center gap-2">
+            <span class="text-base">🏆</span>
+            <div>
+              <p class="text-xs font-medium" [ngClass]="isDarkMode ? 'text-gray-400' : 'text-gray-500'">
+                Skor terbaikmu
+              </p>
+              <p class="text-sm font-bold"
+                [ngClass]="bestScore >= 80
+                  ? 'text-emerald-500'
+                  : bestScore >= 60
+                  ? 'text-amber-500'
+                  : 'text-rose-500'">
+                {{ bestScore }}<span class="text-xs font-normal" [ngClass]="isDarkMode ? 'text-gray-500' : 'text-gray-400'">/100</span>
+              </p>
+            </div>
+          </div>
+          <span class="text-xs px-2.5 py-1 rounded-full font-medium"
+            [ngClass]="isDarkMode ? 'bg-gray-700 text-gray-400' : 'bg-gray-100 text-gray-500'">
+            {{ attemptCount }}× dimainkan
+          </span>
+        </div>
+
+        <!-- Belum pernah main -->
+        <div *ngIf="!isLoadingStats && bestScore === null && attemptCount === 0"
+          class="flex items-center gap-2">
+          <span class="text-base">🎯</span>
+          <p class="text-xs font-medium" [ngClass]="isDarkMode ? 'text-gray-400' : 'text-gray-500'">
+            Belum pernah dimainkan — jadilah yang pertama!
+          </p>
+        </div>
+      </div>
+
       <!-- Form body -->
       <form (ngSubmit)="startQuiz()" #quizForm="ngForm" class="px-6 py-5 space-y-5">
 
