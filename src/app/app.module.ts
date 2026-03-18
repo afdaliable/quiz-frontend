@@ -33,6 +33,7 @@ import { PremiumAccessModalComponent } from './premium/premium-access-modal.comp
 import { HistoryComponent } from './history/history.component';
 import { NotFoundComponent } from './not-found/not-found.component';
 import { BookmarksPageComponent } from './bookmark/bookmarks-page.component';
+import { BottomNavComponent } from './bottom-nav/bottom-nav.component';
 
 @NgModule({
   declarations: [
@@ -54,7 +55,8 @@ import { BookmarksPageComponent } from './bookmark/bookmarks-page.component';
     PaymentCallbackComponent,
     HistoryComponent,
     NotFoundComponent,
-    BookmarksPageComponent
+    BookmarksPageComponent,
+    BottomNavComponent
   ],
   imports: [
     BrowserModule,

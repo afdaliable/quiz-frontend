@@ -1,0 +1,20 @@
+/* Only show on mobile */
+.bottom-nav {
+  display: none;
+}
+
+@media (max-width: 767px) {
+  .bottom-nav {
+    display: block;
+  }
+}
+
+/* Safe area for iPhone notch */
+.safe-area-bottom {
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+/* Min height for tap targets */
+.bottom-nav button {
+  min-height: 56px;
+}
