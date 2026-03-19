@@ -120,8 +120,10 @@ export class QuestionDiscussionComponent implements OnInit, OnChanges, OnDestroy
         this.replyTarget = null;
         this.isPosting = false;
       },
-      error: () => {
-        this.errorMessage = 'Gagal mengirim komentar. Coba lagi.';
+      error: (err) => {
+        this.errorMessage = err?.status === 429
+          ? 'Tunggu sebentar sebelum berkomentar lagi.'
+          : 'Gagal mengirim komentar. Coba lagi.';
         this.isPosting = false;
       }
     });

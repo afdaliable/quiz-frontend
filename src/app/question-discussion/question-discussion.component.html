@@ -81,10 +81,9 @@
 
           <!-- Actions -->
           <div class="flex items-center gap-3">
-            <!-- Upvote -->
-            <button
+            <!-- Upvote (hanya jika login) -->
+            <button *ngIf="isAuthenticated"
               (click)="toggleUpvote(c)"
-              [disabled]="!isAuthenticated"
               class="flex items-center gap-1 text-xs transition-colors duration-150"
               [ngClass]="c.has_upvoted
                 ? (isDarkMode ? 'text-indigo-400' : 'text-indigo-600')
@@ -95,6 +94,12 @@
               </svg>
               {{ c.upvotes > 0 ? c.upvotes : '' }} Suka
             </button>
+            <!-- Upvote count (hanya tampilkan angka jika tidak login dan ada upvotes) -->
+            <span *ngIf="!isAuthenticated && c.upvotes > 0"
+              class="text-xs"
+              [ngClass]="isDarkMode ? 'text-gray-500' : 'text-gray-400'">
+              {{ c.upvotes }} suka
+            </span>
 
             <!-- Reply -->
             <button *ngIf="isAuthenticated"
@@ -147,10 +152,9 @@
                   [ngClass]="isDarkMode ? 'text-gray-300' : 'text-gray-700'">
                   {{ r.body }}
                 </p>
-                <!-- Upvote untuk reply -->
-                <button
+                <!-- Upvote untuk reply (hanya jika login) -->
+                <button *ngIf="isAuthenticated"
                   (click)="toggleUpvote(r)"
-                  [disabled]="!isAuthenticated"
                   class="flex items-center gap-1 text-xs mt-1.5 transition-colors duration-150"
                   [ngClass]="r.has_upvoted
                     ? (isDarkMode ? 'text-indigo-400' : 'text-indigo-600')

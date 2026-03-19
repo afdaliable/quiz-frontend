@@ -1,7 +1,8 @@
 import { Injectable, Inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { Comment } from '../models/comment.model';
+import { map } from 'rxjs/operators';
+import { Comment, CommentListResponse } from '../models/comment.model';
 
 @Injectable({ providedIn: 'root' })
 export class CommentService {
@@ -15,15 +16,19 @@ export class CommentService {
   }
 
   getComments(questionId: number, page: number = 1): Observable<Comment[]> {
-    return this.http.get<Comment[]>(
-      `${this.baseUrl}/questions/${questionId}/comments?page=${page}&limit=20`
-    );
+    return this.http
+      .get<CommentListResponse>(
+        `${this.baseUrl}/questions/${questionId}/comments?page=${page}&limit=20`
+      )
+      .pipe(map(res => res.data || []));
   }
 
   getReplies(questionId: number, commentId: string): Observable<Comment[]> {
-    return this.http.get<Comment[]>(
-      `${this.baseUrl}/questions/${questionId}/comments/${commentId}/replies`
-    );
+    return this.http
+      .get<CommentListResponse>(
+        `${this.baseUrl}/questions/${questionId}/comments/${commentId}/replies`
+      )
+      .pipe(map(res => res.data || []));
   }
 
   postComment(questionId: number, body: string, parentId?: string): Observable<Comment> {

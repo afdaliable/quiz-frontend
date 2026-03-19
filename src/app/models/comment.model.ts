@@ -23,4 +23,5 @@ export interface CommentListResponse {
   data: Comment[];
   total: number;
   page: number;
+  limit: number;
 }
