@@ -18,6 +18,7 @@ import { LicenseActivationComponent } from './premium/license-activation.compone
 import { HistoryComponent } from './history/history.component';
 import { NotFoundComponent } from './not-found/not-found.component';
 import { BookmarksPageComponent } from './bookmark/bookmarks-page.component';
+import { AboutComponent } from './about/about.component';
 
 const routes: Routes = [
   {
@@ -96,6 +97,10 @@ const routes: Routes = [
   {
     path: 'aktivasi-berlangganan',
     component: LicenseActivationComponent
+  },
+  {
+    path: 'about',
+    component: AboutComponent,
   },
   {
     path: 'invalid-session',

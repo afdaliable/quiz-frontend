@@ -122,6 +122,13 @@
           </div>
         </div>
 
+        <!-- Tentang Kami link (if not logged in) -->
+        <a *ngIf="!isLoggedIn()" routerLink="/about"
+          class="hidden sm:inline-block px-3 py-2 rounded-lg text-sm font-medium transition-colors duration-200"
+          [ngClass]="isDarkMode ? 'text-gray-300 hover:text-white hover:bg-gray-800' : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'">
+          Tentang
+        </a>
+
         <!-- Login button (if not logged in) -->
         <button *ngIf="!isLoggedIn()" (click)="router.navigate([getButtonRoute()])"
           class="px-4 py-2 rounded-lg text-sm font-semibold bg-indigo-600 text-white hover:bg-indigo-700 transition-colors duration-200">
