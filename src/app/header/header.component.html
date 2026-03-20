@@ -6,14 +6,17 @@
       <!-- Brand -->
       <a routerLink="/home" class="flex items-center gap-2 group">
         <div class="w-8 h-8 rounded-lg bg-indigo-600 flex items-center justify-center shadow-sm group-hover:bg-indigo-700 transition-colors">
+          <!-- Graduation cap icon -->
           <svg class="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-              d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
+              d="M12 14l9-5-9-5-9 5 9 5z" />
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z" />
           </svg>
         </div>
         <span class="text-xl font-bold tracking-tight transition-colors duration-200"
           [ngClass]="isDarkMode ? 'text-white' : 'text-gray-900'">
-          QuizKu
+          Canducation
         </span>
       </a>
 
@@ -121,6 +124,13 @@
             </button>
           </div>
         </div>
+
+        <!-- Tentang Kami link (if not logged in) -->
+        <a *ngIf="!isLoggedIn()" routerLink="/about"
+          class="hidden sm:inline-block px-3 py-2 rounded-lg text-sm font-medium transition-colors duration-200"
+          [ngClass]="isDarkMode ? 'text-gray-300 hover:text-white hover:bg-gray-800' : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'">
+          Tentang
+        </a>
 
         <!-- Login button (if not logged in) -->
         <button *ngIf="!isLoggedIn()" (click)="router.navigate([getButtonRoute()])"

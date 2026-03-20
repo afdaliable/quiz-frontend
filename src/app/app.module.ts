@@ -34,6 +34,8 @@ import { HistoryComponent } from './history/history.component';
 import { NotFoundComponent } from './not-found/not-found.component';
 import { BookmarksPageComponent } from './bookmark/bookmarks-page.component';
 import { BottomNavComponent } from './bottom-nav/bottom-nav.component';
+import { QuestionDiscussionComponent } from './question-discussion/question-discussion.component';
+import { AboutComponent } from './about/about.component';
 
 @NgModule({
   declarations: [
@@ -56,7 +58,9 @@ import { BottomNavComponent } from './bottom-nav/bottom-nav.component';
     HistoryComponent,
     NotFoundComponent,
     BookmarksPageComponent,
-    BottomNavComponent
+    BottomNavComponent,
+    QuestionDiscussionComponent,
+    AboutComponent
   ],
   imports: [
     BrowserModule,
