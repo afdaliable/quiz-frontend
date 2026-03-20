@@ -17,6 +17,8 @@ export class AppComponent implements OnInit, OnDestroy {
   private subscriptions: Subscription[] = [];
   showSessionInvalidModal = false;
   isNavigating = false;
+  showBottomNav = false;
+  private readonly hiddenNavRoutes = ['/question', '/review', '/welcome', '/login', '/auth'];
 
   constructor(
     private userService: UserService,
@@ -35,6 +37,7 @@ export class AppComponent implements OnInit, OnDestroy {
         this.currentUrl = event.url;
         this.isRedirecting = false;
         this.isNavigating = false;
+        this.showBottomNav = !this.hiddenNavRoutes.some(r => event.url.startsWith(r));
         console.log('Navigation completed to:', this.currentUrl);
       } else if (event instanceof NavigationCancel || event instanceof NavigationError) {
         this.isNavigating = false;

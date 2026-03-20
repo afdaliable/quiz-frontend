@@ -13,7 +13,6 @@ export class BookmarksPageComponent implements OnInit, OnDestroy {
   bookmarks: BookmarkQuestion[] = [];
   filteredBookmarks: BookmarkQuestion[] = [];
   selectedCategory: string = 'all';
-  searchTerm: string = '';
   isDarkMode: boolean = false;
   isLoading: boolean = false;
 
@@ -23,7 +22,7 @@ export class BookmarksPageComponent implements OnInit, OnDestroy {
   showSortMenu: boolean = false;
 
   // View
-  viewMode: 'grid' | 'list' = 'grid';
+  viewMode: 'grid' | 'list' = 'list';
 
   // Delete confirmation
   deleteTarget: BookmarkQuestion | null = null;
@@ -84,33 +83,16 @@ export class BookmarksPageComponent implements OnInit, OnDestroy {
   }
 
   applyFilter(): void {
-    let result = [...this.bookmarks];
-    if (this.selectedCategory !== 'all') {
-      result = result.filter(b => b.category === this.selectedCategory);
+    if (this.selectedCategory === 'all') {
+      this.filteredBookmarks = [...this.bookmarks];
+    } else {
+      this.filteredBookmarks = this.bookmarks.filter(b => b.category === this.selectedCategory);
     }
-    if (this.searchTerm.trim()) {
-      const term = this.searchTerm.toLowerCase();
-      result = result.filter(b =>
-        b.questionText.toLowerCase().includes(term) ||
-        (b.package_name || '').toLowerCase().includes(term) ||
-        (b.category || '').toLowerCase().includes(term)
-      );
-    }
-    this.filteredBookmarks = result;
   }
 
   filterByCategory(category: string): void {
     this.selectedCategory = category;
     this.selectedIds.clear();
-    this.applyFilter();
-  }
-
-  searchBookmarks(): void {
-    this.applyFilter();
-  }
-
-  clearSearch(): void {
-    this.searchTerm = '';
     this.applyFilter();
   }
 
@@ -133,6 +115,14 @@ export class BookmarksPageComponent implements OnInit, OnDestroy {
 
   getCategoryCount(category: string): number {
     return this.bookmarks.filter(b => b.category === category).length;
+  }
+
+  getOptionLabel(index: number): string {
+    return ['A', 'B', 'C', 'D', 'E'][index] || String(index + 1);
+  }
+
+  hasCorrectAnswer(bookmark: BookmarkQuestion): boolean {
+    return bookmark.options.some(o => o.correct);
   }
 
   // ── Delete ─────────────────────────────────────────────────────────────────
@@ -197,6 +187,10 @@ export class BookmarksPageComponent implements OnInit, OnDestroy {
     return this.filteredBookmarks.length > 0 && this.selectedIds.size === this.filteredBookmarks.length;
   }
 
+  isSelected(question: BookmarkQuestion): boolean {
+    return this.selectedIds.has(String(question.question_id));
+  }
+
   bulkDelete(): void {
     if (this.selectedIds.size === 0 || this.isBulkDeleting) return;
     const count = this.selectedIds.size;
@@ -223,19 +217,43 @@ export class BookmarksPageComponent implements OnInit, OnDestroy {
     }, 280);
   }
 
-  // ── Helpers ────────────────────────────────────────────────────────────────
-
   isFadingOut(question: BookmarkQuestion): boolean {
     return this.fadingOutIds.has(String(question.question_id));
   }
 
-  isSelected(question: BookmarkQuestion): boolean {
-    return this.selectedIds.has(String(question.question_id));
+  // ── Latihan dari Bookmark ───────────────────────────────────────────────────
+
+  startQuizFromBookmarks(): void {
+    const source = this.filteredBookmarks.length > 0 ? this.filteredBookmarks : this.bookmarks;
+    if (source.length === 0) return;
+
+    const bookmarkQuizData = {
+      nama_paket_soal: this.selectedCategory !== 'all'
+        ? `Bookmark · ${this.selectedCategory}`
+        : 'Latihan Bookmark',
+      kategori_soal: this.selectedCategory !== 'all' ? this.selectedCategory : 'Bookmark',
+      questions: source.map(b => ({
+        id: b.question_id,
+        questionText: b.questionText,
+        options: b.options,
+        explanation: b.solution || '',
+        question_type: 'multiple_choice'
+      }))
+    };
+
+    localStorage.setItem('bookmarkQuizData', JSON.stringify(bookmarkQuizData));
+    localStorage.setItem('quizMode', 'study');
+    localStorage.setItem('durasi', '0');
+    this.router.navigate(['/question']);
   }
 
-  hasCorrectAnswer(bookmark: BookmarkQuestion): boolean {
-    return bookmark.options.some(o => o.correct);
+  // ── Navigation ─────────────────────────────────────────────────────────────
+
+  goToHome(): void {
+    this.router.navigate(['/home']);
   }
+
+  // ── Helpers ────────────────────────────────────────────────────────────────
 
   relativeTime(dateStr: string | null): string {
     if (!dateStr) return '';
@@ -250,15 +268,6 @@ export class BookmarksPageComponent implements OnInit, OnDestroy {
     if (diffHours < 24) return `${diffHours} jam lalu`;
     if (diffDays < 30) return `${diffDays} hari lalu`;
     return `${Math.floor(diffDays / 30)} bulan lalu`;
-  }
-
-  selectQuestion(question: BookmarkQuestion): void {
-    localStorage.setItem('selectedBookmark', JSON.stringify(question));
-    this.router.navigate(['/review']);
-  }
-
-  goToHome(): void {
-    this.router.navigate(['/home']);
   }
 
   private showToast(message: string, success: boolean): void {

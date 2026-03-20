@@ -1,0 +1,44 @@
+<nav
+  class="bottom-nav fixed bottom-0 left-0 right-0 z-50 border-t transition-colors duration-200"
+  [ngClass]="isDarkMode ? 'bg-gray-900 border-gray-800' : 'bg-white border-gray-200'"
+>
+  <div class="flex items-stretch safe-area-bottom">
+    <button
+      *ngFor="let tab of tabs"
+      type="button"
+      (click)="navigate(tab.route)"
+      class="flex-1 flex flex-col items-center justify-center gap-0.5 py-2 relative transition-colors duration-150 focus:outline-none"
+      [ngClass]="isActive(tab.route)
+        ? (isDarkMode ? 'text-indigo-400' : 'text-indigo-600')
+        : (isDarkMode ? 'text-gray-500 hover:text-gray-300' : 'text-gray-400 hover:text-gray-600')"
+    >
+      <!-- Active indicator pill -->
+      <span
+        *ngIf="isActive(tab.route)"
+        class="absolute top-0 left-1/2 -translate-x-1/2 w-8 h-0.5 rounded-b-full transition-all"
+        [ngClass]="isDarkMode ? 'bg-indigo-400' : 'bg-indigo-600'"
+      ></span>
+
+      <!-- Icon -->
+      <span class="relative flex items-center justify-center">
+        <span [innerHTML]="isActive(tab.route) ? tab.activeIcon : tab.icon"></span>
+
+        <!-- Bookmark badge -->
+        <span
+          *ngIf="tab.route === '/bookmarks' && bookmarkCount > 0"
+          class="absolute -top-1 -right-2 min-w-[16px] h-4 px-0.5 rounded-full bg-indigo-600 text-white text-[10px] font-bold leading-4 flex items-center justify-center"
+        >
+          {{ bookmarkCount > 99 ? '99+' : bookmarkCount }}
+        </span>
+      </span>
+
+      <!-- Label -->
+      <span
+        class="text-[10px] leading-none font-medium transition-all duration-150"
+        [ngClass]="isActive(tab.route) ? 'font-semibold' : ''"
+      >
+        {{ tab.label }}
+      </span>
+    </button>
+  </div>
+</nav>

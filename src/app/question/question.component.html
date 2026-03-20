@@ -80,11 +80,16 @@
             [ngClass]="isDarkMode ? 'text-gray-300' : 'text-gray-700'">
             {{ currentQuestion + 1 }} / {{ questionList.length }}
           </span>
-          <div class="hidden sm:block w-36 h-3 rounded-full overflow-hidden"
+          <div class="hidden sm:block w-48 h-2.5 rounded-full overflow-hidden"
             [ngClass]="isDarkMode ? 'bg-gray-700' : 'bg-gray-200'">
-            <div class="h-full bg-gradient-to-r from-indigo-500 via-indigo-600 to-purple-600 rounded-full transition-all duration-300"
+            <div class="h-full rounded-full transition-all duration-400 ease-in-out"
+              style="background: linear-gradient(90deg, #6366f1, #8b5cf6)"
               [style.width.%]="((currentQuestion + 1) / questionList.length) * 100"></div>
           </div>
+          <span class="hidden sm:inline text-xs font-medium"
+            [ngClass]="isDarkMode ? 'text-gray-500' : 'text-gray-400'">
+            {{ ((currentQuestion + 1) / questionList.length * 100) | number:'1.0-0' }}%
+          </span>
         </div>
 
         <!-- Timer (only show in exam mode) -->
@@ -149,6 +154,15 @@
           </button>
         </div>
       </div>
+    </div>
+  </div>
+
+  <!-- Full-width progress bar -->
+  <div class="w-full h-2.5 transition-colors duration-200"
+    [ngClass]="isDarkMode ? 'bg-gray-800' : 'bg-gray-100'">
+    <div class="h-full rounded-r-full transition-all duration-400 ease-in-out"
+      style="background: linear-gradient(90deg, #6366f1, #8b5cf6)"
+      [style.width.%]="((currentQuestion + 1) / questionList.length) * 100">
     </div>
   </div>
 

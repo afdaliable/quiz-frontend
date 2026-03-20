@@ -5,7 +5,10 @@
 </div>
 
 <app-header></app-header>
-<router-outlet></router-outlet>
+<div [class.pb-14]="showBottomNav">
+  <router-outlet></router-outlet>
+</div>
+<app-bottom-nav *ngIf="showBottomNav"></app-bottom-nav>
 
 <!-- Session Invalid Modal -->
 <div *ngIf="showSessionInvalidModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
