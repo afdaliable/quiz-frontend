@@ -1,0 +1,549 @@
+<div class="min-h-screen transition-colors duration-200"
+  [ngClass]="isDarkMode ? 'bg-gray-950 text-white' : 'bg-white text-gray-900'">
+
+  <!-- ===== SECTION 1: HERO ===== -->
+  <section class="relative overflow-hidden">
+    <!-- Background gradient -->
+    <div class="absolute inset-0 hero-gradient opacity-95"></div>
+    <!-- Grid overlay -->
+    <div class="absolute inset-0 opacity-10"
+      style="background-image: linear-gradient(rgba(255,255,255,0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.1) 1px, transparent 1px); background-size: 40px 40px;"></div>
+
+    <div class="relative max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-20 sm:py-28 text-center">
+      <!-- Label pill -->
+      <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/20 backdrop-blur-sm border border-white/30 text-white text-sm font-medium mb-6">
+        <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+        Platform ALL IN ONE Indonesia
+      </div>
+
+      <!-- Main headline -->
+      <h1 class="text-5xl sm:text-6xl lg:text-7xl font-extrabold text-white mb-3 leading-tight">
+        Satu Platform,
+      </h1>
+      <h1 class="text-5xl sm:text-6xl lg:text-7xl font-extrabold text-white mb-4 leading-tight">
+        Semua Ujian.
+      </h1>
+
+      <!-- Italic sub-headline -->
+      <p class="font-fraunces text-2xl sm:text-3xl italic text-indigo-200 mb-5">
+        "Dari siswa hingga profesional."
+      </p>
+
+      <!-- Jalur list -->
+      <p class="text-white/80 text-base sm:text-lg mb-8">
+        CPNS · PPPK · SNBT · PPG · UKMPPD · TOEFL · BUMN · LPDP
+      </p>
+
+      <!-- CTA buttons -->
+      <div class="flex flex-col sm:flex-row gap-3 justify-center mb-14">
+        <a routerLink="/home"
+          class="px-8 py-3.5 rounded-xl bg-white text-indigo-700 font-bold text-base hover:bg-indigo-50 transition-all duration-200 shadow-lg hover:shadow-xl active:scale-95">
+          Mulai Gratis Sekarang
+        </a>
+        <a routerLink="/premium-plans"
+          class="px-8 py-3.5 rounded-xl bg-white/15 backdrop-blur-sm border border-white/30 text-white font-semibold text-base hover:bg-white/25 transition-all duration-200 active:scale-95">
+          Lihat Paket Premium
+        </a>
+      </div>
+
+      <!-- Stats bar -->
+      <div class="grid grid-cols-2 sm:grid-cols-5 gap-4 sm:gap-6 max-w-3xl mx-auto">
+        <div class="stat-item flex flex-col items-center px-4 py-3 rounded-2xl bg-white/10 backdrop-blur-sm border border-white/20">
+          <span class="text-2xl font-extrabold text-white">1.200+</span>
+          <span class="text-xs text-white/70 mt-0.5">Pengguna Aktif</span>
+        </div>
+        <div class="stat-item flex flex-col items-center px-4 py-3 rounded-2xl bg-white/10 backdrop-blur-sm border border-white/20">
+          <span class="text-2xl font-extrabold text-white">18+</span>
+          <span class="text-xs text-white/70 mt-0.5">Paket Soal</span>
+        </div>
+        <div class="stat-item flex flex-col items-center px-4 py-3 rounded-2xl bg-white/10 backdrop-blur-sm border border-white/20">
+          <span class="text-2xl font-extrabold text-white">6</span>
+          <span class="text-xs text-white/70 mt-0.5">Jalur Ujian</span>
+        </div>
+        <div class="stat-item flex flex-col items-center px-4 py-3 rounded-2xl bg-white/10 backdrop-blur-sm border border-white/20">
+          <span class="text-2xl font-extrabold text-white">500+</span>
+          <span class="text-xs text-white/70 mt-0.5">Target 2026</span>
+        </div>
+        <div class="col-span-2 sm:col-span-1 stat-item flex flex-col items-center px-4 py-3 rounded-2xl bg-white/10 backdrop-blur-sm border border-white/20">
+          <span class="text-2xl font-extrabold text-white">∞</span>
+          <span class="text-xs text-white/70 mt-0.5">Gratis Selamanya</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Wave bottom -->
+    <div class="absolute bottom-0 left-0 right-0">
+      <svg viewBox="0 0 1440 60" fill="none" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none" class="w-full h-10 sm:h-14">
+        <path d="M0 60L1440 60L1440 20C1080 60 360 0 0 40V60Z" [attr.fill]="isDarkMode ? '#030712' : '#ffffff'"/>
+      </svg>
+    </div>
+  </section>
+
+  <!-- ===== SECTION 2: JALUR UJIAN ===== -->
+  <section class="py-16 sm:py-20" [ngClass]="isDarkMode ? 'bg-gray-950' : 'bg-white'">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="text-center mb-10 reveal">
+        <p class="text-sm font-semibold uppercase tracking-widest mb-2"
+          [ngClass]="isDarkMode ? 'text-indigo-400' : 'text-indigo-600'">Cakupan Platform</p>
+        <h2 class="text-3xl sm:text-4xl font-extrabold mb-3"
+          [ngClass]="isDarkMode ? 'text-white' : 'text-gray-900'">
+          6 Jalur Ujian Penting Indonesia
+        </h2>
+        <p class="text-base max-w-xl mx-auto"
+          [ngClass]="isDarkMode ? 'text-gray-400' : 'text-gray-500'">
+          Satu akun untuk semua persiapanmu. Dari ASN hingga internasional.
+        </p>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+        <div *ngFor="let jalur of jalurList; let i = index"
+          class="reveal rounded-2xl border p-6 flex flex-col gap-3 transition-all duration-300 hover:shadow-lg hover:-translate-y-0.5"
+          [class]="'reveal-delay-' + (i + 1)"
+          [ngClass]="jalur.status === 'live'
+            ? (isDarkMode ? 'bg-indigo-950/50 border-indigo-600/40 shadow-indigo-900/10' : 'bg-indigo-50/80 border-indigo-200 shadow-indigo-100/60')
+            : (isDarkMode ? 'bg-gray-900 border-gray-800' : 'bg-gray-50 border-gray-200')">
+
+          <!-- Icon + status -->
+          <div class="flex items-start justify-between">
+            <span class="text-3xl">{{ jalur.icon }}</span>
+            <span class="px-2.5 py-0.5 rounded-full text-xs font-bold" [ngClass]="getStatusClass(jalur.status)">
+              {{ getStatusLabel(jalur.status) }}
+            </span>
+          </div>
+
+          <!-- Name + desc -->
+          <div>
+            <h3 class="text-lg font-bold mb-1"
+              [ngClass]="isDarkMode ? 'text-white' : 'text-gray-900'">
+              {{ jalur.name }}
+            </h3>
+            <p class="text-sm leading-relaxed"
+              [ngClass]="isDarkMode ? 'text-gray-400' : 'text-gray-500'">
+              {{ jalur.description }}
+            </p>
+          </div>
+
+          <!-- Tags -->
+          <div class="flex flex-wrap gap-1.5 mt-auto pt-2">
+            <span *ngFor="let tag of jalur.tags"
+              class="px-2 py-0.5 rounded-lg text-xs font-medium"
+              [ngClass]="isDarkMode ? 'bg-gray-800 text-gray-300' : 'bg-white text-gray-600 border border-gray-200'">
+              {{ tag }}
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== SECTION 3: VISI & ROADMAP ===== -->
+  <section class="py-16 sm:py-20" [ngClass]="isDarkMode ? 'bg-gray-900' : 'bg-gray-50'">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+      <!-- Visi quote -->
+      <div class="text-center mb-14 reveal">
+        <p class="text-sm font-semibold uppercase tracking-widest mb-4"
+          [ngClass]="isDarkMode ? 'text-violet-400' : 'text-violet-600'">Visi Kami</p>
+        <blockquote class="text-2xl sm:text-3xl font-fraunces italic font-bold max-w-2xl mx-auto leading-snug"
+          [ngClass]="isDarkMode ? 'text-white' : 'text-gray-900'">
+          "Menjadi satu-satunya platform latihan soal yang dibutuhkan setiap orang Indonesia."
+        </blockquote>
+      </div>
+
+      <!-- 4 Pilar visi -->
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-14">
+        <div *ngFor="let pilar of [
+            {icon: '🌐', title: 'Relevan Semua Jalur', desc: 'Dari CPNS sampai LPDP'},
+            {icon: '📖', title: 'Pembahasan Berkualitas', desc: 'Pahami, bukan hafal'},
+            {icon: '💚', title: 'Gratis untuk Yang Butuh', desc: 'Akses dasar forever free'},
+            {icon: '🤝', title: 'Komunitas Belajar', desc: 'Tumbuh bersama'}
+          ]; let i = index"
+          class="reveal text-center p-5 rounded-2xl border"
+          [class]="'reveal-delay-' + (i + 1)"
+          [ngClass]="isDarkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'">
+          <span class="text-3xl block mb-2">{{ pilar.icon }}</span>
+          <p class="text-sm font-bold mb-1" [ngClass]="isDarkMode ? 'text-white' : 'text-gray-900'">{{ pilar.title }}</p>
+          <p class="text-xs" [ngClass]="isDarkMode ? 'text-gray-400' : 'text-gray-500'">{{ pilar.desc }}</p>
+        </div>
+      </div>
+
+      <!-- Roadmap -->
+      <div class="reveal">
+        <h3 class="text-xl font-bold text-center mb-8"
+          [ngClass]="isDarkMode ? 'text-white' : 'text-gray-900'">
+          Roadmap Pengembangan Platform
+        </h3>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div *ngFor="let fase of roadmapFases; let i = index"
+            class="relative p-5 rounded-2xl border"
+            [class]="'reveal-delay-' + (i + 1)"
+            [ngClass]="i === 0
+              ? (isDarkMode ? 'bg-indigo-900/40 border-indigo-600/50' : 'bg-indigo-50 border-indigo-200')
+              : (isDarkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200')">
+            <!-- Fase badge -->
+            <div class="flex items-center gap-2 mb-3">
+              <span class="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold text-white"
+                [ngClass]="i === 0 ? 'bg-indigo-600' : (i === 1 ? 'bg-violet-600' : (i === 2 ? 'bg-purple-600' : 'bg-fuchsia-600'))">
+                {{ i + 1 }}
+              </span>
+              <span class="text-xs font-semibold" [ngClass]="isDarkMode ? 'text-gray-400' : 'text-gray-500'">
+                {{ fase.fase }} · {{ fase.period }}
+              </span>
+              <span *ngIf="i === 0" class="ml-auto px-2 py-0.5 rounded-full text-xs font-bold bg-emerald-500/20 text-emerald-400 border border-emerald-600/40">
+                ✅ Now
+              </span>
+            </div>
+            <h4 class="font-bold text-sm mb-3" [ngClass]="isDarkMode ? 'text-white' : 'text-gray-900'">
+              {{ fase.title }}
+            </h4>
+            <ul class="space-y-1.5">
+              <li *ngFor="let item of fase.items" class="flex items-start gap-1.5 text-xs"
+                [ngClass]="isDarkMode ? 'text-gray-400' : 'text-gray-600'">
+                <span class="mt-0.5" [ngClass]="i === 0 ? 'text-emerald-500' : 'text-gray-400'">
+                  {{ i === 0 ? '✓' : '○' }}
+                </span>
+                {{ item }}
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== SECTION 4: FITUR PLATFORM ===== -->
+  <section class="py-16 sm:py-20" [ngClass]="isDarkMode ? 'bg-gray-950' : 'bg-white'">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex flex-col lg:flex-row items-center gap-12 lg:gap-16">
+        <!-- Phone mockup -->
+        <div class="relative flex-shrink-0 reveal">
+          <div class="w-64 sm:w-72 phone-mockup overflow-hidden"
+            [ngClass]="isDarkMode ? 'bg-gray-800 border-4 border-gray-700' : 'bg-white border-4 border-gray-200'">
+            <!-- Status bar -->
+            <div class="h-8 flex items-center justify-between px-4"
+              [ngClass]="isDarkMode ? 'bg-gray-900' : 'bg-gray-100'">
+              <span class="text-xs font-medium" [ngClass]="isDarkMode ? 'text-gray-400' : 'text-gray-500'">9:41</span>
+              <div class="flex gap-1">
+                <div class="w-4 h-2 rounded-sm" [ngClass]="isDarkMode ? 'bg-gray-600' : 'bg-gray-300'"></div>
+                <div class="w-1.5 h-2 rounded-sm" [ngClass]="isDarkMode ? 'bg-indigo-500' : 'bg-indigo-400'"></div>
+              </div>
+            </div>
+
+            <!-- App header -->
+            <div class="px-4 py-3" [ngClass]="isDarkMode ? 'bg-gray-800' : 'bg-white'">
+              <div class="flex items-center justify-between mb-3">
+                <div>
+                  <p class="text-xs font-medium" [ngClass]="isDarkMode ? 'text-gray-400' : 'text-gray-500'">Selamat datang</p>
+                  <p class="text-sm font-bold" [ngClass]="isDarkMode ? 'text-white' : 'text-gray-900'">Canducation 👋</p>
+                </div>
+                <div class="w-8 h-8 rounded-full bg-indigo-600 flex items-center justify-center text-white text-xs font-bold">U</div>
+              </div>
+
+              <!-- Mini stats -->
+              <div class="grid grid-cols-3 gap-1.5 mb-3">
+                <div class="p-2 rounded-xl text-center" [ngClass]="isDarkMode ? 'bg-gray-700' : 'bg-indigo-50'">
+                  <p class="text-base font-bold" [ngClass]="isDarkMode ? 'text-indigo-400' : 'text-indigo-600'">24</p>
+                  <p class="text-xs" [ngClass]="isDarkMode ? 'text-gray-400' : 'text-gray-500'">Kuis</p>
+                </div>
+                <div class="p-2 rounded-xl text-center" [ngClass]="isDarkMode ? 'bg-gray-700' : 'bg-emerald-50'">
+                  <p class="text-base font-bold" [ngClass]="isDarkMode ? 'text-emerald-400' : 'text-emerald-600'">87%</p>
+                  <p class="text-xs" [ngClass]="isDarkMode ? 'text-gray-400' : 'text-gray-500'">Akurasi</p>
+                </div>
+                <div class="p-2 rounded-xl text-center" [ngClass]="isDarkMode ? 'bg-gray-700' : 'bg-amber-50'">
+                  <p class="text-base font-bold" [ngClass]="isDarkMode ? 'text-amber-400' : 'text-amber-600'">🔥7</p>
+                  <p class="text-xs" [ngClass]="isDarkMode ? 'text-gray-400' : 'text-gray-500'">Streak</p>
+                </div>
+              </div>
+
+              <!-- Grid jalur -->
+              <p class="text-xs font-semibold mb-2" [ngClass]="isDarkMode ? 'text-gray-400' : 'text-gray-500'">Pilih Jalur Ujian</p>
+              <div class="grid grid-cols-2 gap-1.5">
+                <div *ngFor="let item of [
+                    {icon: '🏛️', label: 'Seleksi ASN', color: 'indigo'},
+                    {icon: '🎓', label: 'PTN', color: 'violet'},
+                    {icon: '📜', label: 'Profesi', color: 'purple'},
+                    {icon: '🌏', label: 'Bahasa', color: 'blue'}
+                  ]"
+                  class="p-2.5 rounded-xl flex items-center gap-2"
+                  [ngClass]="isDarkMode ? 'bg-gray-700' : 'bg-gray-50 border border-gray-100'">
+                  <span class="text-base">{{ item.icon }}</span>
+                  <span class="text-xs font-medium truncate" [ngClass]="isDarkMode ? 'text-gray-300' : 'text-gray-700'">{{ item.label }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Floating badges -->
+          <div class="absolute -top-3 -right-4 float-badge px-3 py-1.5 rounded-xl shadow-lg text-xs font-bold text-white bg-gradient-to-r from-amber-500 to-orange-500">
+            🔥 Streak 7 hari!
+          </div>
+          <div class="absolute -bottom-3 -left-4 float-badge-delay px-3 py-1.5 rounded-xl shadow-lg text-xs font-bold"
+            [ngClass]="isDarkMode ? 'bg-indigo-600 text-white' : 'bg-indigo-600 text-white'">
+            #12 Leaderboard 🏆
+          </div>
+        </div>
+
+        <!-- Features list -->
+        <div class="flex-1">
+          <p class="text-sm font-semibold uppercase tracking-widest mb-2"
+            [ngClass]="isDarkMode ? 'text-indigo-400' : 'text-indigo-600'">Kenapa Canducation?</p>
+          <h2 class="text-3xl sm:text-4xl font-extrabold mb-8"
+            [ngClass]="isDarkMode ? 'text-white' : 'text-gray-900'">
+            Semua yang kamu butuhkan,<br>dalam satu platform.
+          </h2>
+
+          <div class="space-y-5">
+            <div *ngFor="let feat of features; let i = index"
+              class="reveal flex items-start gap-4"
+              [class]="'reveal-delay-' + (i + 1)">
+              <div class="w-11 h-11 rounded-xl flex items-center justify-center text-xl flex-shrink-0"
+                [ngClass]="isDarkMode ? 'bg-indigo-900/50' : 'bg-indigo-50'">
+                {{ feat.icon }}
+              </div>
+              <div>
+                <h3 class="font-bold text-base mb-0.5" [ngClass]="isDarkMode ? 'text-white' : 'text-gray-900'">
+                  {{ feat.title }}
+                </h3>
+                <p class="text-sm leading-relaxed" [ngClass]="isDarkMode ? 'text-gray-400' : 'text-gray-500'">
+                  {{ feat.desc }}
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== SECTION 5: CARA KERJA ===== -->
+  <section class="py-16 sm:py-20" [ngClass]="isDarkMode ? 'bg-gray-900' : 'bg-gray-50'">
+    <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="text-center mb-12 reveal">
+        <p class="text-sm font-semibold uppercase tracking-widest mb-2"
+          [ngClass]="isDarkMode ? 'text-indigo-400' : 'text-indigo-600'">Cara Kerja</p>
+        <h2 class="text-3xl sm:text-4xl font-extrabold"
+          [ngClass]="isDarkMode ? 'text-white' : 'text-gray-900'">
+          Mulai dalam 4 langkah mudah
+        </h2>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div *ngFor="let step of steps; let i = index"
+          class="reveal text-center"
+          [class]="'reveal-delay-' + (i + 1)">
+          <!-- Step circle -->
+          <div class="relative mx-auto mb-4">
+            <div class="w-14 h-14 rounded-2xl flex items-center justify-center mx-auto font-extrabold text-xl text-white"
+              [ngClass]="i === 0 ? 'bg-indigo-600' : (i === 1 ? 'bg-violet-600' : (i === 2 ? 'bg-purple-600' : 'bg-fuchsia-600'))">
+              {{ step.num }}
+            </div>
+          </div>
+          <h3 class="font-bold text-base mb-2" [ngClass]="isDarkMode ? 'text-white' : 'text-gray-900'">{{ step.title }}</h3>
+          <p class="text-sm leading-relaxed" [ngClass]="isDarkMode ? 'text-gray-400' : 'text-gray-500'">{{ step.desc }}</p>
+        </div>
+      </div>
+
+      <!-- Bottom CTA -->
+      <div class="text-center mt-10 reveal">
+        <a routerLink="/home"
+          class="inline-block px-8 py-3.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-base transition-all duration-200 shadow-md hover:shadow-lg active:scale-95">
+          Coba Sekarang — Gratis
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== SECTION 6: TESTIMONI ===== -->
+  <section class="py-16 sm:py-20" [ngClass]="isDarkMode ? 'bg-gray-950' : 'bg-white'">
+    <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="text-center mb-10 reveal">
+        <p class="text-sm font-semibold uppercase tracking-widest mb-2"
+          [ngClass]="isDarkMode ? 'text-indigo-400' : 'text-indigo-600'">Testimoni</p>
+        <h2 class="text-3xl sm:text-4xl font-extrabold"
+          [ngClass]="isDarkMode ? 'text-white' : 'text-gray-900'">
+          Mereka berhasil, kamu berikutnya.
+        </h2>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-6">
+        <div *ngFor="let t of testimonials; let i = index"
+          class="reveal p-6 rounded-2xl border flex flex-col gap-4 hover:shadow-md transition-shadow duration-200"
+          [class]="'reveal-delay-' + (i + 1)"
+          [ngClass]="isDarkMode ? 'bg-gray-900 border-gray-800' : 'bg-gray-50 border-gray-200'">
+          <!-- Quote icon -->
+          <svg class="w-8 h-8 opacity-30" [ngClass]="isDarkMode ? 'text-indigo-400' : 'text-indigo-600'"
+            fill="currentColor" viewBox="0 0 24 24">
+            <path d="M14.017 21v-7.391c0-5.704 3.731-9.57 8.983-10.609l.995 2.151c-2.432.917-3.995 3.638-3.995 5.849h4v10h-9.983zm-14.017 0v-7.391c0-5.704 3.748-9.57 9-10.609l.996 2.151c-2.433.917-3.996 3.638-3.996 5.849h3.983v10h-9.983z"/>
+          </svg>
+          <p class="text-sm leading-relaxed flex-1 italic"
+            [ngClass]="isDarkMode ? 'text-gray-300' : 'text-gray-700'">
+            "{{ t.text }}"
+          </p>
+          <div class="flex items-center gap-3 pt-2 border-t"
+            [ngClass]="isDarkMode ? 'border-gray-800' : 'border-gray-100'">
+            <div class="w-9 h-9 rounded-full bg-indigo-600 flex items-center justify-center text-white font-bold text-sm flex-shrink-0">
+              {{ t.initial }}
+            </div>
+            <div>
+              <p class="text-sm font-semibold" [ngClass]="isDarkMode ? 'text-white' : 'text-gray-900'">{{ t.name }}</p>
+              <p class="text-xs" [ngClass]="isDarkMode ? 'text-emerald-400' : 'text-emerald-600'">{{ t.role }}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== SECTION 7: PRICING ===== -->
+  <section class="py-16 sm:py-20" [ngClass]="isDarkMode ? 'bg-gray-900' : 'bg-gray-50'">
+    <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="text-center mb-10 reveal">
+        <p class="text-sm font-semibold uppercase tracking-widest mb-2"
+          [ngClass]="isDarkMode ? 'text-indigo-400' : 'text-indigo-600'">Harga</p>
+        <h2 class="text-3xl sm:text-4xl font-extrabold mb-2"
+          [ngClass]="isDarkMode ? 'text-white' : 'text-gray-900'">
+          Pilih Paket yang Tepat
+        </h2>
+        <p class="text-base" [ngClass]="isDarkMode ? 'text-gray-400' : 'text-gray-500'">
+          Mulai gratis, upgrade kapan saja.
+        </p>
+      </div>
+
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
+        <div *ngFor="let plan of [
+            {name: 'Silver', price: 'Rp 29.000', duration: '30 hari', features: ['Akses penuh soal', 'Pembahasan detail', 'Statistik personal'], color: 'gray'},
+            {name: 'Gold', price: 'Rp 69.000', duration: '90 hari', features: ['Semua fitur Silver', 'Prioritas update soal', 'Diskusi komunitas'], color: 'amber', popular: true},
+            {name: 'Platinum', price: 'Rp 119.000', duration: '180 hari', features: ['Semua fitur Gold', 'Notifikasi jadwal ujian', 'Badge Premium'], color: 'indigo'},
+            {name: 'Ultimate', price: 'Rp 199.000', duration: 'Seumur hidup', features: ['Semua jalur ujian', 'Akses selamanya', 'Early access fitur'], color: 'violet'}
+          ]; let i = index"
+          class="reveal relative rounded-2xl border p-5 flex flex-col gap-3 transition-all duration-300"
+          [class]="'reveal-delay-' + (i + 1)"
+          [ngClass]="plan['popular']
+            ? (isDarkMode ? 'bg-gradient-to-br from-indigo-900 to-purple-900 border-amber-500 shadow-xl scale-[1.03]' : 'bg-gradient-to-br from-indigo-50 to-purple-50 border-amber-400 shadow-xl scale-[1.03]')
+            : (isDarkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200')">
+
+          <!-- Popular badge -->
+          <div *ngIf="plan['popular']" class="absolute -top-3 left-1/2 -translate-x-1/2">
+            <span class="px-3 py-1 rounded-full text-xs font-bold bg-amber-500 text-white shadow-md whitespace-nowrap">
+              ⭐ Paling Populer
+            </span>
+          </div>
+
+          <p class="font-bold text-base mt-2"
+            [ngClass]="plan.name === 'Gold'
+              ? (isDarkMode ? 'text-amber-400' : 'text-amber-600')
+              : plan.name === 'Silver'
+              ? (isDarkMode ? 'text-gray-300' : 'text-gray-700')
+              : plan.name === 'Platinum'
+              ? (isDarkMode ? 'text-indigo-400' : 'text-indigo-700')
+              : (isDarkMode ? 'text-violet-400' : 'text-violet-700')">
+            {{ plan.name }}
+          </p>
+          <div>
+            <p class="text-2xl font-extrabold" [ngClass]="isDarkMode ? 'text-white' : 'text-gray-900'">{{ plan.price }}</p>
+            <p class="text-xs" [ngClass]="isDarkMode ? 'text-gray-400' : 'text-gray-500'">{{ plan.duration }}</p>
+          </div>
+          <ul class="space-y-1.5 flex-1">
+            <li *ngFor="let f of plan.features" class="flex items-start gap-1.5 text-xs"
+              [ngClass]="isDarkMode ? 'text-gray-300' : 'text-gray-600'">
+              <svg class="w-3.5 h-3.5 mt-0.5 flex-shrink-0 text-emerald-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>
+              </svg>
+              {{ f }}
+            </li>
+          </ul>
+          <a routerLink="/premium-plans"
+            class="block text-center py-2.5 px-3 rounded-xl text-xs font-bold transition-all duration-200 active:scale-95"
+            [ngClass]="plan['popular']
+              ? 'bg-amber-500 hover:bg-amber-600 text-white'
+              : (isDarkMode ? 'bg-indigo-600 hover:bg-indigo-500 text-white' : 'bg-indigo-600 hover:bg-indigo-700 text-white')">
+            Pilih Paket
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== SECTION 8: FAQ ===== -->
+  <section class="py-16 sm:py-20" [ngClass]="isDarkMode ? 'bg-gray-950' : 'bg-white'">
+    <div class="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="text-center mb-10 reveal">
+        <p class="text-sm font-semibold uppercase tracking-widest mb-2"
+          [ngClass]="isDarkMode ? 'text-indigo-400' : 'text-indigo-600'">FAQ</p>
+        <h2 class="text-3xl sm:text-4xl font-extrabold"
+          [ngClass]="isDarkMode ? 'text-white' : 'text-gray-900'">
+          Pertanyaan Umum
+        </h2>
+      </div>
+
+      <div class="space-y-2 reveal">
+        <div *ngFor="let item of faqItems; let i = index"
+          class="rounded-xl border overflow-hidden transition-colors duration-200"
+          [ngClass]="isDarkMode ? 'border-gray-800 bg-gray-900' : 'border-gray-200 bg-gray-50'">
+          <button
+            (click)="toggleFaq(i)"
+            class="w-full flex items-center justify-between px-5 py-4 text-left"
+            [ngClass]="isDarkMode ? 'hover:bg-gray-800' : 'hover:bg-white'">
+            <span class="text-sm font-semibold pr-4" [ngClass]="isDarkMode ? 'text-gray-200' : 'text-gray-800'">
+              {{ item.q }}
+            </span>
+            <svg class="w-4 h-4 flex-shrink-0 transition-transform duration-200"
+              [class.rotate-180]="openFaqIndex === i"
+              [ngClass]="isDarkMode ? 'text-gray-400' : 'text-gray-500'"
+              fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+            </svg>
+          </button>
+          <div *ngIf="openFaqIndex === i"
+            class="px-5 pb-4 text-sm leading-relaxed border-t"
+            [ngClass]="isDarkMode ? 'text-gray-400 border-gray-800' : 'text-gray-600 border-gray-100'">
+            <p class="pt-3">{{ item.a }}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== SECTION 9: CTA FINAL ===== -->
+  <section class="py-16 sm:py-24 relative overflow-hidden">
+    <div class="absolute inset-0 hero-gradient opacity-90"></div>
+    <div class="absolute inset-0 opacity-10"
+      style="background-image: radial-gradient(circle at 25% 50%, rgba(255,255,255,0.2) 0%, transparent 50%), radial-gradient(circle at 75% 50%, rgba(255,255,255,0.15) 0%, transparent 50%);"></div>
+
+    <div class="relative max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 text-center reveal">
+      <p class="text-white/80 text-sm font-semibold uppercase tracking-widest mb-3">Siap Mulai?</p>
+      <h2 class="text-4xl sm:text-5xl font-extrabold text-white mb-3 leading-tight">
+        Satu platform,
+      </h2>
+      <h2 class="text-4xl sm:text-5xl font-extrabold text-white mb-5 leading-tight">
+        semua ujian Indonesia.
+      </h2>
+      <p class="font-fraunces text-xl italic text-indigo-200 mb-8">
+        "Dari SD sampai S3, dari siswa sampai PNS — Canducation ada untuk semua."
+      </p>
+
+      <div class="flex flex-col sm:flex-row gap-3 justify-center">
+        <a routerLink="/home"
+          class="px-10 py-4 rounded-xl bg-white text-indigo-700 font-bold text-base hover:bg-indigo-50 transition-all duration-200 shadow-lg hover:shadow-xl active:scale-95">
+          Daftar Gratis Sekarang
+        </a>
+        <a routerLink="/premium-plans"
+          class="px-10 py-4 rounded-xl bg-white/15 backdrop-blur-sm border border-white/30 text-white font-semibold text-base hover:bg-white/25 transition-all duration-200 active:scale-95">
+          Lihat Harga Premium
+        </a>
+      </div>
+
+      <p class="text-white/50 text-xs mt-6">Tidak perlu kartu kredit. Gratis selamanya untuk paket dasar.</p>
+    </div>
+  </section>
+
+  <!-- Footer minimal -->
+  <div class="py-6 text-center text-xs border-t"
+    [ngClass]="isDarkMode ? 'bg-gray-950 border-gray-800 text-gray-600' : 'bg-white border-gray-100 text-gray-400'">
+    <span>© 2026 Canducation. Semua hak dilindungi.</span>
+    <span class="mx-2">·</span>
+    <a routerLink="/login" class="hover:underline" [ngClass]="isDarkMode ? 'text-gray-500 hover:text-gray-300' : 'text-gray-400 hover:text-gray-600'">Masuk</a>
+    <span class="mx-2">·</span>
+    <a routerLink="/premium-plans" class="hover:underline" [ngClass]="isDarkMode ? 'text-gray-500 hover:text-gray-300' : 'text-gray-400 hover:text-gray-600'">Premium</a>
+  </div>
+</div>

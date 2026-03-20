@@ -34,6 +34,7 @@ import { HistoryComponent } from './history/history.component';
 import { NotFoundComponent } from './not-found/not-found.component';
 import { BookmarksPageComponent } from './bookmark/bookmarks-page.component';
 import { QuestionDiscussionComponent } from './question-discussion/question-discussion.component';
+import { AboutComponent } from './about/about.component';
 
 @NgModule({
   declarations: [
@@ -56,7 +57,8 @@ import { QuestionDiscussionComponent } from './question-discussion/question-disc
     HistoryComponent,
     NotFoundComponent,
     BookmarksPageComponent,
-    QuestionDiscussionComponent
+    QuestionDiscussionComponent,
+    AboutComponent
   ],
   imports: [
     BrowserModule,
