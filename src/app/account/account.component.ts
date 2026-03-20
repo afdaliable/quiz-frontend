@@ -63,6 +63,13 @@ export class AccountComponent implements OnInit, OnDestroy {
         this.profile = profile;
         this.stats = stats;
         this.loading = false;
+
+        // Sync account_status dari auth state (sumber yang sama dengan navbar)
+        // agar badge tidak stale jika API profile belum ter-update pasca upgrade
+        const authUser = this.authService.getCurrentUser();
+        if (authUser?.account_status && this.profile) {
+          this.profile.account_status = authUser.account_status;
+        }
       },
       error: (err) => {
         console.error('Failed to load profile data:', err);
