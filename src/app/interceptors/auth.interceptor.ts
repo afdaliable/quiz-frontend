@@ -70,11 +70,13 @@ export class AuthInterceptor implements HttpInterceptor {
       console.log('Preserved existing User_id header:', userId);
     }
 
-    // Add user_id header for premium, payment, and user endpoints
+    // Add user_id header for premium, payment, user, license, and discussion endpoints
     if (request.url.includes('/premium/') ||
         request.url.includes('/payment/') ||
         request.url.includes('/user/') ||
-        request.url.includes('/license/')) {
+        request.url.includes('/license/') ||
+        request.url.includes('/questions/') ||
+        request.url.includes('/comments/')) {
       const user = this.authService.getCurrentUser();
       if (user && user.id) {
         headers = headers.set('user_id', user.id.toString());
@@ -154,6 +156,14 @@ export class AuthInterceptor implements HttpInterceptor {
         }
         
         if (error.status === 401) {
+          // For discussion/comment endpoints, propagate error to component
+          // instead of triggering session invalidation flow
+          const isDiscussionEndpoint =
+            request.url.includes('/questions/') ||
+            request.url.includes('/comments/');
+          if (isDiscussionEndpoint) {
+            return throwError(() => error);
+          }
           // Token expired or invalid, validate session
           return this.handleUnauthorizedError(request, next);
         }
