@@ -113,20 +113,20 @@ export class AboutComponent implements OnInit, OnDestroy, AfterViewInit {
 
   faqItems: FaqItem[] = [
     {
-      q: 'Apakah QuizKu gratis?',
-      a: 'Ya! Paket dasar QuizKu gratis selamanya. Kamu bisa mengakses ratusan soal tanpa bayar. Paket premium tersedia untuk akses penuh ke semua soal, pembahasan lengkap, dan fitur eksklusif.'
+      q: 'Apakah Canducation gratis?',
+      a: 'Ya! Paket dasar Canducation gratis selamanya. Kamu bisa mengakses ratusan soal tanpa bayar. Paket premium tersedia untuk akses penuh ke semua soal, pembahasan lengkap, dan fitur eksklusif.'
     },
     {
       q: 'Apakah semua jalur ujian sudah tersedia?',
-      a: 'Saat ini QuizKu fokus pada Seleksi ASN (CPNS SKD, PPPK). Jalur lain seperti SNBT, PPG, UKMPPD, TOEFL, BUMN, dan Beasiswa sedang dalam pengembangan aktif dan akan hadir di Q3–Q4 2026. Kami berkomitmen untuk jujur tentang roadmap kami.'
+      a: 'Saat ini Canducation fokus pada Seleksi ASN (CPNS SKD, PPPK). Jalur lain seperti SNBT, PPG, UKMPPD, TOEFL, BUMN, dan Beasiswa sedang dalam pengembangan aktif dan akan hadir di Q3–Q4 2026. Kami berkomitmen untuk jujur tentang roadmap kami.'
     },
     {
-      q: 'Bagaimana kualitas soal di QuizKu?',
-      a: 'Soal-soal di QuizKu dikurasi dan diverifikasi oleh tim ahli di bidangnya. Setiap soal dilengkapi pembahasan detail sehingga kamu tidak hanya latihan, tapi benar-benar mengerti materinya.'
+      q: 'Bagaimana kualitas soal di Canducation?',
+      a: 'Soal-soal di Canducation dikurasi dan diverifikasi oleh tim ahli di bidangnya. Setiap soal dilengkapi pembahasan detail sehingga kamu tidak hanya latihan, tapi benar-benar mengerti materinya.'
     },
     {
       q: 'Apakah ada aplikasi mobile?',
-      a: 'Ya! QuizKu tersedia sebagai aplikasi mobile (Android & iOS) sehingga kamu bisa latihan kapan saja dan di mana saja, bahkan dalam perjalanan.'
+      a: 'Ya! Canducation tersedia sebagai aplikasi mobile (Android & iOS) sehingga kamu bisa latihan kapan saja dan di mana saja, bahkan dalam perjalanan.'
     },
     {
       q: 'Bagaimana cara berlangganan premium?',
@@ -142,13 +142,13 @@ export class AboutComponent implements OnInit, OnDestroy, AfterViewInit {
     {
       name: 'Rika Handayani',
       role: 'Lolos CPNS Kemenkeu 2024',
-      text: 'Awalnya skeptis, tapi setelah rutin latihan 2 bulan di QuizKu, skor TWK saya naik drastis. Pembahasannya detail banget, beda dari platform lain.',
+      text: 'Awalnya skeptis, tapi setelah rutin latihan 2 bulan di Canducation, skor TWK saya naik drastis. Pembahasannya detail banget, beda dari platform lain.',
       initial: 'R'
     },
     {
       name: 'Budi Santoso',
       role: 'Lolos PPPK Guru 2024',
-      text: 'Saya guru honorer 8 tahun, akhirnya lolos PPPK setelah latihan intensif di QuizKu. Soal-soalnya sangat relevan dengan ujian aslinya.',
+      text: 'Saya guru honorer 8 tahun, akhirnya lolos PPPK setelah latihan intensif di Canducation. Soal-soalnya sangat relevan dengan ujian aslinya.',
       initial: 'B'
     },
     {
