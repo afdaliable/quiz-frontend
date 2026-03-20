@@ -20,6 +20,8 @@ import { NotFoundComponent } from './not-found/not-found.component';
 import { BookmarksPageComponent } from './bookmark/bookmarks-page.component';
 import { AboutComponent } from './about/about.component';
 import { SubscriptionComponent } from './subscription/subscription.component';
+import { OnboardingComponent } from './onboarding/onboarding.component';
+import { OnboardingGuard } from './auth/onboarding.guard';
 
 const routes: Routes = [
   {
@@ -30,6 +32,12 @@ const routes: Routes = [
   {
     path: 'home',
     component: HomeComponent,
+    canActivate: [OnboardingGuard],
+  },
+  {
+    path: 'onboarding',
+    component: OnboardingComponent,
+    canActivate: [AuthGuard],
   },
   {
     path: 'bookmarks',

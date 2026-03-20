@@ -1,0 +1,18 @@
+<div class="min-h-screen flex items-center justify-center p-4"
+     [ngClass]="isDarkMode ? 'bg-gray-900' : 'bg-gray-50'">
+  <div class="text-center max-w-md">
+    <div class="text-6xl mb-6">🚀</div>
+    <h1 class="text-3xl font-bold mb-4"
+        [ngClass]="isDarkMode ? 'text-white' : 'text-gray-900'">
+      Selamat Datang di QuizKu!
+    </h1>
+    <p class="mb-8"
+       [ngClass]="isDarkMode ? 'text-gray-400' : 'text-gray-600'">
+      Onboarding wizard akan segera hadir. Untuk sekarang, langsung mulai saja yuk!
+    </p>
+    <button (click)="skipOnboarding()"
+            class="px-6 py-3 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-semibold transition-colors">
+      Mulai Belajar
+    </button>
+  </div>
+</div>

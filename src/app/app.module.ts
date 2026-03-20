@@ -37,6 +37,7 @@ import { BottomNavComponent } from './bottom-nav/bottom-nav.component';
 import { QuestionDiscussionComponent } from './question-discussion/question-discussion.component';
 import { AboutComponent } from './about/about.component';
 import { SubscriptionComponent } from './subscription/subscription.component';
+import { OnboardingComponent } from './onboarding/onboarding.component';
 
 @NgModule({
   declarations: [
@@ -62,7 +63,8 @@ import { SubscriptionComponent } from './subscription/subscription.component';
     BottomNavComponent,
     QuestionDiscussionComponent,
     AboutComponent,
-    SubscriptionComponent
+    SubscriptionComponent,
+    OnboardingComponent,
   ],
   imports: [
     BrowserModule,

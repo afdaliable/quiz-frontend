@@ -16,6 +16,8 @@ interface AuthResponse {
     email: string;
     display_name: string;
     picture?: string;
+    account_status?: string;
+    onboarding_completed?: boolean;
   };
 }
 
@@ -208,7 +210,9 @@ export class AuthService {
             id: response.user.id,
             email: response.user.email,
             display_name: response.user.display_name,
-            picture: response.user.picture
+            picture: response.user.picture,
+            account_status: response.user.account_status,
+            onboarding_completed: response.user.onboarding_completed ?? false,
           };
           localStorage.setItem('user', JSON.stringify(userData));
           this.setUser(userData);

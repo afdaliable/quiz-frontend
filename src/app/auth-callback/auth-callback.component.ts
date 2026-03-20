@@ -97,41 +97,44 @@ export class AuthCallbackComponent implements OnInit {
     this.authService.exchangeCodeForToken(code).subscribe({
       next: () => {
         console.log('Authentication successful');
-        
-        // Check if we have a stored return URL
-        const returnUrl = localStorage.getItem('authReturnUrl');
-        const hasPendingPayment = localStorage.getItem('hasPendingPayment');
-        
-        // Clear stored return URL and pending payment flag
-        localStorage.removeItem('authReturnUrl');
-        localStorage.removeItem('hasPendingPayment');
-        
-        if (returnUrl && returnUrl.includes('/payment/callback')) {
-          console.log('Redirecting to payment callback:', returnUrl);
-          setTimeout(() => {
-            this.router.navigate([returnUrl]);
-          }, 1000);
-        } else if (returnUrl) {
-          console.log('Redirecting to stored return URL:', returnUrl);
-          setTimeout(() => {
-            this.router.navigate([returnUrl]);
-          }, 1000);
-        } else {
-          console.log('No stored return URL, redirecting to home');
-          setTimeout(() => {
-            this.router.navigate(['/home']);
-          }, 1000);
-        }
+        setTimeout(() => {
+          this.navigateAfterLogin();
+        }, 1000);
       },
       error: (error) => {
         console.error('Error exchanging code for token:', error);
         this.errorMessage = 'Authentication failed. Please try again.';
         setTimeout(() => {
-          this.router.navigate(['/login'], { 
-            queryParams: { error: this.errorMessage } 
+          this.router.navigate(['/login'], {
+            queryParams: { error: this.errorMessage }
           });
         }, 2000);
       }
     });
   }
-} 
+
+  private navigateAfterLogin(): void {
+    const returnUrl = localStorage.getItem('authReturnUrl');
+    localStorage.removeItem('authReturnUrl');
+    localStorage.removeItem('hasPendingPayment');
+
+    // Payment callback takes priority
+    if (returnUrl && returnUrl.includes('/payment/callback')) {
+      this.router.navigate([returnUrl]);
+      return;
+    }
+
+    const user = this.authService.getCurrentUser();
+    const isOnboardingDone =
+      user?.onboarding_completed === true ||
+      localStorage.getItem('onboarding_completed') === 'true';
+
+    if (!isOnboardingDone) {
+      this.router.navigate(['/onboarding']);
+    } else if (returnUrl) {
+      this.router.navigate([returnUrl]);
+    } else {
+      this.router.navigate(['/home']);
+    }
+  }
+}
