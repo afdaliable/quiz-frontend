@@ -121,9 +121,13 @@ export class QuestionDiscussionComponent implements OnInit, OnChanges, OnDestroy
         this.isPosting = false;
       },
       error: (err) => {
-        this.errorMessage = err?.status === 429
-          ? 'Tunggu sebentar sebelum berkomentar lagi.'
-          : 'Gagal mengirim komentar. Coba lagi.';
+        if (err?.status === 429) {
+          this.errorMessage = 'Tunggu sebentar sebelum berkomentar lagi.';
+        } else if (err?.status === 401) {
+          this.errorMessage = 'Sesi habis. Silakan login ulang untuk berkomentar.';
+        } else {
+          this.errorMessage = 'Gagal mengirim komentar. Coba lagi.';
+        }
         this.isPosting = false;
       }
     });
