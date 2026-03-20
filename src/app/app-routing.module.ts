@@ -19,6 +19,7 @@ import { HistoryComponent } from './history/history.component';
 import { NotFoundComponent } from './not-found/not-found.component';
 import { BookmarksPageComponent } from './bookmark/bookmarks-page.component';
 import { AboutComponent } from './about/about.component';
+import { SubscriptionComponent } from './subscription/subscription.component';
 
 const routes: Routes = [
   {
@@ -67,6 +68,11 @@ const routes: Routes = [
   {
     path: 'account',
     component: AccountComponent,
+    canActivate: [AuthGuard]
+  },
+  {
+    path: 'subscription',
+    component: SubscriptionComponent,
     canActivate: [AuthGuard]
   },
   {

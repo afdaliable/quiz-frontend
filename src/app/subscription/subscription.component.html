@@ -1,0 +1,456 @@
+<div class="min-h-screen transition-colors duration-200" [ngClass]="isDarkMode ? 'bg-gray-900' : 'bg-gray-50'">
+
+  <!-- Toast Notification -->
+  <div *ngIf="showToast"
+    class="fixed top-4 right-4 z-50 max-w-sm px-4 py-3 rounded-xl shadow-lg text-sm font-medium flex items-center gap-2 transition-all"
+    [ngClass]="toastType === 'success'
+      ? (isDarkMode ? 'bg-green-800 text-green-100' : 'bg-green-600 text-white')
+      : (isDarkMode ? 'bg-red-800 text-red-100' : 'bg-red-600 text-white')">
+    <svg class="w-4 h-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <path *ngIf="toastType === 'success'" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+      <path *ngIf="toastType === 'error'" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+    </svg>
+    {{ toastMessage }}
+  </div>
+
+  <!-- Modal: Pilih Plan -->
+  <div *ngIf="showPlanModal" class="fixed inset-0 z-50 flex items-center justify-center p-4">
+    <div class="absolute inset-0 bg-black/50" (click)="cancelSelection()"></div>
+    <div class="relative w-full max-w-md rounded-2xl shadow-xl p-6 z-10"
+      [ngClass]="isDarkMode ? 'bg-gray-800' : 'bg-white'">
+      <h3 class="text-lg font-bold mb-1" [ngClass]="isDarkMode ? 'text-white' : 'text-gray-900'">
+        Konfirmasi Pilihan Plan
+      </h3>
+      <p class="text-sm mb-4" [ngClass]="isDarkMode ? 'text-gray-400' : 'text-gray-500'">
+        Kamu akan diarahkan ke halaman pembayaran untuk melanjutkan.
+      </p>
+
+      <div *ngIf="selectedPlan" class="rounded-xl p-4 mb-5"
+        [ngClass]="isDarkMode ? 'bg-gray-700' : 'bg-gray-50'">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="font-semibold" [ngClass]="isDarkMode ? 'text-white' : 'text-gray-900'">
+              {{ selectedPlan.name }}
+            </p>
+            <p class="text-xs mt-0.5" [ngClass]="isDarkMode ? 'text-gray-400' : 'text-gray-500'">
+              {{ selectedPlan.is_lifetime ? 'Akses seumur hidup' : selectedPlan.duration_days + ' hari' }}
+            </p>
+          </div>
+          <p class="text-lg font-bold text-indigo-600">{{ formatCurrency(selectedPlan.price) }}</p>
+        </div>
+      </div>
+
+      <div class="flex gap-3">
+        <button (click)="cancelSelection()"
+          class="flex-1 py-2.5 rounded-xl text-sm font-medium border transition-colors"
+          [ngClass]="isDarkMode ? 'border-gray-600 text-gray-300 hover:bg-gray-700' : 'border-gray-200 text-gray-700 hover:bg-gray-50'">
+          Batal
+        </button>
+        <button (click)="confirmPlanSelection()" [disabled]="processingPayment"
+          class="flex-1 py-2.5 rounded-xl text-sm font-semibold bg-indigo-600 hover:bg-indigo-700 disabled:opacity-60 text-white transition-colors flex items-center justify-center gap-2">
+          <svg *ngIf="processingPayment" class="animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
+          </svg>
+          {{ processingPayment ? 'Memproses...' : 'Lanjutkan Bayar' }}
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Batalkan Langganan -->
+  <div *ngIf="showCancelModal" class="fixed inset-0 z-50 flex items-center justify-center p-4">
+    <div class="absolute inset-0 bg-black/50" (click)="dismissCancel()"></div>
+    <div class="relative w-full max-w-md rounded-2xl shadow-xl p-6 z-10"
+      [ngClass]="isDarkMode ? 'bg-gray-800' : 'bg-white'">
+      <div class="w-12 h-12 rounded-full bg-red-100 flex items-center justify-center mb-4">
+        <svg class="w-6 h-6 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+        </svg>
+      </div>
+      <h3 class="text-lg font-bold mb-2" [ngClass]="isDarkMode ? 'text-white' : 'text-gray-900'">
+        Batalkan Langganan?
+      </h3>
+      <p class="text-sm mb-2" [ngClass]="isDarkMode ? 'text-gray-400' : 'text-gray-600'">
+        Jika dibatalkan, akses premium kamu masih aktif hingga
+        <span class="font-semibold" [ngClass]="isDarkMode ? 'text-white' : 'text-gray-900'">
+          {{ activeLicense ? formatDate(activeLicense.expired_at) : '—' }}
+        </span>
+        namun tidak akan diperpanjang otomatis.
+      </p>
+      <p class="text-xs mb-5" [ngClass]="isDarkMode ? 'text-gray-500' : 'text-gray-400'">
+        Untuk membatalkan, hubungi tim support kami.
+      </p>
+      <div class="flex gap-3">
+        <button (click)="dismissCancel()"
+          class="flex-1 py-2.5 rounded-xl text-sm font-semibold bg-indigo-600 hover:bg-indigo-700 text-white transition-colors">
+          Pertahankan
+        </button>
+        <button (click)="confirmCancel()"
+          class="flex-1 py-2.5 rounded-xl text-sm font-medium border transition-colors"
+          [ngClass]="isDarkMode ? 'border-gray-600 text-red-400 hover:bg-gray-700' : 'border-gray-200 text-red-600 hover:bg-red-50'">
+          Batalkan
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Page Content -->
+  <div class="max-w-4xl mx-auto px-4 sm:px-6 py-8 space-y-8">
+
+    <!-- Page Header -->
+    <div>
+      <h1 class="text-2xl font-bold" [ngClass]="isDarkMode ? 'text-white' : 'text-gray-900'">
+        Kelola Langganan
+      </h1>
+      <p class="text-sm mt-1" [ngClass]="isDarkMode ? 'text-gray-400' : 'text-gray-500'">
+        Lihat status, pilih plan, dan kelola pembayaran premium kamu.
+      </p>
+    </div>
+
+    <!-- Loading -->
+    <div *ngIf="loading" class="flex justify-center py-16">
+      <svg class="animate-spin h-8 w-8 text-indigo-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
+      </svg>
+    </div>
+
+    <!-- Error -->
+    <div *ngIf="error && !loading" class="p-4 rounded-xl text-sm"
+      [ngClass]="isDarkMode ? 'bg-red-900/40 text-red-300' : 'bg-red-50 text-red-700'">
+      {{ error }}
+    </div>
+
+    <ng-container *ngIf="!loading">
+
+      <!-- ── SECTION A: Status Langganan ── -->
+      <div class="rounded-2xl border overflow-hidden"
+        [ngClass]="isDarkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'">
+
+        <!-- State: Free -->
+        <div *ngIf="statusType === 'free'" class="p-6">
+          <div class="flex items-start gap-4">
+            <div class="w-12 h-12 rounded-xl bg-gray-100 dark:bg-gray-700 flex items-center justify-center flex-shrink-0">
+              <svg class="w-6 h-6 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+              </svg>
+            </div>
+            <div class="flex-1">
+              <div class="flex items-center gap-2 mb-1">
+                <h2 class="font-semibold" [ngClass]="isDarkMode ? 'text-white' : 'text-gray-900'">
+                  Paket Gratis
+                </h2>
+                <span class="px-2 py-0.5 rounded-full text-xs font-medium"
+                  [ngClass]="isDarkMode ? 'bg-gray-700 text-gray-400' : 'bg-gray-100 text-gray-600'">
+                  Aktif
+                </span>
+              </div>
+              <p class="text-sm mb-4" [ngClass]="isDarkMode ? 'text-gray-400' : 'text-gray-500'">
+                Kamu menggunakan paket gratis dengan akses terbatas. Upgrade untuk membuka semua jalur ujian dan fitur premium.
+              </p>
+              <button (click)="goToPremiumPlans()"
+                class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold bg-indigo-600 hover:bg-indigo-700 text-white transition-colors">
+                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                  <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                </svg>
+                Mulai Berlangganan Premium
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- State: Active -->
+        <div *ngIf="statusType === 'active' && activeLicense">
+          <div class="h-1.5 bg-gradient-to-r from-amber-400 to-amber-500"></div>
+          <div class="p-6">
+            <div class="flex flex-col sm:flex-row sm:items-start gap-4">
+              <div class="w-12 h-12 rounded-xl bg-amber-100 flex items-center justify-center flex-shrink-0">
+                <svg class="w-6 h-6 text-amber-600" fill="currentColor" viewBox="0 0 20 20">
+                  <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                </svg>
+              </div>
+              <div class="flex-1">
+                <div class="flex flex-wrap items-center gap-2 mb-3">
+                  <h2 class="font-bold text-lg" [ngClass]="isDarkMode ? 'text-white' : 'text-gray-900'">
+                    {{ activeLicense.plan_name }}
+                  </h2>
+                  <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium"
+                    [ngClass]="getDaysLeftClass(activeLicense.days_remaining)">
+                    <span class="w-1.5 h-1.5 rounded-full inline-block"
+                      [ngClass]="getDaysLeftDotClass(activeLicense.days_remaining)"></span>
+                    Aktif
+                  </span>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-4">
+                  <div class="rounded-lg p-3" [ngClass]="isDarkMode ? 'bg-gray-700' : 'bg-gray-50'">
+                    <p class="text-xs font-medium mb-0.5" [ngClass]="isDarkMode ? 'text-gray-400' : 'text-gray-500'">
+                      Aktif Hingga
+                    </p>
+                    <p class="text-sm font-semibold" [ngClass]="isDarkMode ? 'text-white' : 'text-gray-900'">
+                      {{ formatDate(activeLicense.expired_at) }}
+                    </p>
+                  </div>
+                  <div class="rounded-lg p-3" [ngClass]="isDarkMode ? 'bg-gray-700' : 'bg-gray-50'">
+                    <p class="text-xs font-medium mb-0.5" [ngClass]="isDarkMode ? 'text-gray-400' : 'text-gray-500'">
+                      Sisa Waktu
+                    </p>
+                    <p class="text-sm font-semibold"
+                      [ngClass]="activeLicense.days_remaining <= 7
+                        ? 'text-red-500'
+                        : activeLicense.days_remaining <= 30
+                          ? 'text-amber-500'
+                          : (isDarkMode ? 'text-green-400' : 'text-green-600')">
+                      {{ activeLicense.days_remaining }} hari lagi
+                    </p>
+                  </div>
+                  <div class="rounded-lg p-3" [ngClass]="isDarkMode ? 'bg-gray-700' : 'bg-gray-50'">
+                    <p class="text-xs font-medium mb-0.5" [ngClass]="isDarkMode ? 'text-gray-400' : 'text-gray-500'">
+                      Status
+                    </p>
+                    <p class="text-sm font-semibold" [ngClass]="isDarkMode ? 'text-white' : 'text-gray-900'">
+                      Premium Aktif
+                    </p>
+                  </div>
+                </div>
+
+                <!-- Warning: expiring soon -->
+                <div *ngIf="activeLicense.days_remaining <= 30"
+                  class="flex items-start gap-2 p-3 rounded-xl mb-4 text-sm"
+                  [ngClass]="activeLicense.days_remaining <= 7
+                    ? (isDarkMode ? 'bg-red-500/10 border border-red-500/30 text-red-400' : 'bg-red-50 border border-red-200 text-red-700')
+                    : (isDarkMode ? 'bg-amber-500/10 border border-amber-500/30 text-amber-400' : 'bg-amber-50 border border-amber-200 text-amber-700')">
+                  <svg class="w-4 h-4 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                  </svg>
+                  Langganan kamu akan segera berakhir. Perpanjang sekarang agar akses premium tidak terputus.
+                </div>
+
+                <div class="flex flex-wrap gap-2">
+                  <button (click)="onSelectPlan(plans[getActivePlanRank() - 1] || plans[0])"
+                    class="px-4 py-2 rounded-xl text-sm font-medium bg-indigo-600 hover:bg-indigo-700 text-white transition-colors">
+                    Perpanjang
+                  </button>
+                  <button (click)="onCancelSubscription()"
+                    class="px-4 py-2 rounded-xl text-sm font-medium border transition-colors"
+                    [ngClass]="isDarkMode ? 'border-gray-600 text-gray-400 hover:bg-gray-700' : 'border-gray-200 text-gray-600 hover:bg-gray-50'">
+                    Batalkan Langganan
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- State: Expired -->
+        <div *ngIf="statusType === 'expired'" class="p-6">
+          <div class="flex items-start gap-4">
+            <div class="w-12 h-12 rounded-xl bg-red-100 flex items-center justify-center flex-shrink-0">
+              <svg class="w-6 h-6 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            </div>
+            <div class="flex-1">
+              <div class="flex items-center gap-2 mb-1">
+                <h2 class="font-semibold" [ngClass]="isDarkMode ? 'text-white' : 'text-gray-900'">
+                  {{ licenses[0] ? licenses[0].plan_name : 'Langganan Premium' }}
+                </h2>
+                <span class="px-2 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-700">
+                  Kedaluwarsa
+                </span>
+              </div>
+              <p class="text-sm mb-4" [ngClass]="isDarkMode ? 'text-gray-400' : 'text-gray-500'">
+                Akses premium kamu sudah tidak aktif. Perpanjang untuk melanjutkan belajar.
+              </p>
+              <button (click)="goToPremiumPlans()"
+                class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold bg-indigo-600 hover:bg-indigo-700 text-white transition-colors">
+                Perpanjang Sekarang
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── SECTION B: Pilih atau Ganti Plan ── -->
+      <div>
+        <h2 class="text-lg font-bold mb-1" [ngClass]="isDarkMode ? 'text-white' : 'text-gray-900'">
+          Pilih atau Ganti Plan
+        </h2>
+        <p class="text-sm mb-4" [ngClass]="isDarkMode ? 'text-gray-400' : 'text-gray-500'">
+          Pilih plan yang sesuai dengan kebutuhan belajar kamu.
+        </p>
+
+        <div *ngIf="plans.length === 0 && !loading"
+          class="text-center py-8 text-sm" [ngClass]="isDarkMode ? 'text-gray-400' : 'text-gray-500'">
+          Tidak ada plan tersedia saat ini.
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div *ngFor="let plan of plans"
+            class="relative rounded-2xl border p-4 flex flex-col transition-all duration-200"
+            [ngClass]="[isDarkMode ? 'bg-gray-800' : 'bg-white', getPlanBorderClass(plan)]">
+
+            <!-- Active badge -->
+            <div *ngIf="isActivePlan(plan)"
+              class="absolute -top-2.5 left-1/2 -translate-x-1/2 px-3 py-0.5 rounded-full text-xs font-bold bg-amber-500 text-white whitespace-nowrap">
+              ✅ Plan Aktif
+            </div>
+
+            <!-- Plan header gradient bar -->
+            <div class="h-1 rounded-full mb-3 bg-gradient-to-r" [ngClass]="getPlanAccentClass(plan)"></div>
+
+            <p class="font-bold text-base mb-0.5" [ngClass]="isDarkMode ? 'text-white' : 'text-gray-900'">
+              {{ plan.name }}
+            </p>
+            <p class="text-2xl font-bold mb-1 text-indigo-600">
+              {{ formatCurrency(plan.price) }}
+            </p>
+            <p class="text-xs mb-3" [ngClass]="isDarkMode ? 'text-gray-500' : 'text-gray-400'">
+              {{ plan.is_lifetime ? 'Seumur hidup' : (plan.duration_days + ' hari') }}
+            </p>
+
+            <ul class="space-y-1.5 flex-1 mb-4">
+              <li *ngFor="let feature of plan.features" class="flex items-start gap-1.5 text-xs"
+                [ngClass]="isDarkMode ? 'text-gray-300' : 'text-gray-600'">
+                <svg class="w-3.5 h-3.5 text-green-500 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7" />
+                </svg>
+                {{ feature }}
+              </li>
+            </ul>
+
+            <button (click)="onSelectPlan(plan)"
+              [disabled]="isActivePlan(plan)"
+              class="w-full py-2 rounded-xl text-sm font-semibold transition-colors"
+              [ngClass]="getPlanButtonClass(plan)">
+              {{ getPlanButtonLabel(plan) }}
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── SECTION C: Metode Pembayaran ── -->
+      <div class="rounded-2xl border p-6"
+        [ngClass]="isDarkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'">
+        <h2 class="font-bold mb-4" [ngClass]="isDarkMode ? 'text-white' : 'text-gray-900'">
+          Metode Pembayaran Tersedia
+        </h2>
+        <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
+          <div *ngFor="let method of paymentMethods"
+            class="flex items-center gap-2.5 p-3 rounded-xl"
+            [ngClass]="isDarkMode ? 'bg-gray-700' : 'bg-gray-50'">
+            <span class="text-xl">{{ method.icon }}</span>
+            <div>
+              <p class="text-sm font-medium" [ngClass]="isDarkMode ? 'text-white' : 'text-gray-900'">
+                {{ method.name }}
+              </p>
+              <p *ngIf="method.detail" class="text-xs" [ngClass]="isDarkMode ? 'text-gray-500' : 'text-gray-400'">
+                {{ method.detail }}
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── SECTION D: Riwayat Pembayaran ── -->
+      <div class="rounded-2xl border overflow-hidden"
+        [ngClass]="isDarkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'">
+        <div class="px-6 py-4 border-b" [ngClass]="isDarkMode ? 'border-gray-700' : 'border-gray-100'">
+          <h2 class="font-bold" [ngClass]="isDarkMode ? 'text-white' : 'text-gray-900'">
+            Riwayat Langganan
+          </h2>
+        </div>
+
+        <div *ngIf="licenses.length === 0"
+          class="flex flex-col items-center py-10 text-center px-4">
+          <svg class="w-10 h-10 mb-3" [ngClass]="isDarkMode ? 'text-gray-600' : 'text-gray-300'"
+            fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+              d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+          </svg>
+          <p class="text-sm" [ngClass]="isDarkMode ? 'text-gray-400' : 'text-gray-500'">
+            Belum ada riwayat langganan.
+          </p>
+        </div>
+
+        <div *ngIf="licenses.length > 0" class="overflow-x-auto">
+          <table class="w-full text-sm">
+            <thead>
+              <tr class="border-b" [ngClass]="isDarkMode ? 'border-gray-700 text-gray-400' : 'border-gray-100 text-gray-500'">
+                <th class="text-left px-6 py-3 font-medium">Plan</th>
+                <th class="text-left px-6 py-3 font-medium hidden sm:table-cell">Berlaku Hingga</th>
+                <th class="text-left px-6 py-3 font-medium hidden md:table-cell">Kode Lisensi</th>
+                <th class="text-left px-6 py-3 font-medium">Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let lic of licenses; let i = index"
+                class="border-b last:border-0 transition-colors"
+                [ngClass]="[
+                  isDarkMode ? 'border-gray-700' : 'border-gray-50',
+                  isDarkMode ? 'hover:bg-gray-700/50' : 'hover:bg-gray-50'
+                ]">
+                <td class="px-6 py-4">
+                  <p class="font-medium" [ngClass]="isDarkMode ? 'text-white' : 'text-gray-900'">
+                    {{ lic.plan_name }}
+                  </p>
+                </td>
+                <td class="px-6 py-4 hidden sm:table-cell" [ngClass]="isDarkMode ? 'text-gray-300' : 'text-gray-600'">
+                  {{ formatDate(lic.expired_at) }}
+                </td>
+                <td class="px-6 py-4 hidden md:table-cell">
+                  <code class="text-xs px-2 py-1 rounded font-mono"
+                    [ngClass]="isDarkMode ? 'bg-gray-700 text-gray-300' : 'bg-gray-100 text-gray-600'">
+                    {{ lic.license_code }}
+                  </code>
+                </td>
+                <td class="px-6 py-4">
+                  <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium"
+                    [ngClass]="getStatusBadgeClass(lic.days_remaining > 0 ? 'active' : 'expired')">
+                    {{ lic.days_remaining > 0 ? 'Aktif' : 'Kedaluwarsa' }}
+                  </span>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- ── SECTION E: FAQ ── -->
+      <div class="rounded-2xl border overflow-hidden"
+        [ngClass]="isDarkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'">
+        <div class="px-6 py-4 border-b" [ngClass]="isDarkMode ? 'border-gray-700' : 'border-gray-100'">
+          <h2 class="font-bold" [ngClass]="isDarkMode ? 'text-white' : 'text-gray-900'">
+            Pertanyaan Umum
+          </h2>
+        </div>
+        <div class="divide-y" [ngClass]="isDarkMode ? 'divide-gray-700' : 'divide-gray-100'">
+          <div *ngFor="let faq of faqItems; let i = index">
+            <button (click)="toggleFaq(i)"
+              class="w-full flex items-center justify-between px-6 py-4 text-left transition-colors"
+              [ngClass]="isDarkMode ? 'hover:bg-gray-700/50' : 'hover:bg-gray-50'">
+              <span class="text-sm font-medium pr-4" [ngClass]="isDarkMode ? 'text-white' : 'text-gray-900'">
+                {{ faq.question }}
+              </span>
+              <svg class="w-4 h-4 flex-shrink-0 transition-transform duration-200"
+                [class.rotate-180]="faq.open"
+                [ngClass]="isDarkMode ? 'text-gray-400' : 'text-gray-500'"
+                fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+              </svg>
+            </button>
+            <div *ngIf="faq.open" class="px-6 pb-4 text-sm" [ngClass]="isDarkMode ? 'text-gray-400' : 'text-gray-600'">
+              {{ faq.answer }}
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </ng-container>
+  </div>
+</div>

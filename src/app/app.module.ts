@@ -36,6 +36,7 @@ import { BookmarksPageComponent } from './bookmark/bookmarks-page.component';
 import { BottomNavComponent } from './bottom-nav/bottom-nav.component';
 import { QuestionDiscussionComponent } from './question-discussion/question-discussion.component';
 import { AboutComponent } from './about/about.component';
+import { SubscriptionComponent } from './subscription/subscription.component';
 
 @NgModule({
   declarations: [
@@ -60,7 +61,8 @@ import { AboutComponent } from './about/about.component';
     BookmarksPageComponent,
     BottomNavComponent,
     QuestionDiscussionComponent,
-    AboutComponent
+    AboutComponent,
+    SubscriptionComponent
   ],
   imports: [
     BrowserModule,
