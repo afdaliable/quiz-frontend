@@ -1,1 +1,42 @@
-/* Onboarding Component Styles */
+/* Onboarding step transition animations */
+
+.step-content {
+  animation-duration: 0.35s;
+  animation-timing-function: ease-out;
+  animation-fill-mode: both;
+}
+
+.step-enter-forward {
+  animation-name: slideInRight;
+}
+
+.step-enter-backward {
+  animation-name: slideInLeft;
+}
+
+@keyframes slideInRight {
+  from {
+    transform: translateX(40px);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes slideInLeft {
+  from {
+    transform: translateX(-40px);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
