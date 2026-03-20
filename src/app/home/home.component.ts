@@ -7,6 +7,7 @@ import { UserService } from '../services/user.service'; // Ensure this path is c
 import { ThemeService } from '../services/theme.service'; // Ensure this path is correct
 import { AuthService } from '../services/auth.service';
 import { PremiumService, PremiumPlan } from '../services/premium.service';
+import { OnboardingService } from '../services/onboarding.service';
 import { Subscription } from 'rxjs';
 import { QuizHistoryEntry } from '../models/quiz-history.model';
 import { QuizSessionService } from '../services/quiz-session.service';
@@ -51,6 +52,11 @@ export class HomeComponent implements OnInit, OnDestroy {
   randomCategory: string = '';
   isStartingRandom: boolean = false;
 
+  // Personalization
+  personalizedPakets: PaketSoal[] = [];
+  onboardingGoals: string[] = [];
+  showPersonalizedSection = false;
+
   constructor(
     private questionService: QuestionService,
     private router: Router,
@@ -58,7 +64,8 @@ export class HomeComponent implements OnInit, OnDestroy {
     private themeService: ThemeService,
     private authService: AuthService,
     private premiumService: PremiumService,
-    private quizSessionService: QuizSessionService
+    private quizSessionService: QuizSessionService,
+    private onboardingService: OnboardingService
   ) {}
 
   ngOnInit(): void {
@@ -176,6 +183,8 @@ export class HomeComponent implements OnInit, OnDestroy {
         this.paketSoalList = data;
         this.filteredPaketSoalList = data;
         this.isLoading = false;
+        // Load personalized section after paket data is available
+        this.loadPersonalizedContent();
       },
       error: (error) => {
         console.error('Error in home component:', error);
@@ -186,6 +195,69 @@ export class HomeComponent implements OnInit, OnDestroy {
         }
       }
     });
+  }
+
+  private loadPersonalizedContent(): void {
+    const onboardingData = this.onboardingService.getLocal();
+    this.onboardingGoals = onboardingData?.goals ?? [];
+
+    if (this.onboardingGoals.length === 0) {
+      this.showPersonalizedSection = false;
+      return;
+    }
+
+    // If only 'other' selected, skip personalization
+    const meaningfulGoals = this.onboardingGoals.filter(g => g !== 'other');
+    if (meaningfulGoals.length === 0) {
+      this.showPersonalizedSection = false;
+      return;
+    }
+
+    this.filterPersonalizedPakets();
+  }
+
+  private filterPersonalizedPakets(): void {
+    const keywordMap: Record<string, string[]> = {
+      cpns:     ['SKD', 'CPNS', 'TWK', 'TIU', 'TKP', 'PPPK', 'ASN'],
+      snbt:     ['SNBT', 'UTBK', 'PTN', 'SAINTEK', 'SOSHUM', 'TPS'],
+      ppg:      ['PPG', 'GURU', 'SERTIFIKASI'],
+      nakes:    ['UKMPPD', 'NAKES', 'DOKTER', 'PERAWAT', 'UKNI'],
+      toefl:    ['TOEFL', 'IELTS', 'BAHASA INGGRIS', 'ENGLISH'],
+      bumn:     ['BUMN', 'TPA', 'PSIKOTES'],
+      beasiswa: ['LPDP', 'BEASISWA', 'BPI'],
+    };
+
+    const allKeywords: string[] = [];
+    for (let i = 0; i < this.onboardingGoals.length; i++) {
+      const goal = this.onboardingGoals[i];
+      const kws = keywordMap[goal] || [];
+      for (let j = 0; j < kws.length; j++) {
+        allKeywords.push(kws[j]);
+      }
+    }
+
+    if (allKeywords.length === 0) {
+      this.showPersonalizedSection = false;
+      return;
+    }
+
+    const matched = this.paketSoalList.filter(p => {
+      const name = (p.nama_paket_soal || '').toUpperCase();
+      const cat  = (p.kategori_soal || '').toUpperCase();
+      for (let i = 0; i < allKeywords.length; i++) {
+        if (name.indexOf(allKeywords[i]) >= 0 || cat.indexOf(allKeywords[i]) >= 0) {
+          return true;
+        }
+      }
+      return false;
+    });
+
+    this.personalizedPakets = matched.slice(0, 6);
+    this.showPersonalizedSection = this.personalizedPakets.length > 0;
+  }
+
+  clearPersonalization(): void {
+    this.showPersonalizedSection = false;
   }
 
   filterByCategory(category: string | null): void {
