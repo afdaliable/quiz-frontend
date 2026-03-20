@@ -1,18 +1,290 @@
-<div class="min-h-screen flex items-center justify-center p-4"
-     [ngClass]="isDarkMode ? 'bg-gray-900' : 'bg-gray-50'">
-  <div class="text-center max-w-md">
-    <div class="text-6xl mb-6">🚀</div>
-    <h1 class="text-3xl font-bold mb-4"
-        [ngClass]="isDarkMode ? 'text-white' : 'text-gray-900'">
-      Selamat Datang di QuizKu!
-    </h1>
-    <p class="mb-8"
-       [ngClass]="isDarkMode ? 'text-gray-400' : 'text-gray-600'">
-      Onboarding wizard akan segera hadir. Untuk sekarang, langsung mulai saja yuk!
-    </p>
-    <button (click)="skipOnboarding()"
-            class="px-6 py-3 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-semibold transition-colors">
-      Mulai Belajar
-    </button>
-  </div>
+<div class="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-indigo-600 to-violet-700">
+  <div class="w-full max-w-2xl rounded-2xl shadow-2xl overflow-hidden"
+       [ngClass]="isDarkMode ? 'bg-gray-800' : 'bg-white'">
+
+    <!-- Header: Progress dots + Skip -->
+    <div class="px-6 pt-6 pb-4">
+      <div class="flex items-center justify-between mb-4">
+        <div class="flex items-center gap-2">
+          <ng-container *ngFor="let s of getStepArray()">
+            <div class="transition-all duration-300 rounded-full"
+                 [ngClass]="s === currentStep
+                   ? 'w-6 h-3 bg-indigo-600'
+                   : s < currentStep
+                     ? 'w-3 h-3 bg-indigo-400'
+                     : (isDarkMode ? 'w-3 h-3 bg-gray-600' : 'w-3 h-3 bg-gray-300')">
+            </div>
+          </ng-container>
+        </div>
+        <button (click)="skip()"
+                class="text-sm font-medium transition-colors"
+                [ngClass]="isDarkMode ? 'text-gray-400 hover:text-gray-200' : 'text-gray-500 hover:text-gray-700'">
+          Lewati
+        </button>
+      </div>
+      <!-- Progress bar -->
+      <div class="h-1 rounded-full" [ngClass]="isDarkMode ? 'bg-gray-700' : 'bg-gray-200'">
+        <div class="h-1 rounded-full bg-indigo-600 transition-all duration-500"
+             [style.width.%]="progressPercent"></div>
+      </div>
+    </div>
+
+    <!-- Step body -->
+    <div class="px-6 pb-4">
+
+      <!-- ── STEP 1: Pilih Tujuan ─────────────────────────────── -->
+      <div *ngIf="currentStep === 1"
+           class="step-content"
+           [ngClass]="animatingForward ? 'step-enter-forward' : 'step-enter-backward'">
+        <div class="mb-5">
+          <h1 class="text-2xl font-bold mb-1" [ngClass]="isDarkMode ? 'text-white' : 'text-gray-900'">
+            Selamat datang di QuizKu! 👋
+          </h1>
+          <p class="text-sm" [ngClass]="isDarkMode ? 'text-gray-400' : 'text-gray-500'">
+            Apa yang sedang kamu persiapkan? (bisa pilih lebih dari satu)
+          </p>
+        </div>
+
+        <div class="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-2">
+          <button *ngFor="let goal of goalOptions"
+                  (click)="toggleGoal(goal.key)"
+                  class="relative text-left p-3 rounded-xl border-2 transition-all duration-200 focus:outline-none"
+                  [ngClass]="isGoalSelected(goal.key)
+                    ? (isDarkMode
+                        ? 'ring-2 ring-indigo-400 border-indigo-500 bg-indigo-900/30'
+                        : 'ring-2 ring-indigo-500 border-indigo-400 bg-indigo-50')
+                    : (isDarkMode
+                        ? 'border-gray-600 hover:border-gray-500 bg-gray-700/50'
+                        : 'border-gray-200 hover:border-gray-300 bg-white')">
+            <span *ngIf="isGoalSelected(goal.key)"
+                  class="absolute top-2 right-2 w-5 h-5 rounded-full bg-indigo-600 flex items-center justify-center text-white text-xs font-bold">
+              ✓
+            </span>
+            <div class="text-2xl mb-1">{{ goal.icon }}</div>
+            <div class="font-semibold text-sm leading-tight"
+                 [ngClass]="isDarkMode ? 'text-white' : 'text-gray-900'">
+              {{ goal.label }}
+            </div>
+            <div class="text-xs mt-0.5"
+                 [ngClass]="isDarkMode ? 'text-gray-400' : 'text-gray-500'">
+              {{ goal.sublabel }}
+            </div>
+          </button>
+        </div>
+      </div>
+
+      <!-- ── STEP 2: Target Waktu ────────────────────────────── -->
+      <div *ngIf="currentStep === 2"
+           class="step-content"
+           [ngClass]="animatingForward ? 'step-enter-forward' : 'step-enter-backward'">
+        <div class="mb-5">
+          <h1 class="text-2xl font-bold mb-1" [ngClass]="isDarkMode ? 'text-white' : 'text-gray-900'">
+            Kapan rencana ujianmu?
+          </h1>
+          <p class="text-sm" [ngClass]="isDarkMode ? 'text-gray-400' : 'text-gray-500'">
+            Kami akan menyesuaikan rekomendasi untuk kamu.
+          </p>
+        </div>
+
+        <div class="flex flex-col gap-2.5 mb-2">
+          <button *ngFor="let tf of timeframeOptions"
+                  (click)="selectTimeframe(tf.key)"
+                  class="text-left p-4 rounded-xl border-2 transition-all duration-200 focus:outline-none"
+                  [ngClass]="selectedTimeframe === tf.key
+                    ? (isDarkMode
+                        ? 'border-indigo-500 bg-indigo-900/30'
+                        : 'border-indigo-500 bg-indigo-50')
+                    : (isDarkMode
+                        ? 'border-gray-600 hover:border-gray-500 bg-gray-700/50'
+                        : 'border-gray-200 hover:border-gray-300 bg-white')">
+            <div class="flex items-center gap-3">
+              <span class="text-2xl">{{ tf.emoji }}</span>
+              <div class="flex-1">
+                <div class="font-semibold text-sm"
+                     [ngClass]="isDarkMode ? 'text-white' : 'text-gray-900'">
+                  {{ tf.label }}
+                </div>
+                <div *ngIf="selectedTimeframe === tf.key"
+                     class="text-xs mt-0.5"
+                     [ngClass]="isDarkMode ? 'text-indigo-300' : 'text-indigo-600'">
+                  {{ tf.tagline }}
+                </div>
+              </div>
+              <span *ngIf="selectedTimeframe === tf.key"
+                    class="w-5 h-5 rounded-full bg-indigo-600 flex items-center justify-center text-white text-xs font-bold flex-shrink-0">
+                ✓
+              </span>
+            </div>
+          </button>
+        </div>
+      </div>
+
+      <!-- ── STEP 3: Carousel Fitur ──────────────────────────── -->
+      <div *ngIf="currentStep === 3"
+           class="step-content"
+           [ngClass]="animatingForward ? 'step-enter-forward' : 'step-enter-backward'">
+        <div class="mb-5">
+          <h1 class="text-2xl font-bold mb-1" [ngClass]="isDarkMode ? 'text-white' : 'text-gray-900'">
+            Kenalan dulu sama QuizKu
+          </h1>
+          <p class="text-sm" [ngClass]="isDarkMode ? 'text-gray-400' : 'text-gray-500'">
+            Ini fitur unggulan yang ada buat kamu.
+          </p>
+        </div>
+
+        <!-- Carousel card -->
+        <div class="rounded-xl p-5 mb-2"
+             [ngClass]="isDarkMode ? 'bg-gray-700/60' : 'bg-indigo-50'"
+             (touchstart)="onTouchStart($event)"
+             (touchend)="onTouchEnd($event)">
+          <!-- Slide nav row -->
+          <div class="flex items-center justify-between mb-4">
+            <button (click)="prevFeatureSlide()"
+                    class="w-8 h-8 rounded-full flex items-center justify-center text-lg transition-colors"
+                    [disabled]="currentFeatureSlide === 0"
+                    [ngClass]="currentFeatureSlide === 0
+                      ? (isDarkMode ? 'text-gray-600 cursor-default' : 'text-gray-300 cursor-default')
+                      : (isDarkMode ? 'text-gray-300 hover:bg-gray-600' : 'text-gray-500 hover:bg-white')">
+              ‹
+            </button>
+            <span class="text-xs font-medium"
+                  [ngClass]="isDarkMode ? 'text-gray-400' : 'text-gray-400'">
+              {{ currentFeatureSlide + 1 }} / {{ totalFeatureSlides }}
+            </span>
+            <button (click)="nextFeatureSlide()"
+                    class="w-8 h-8 rounded-full flex items-center justify-center text-lg transition-colors"
+                    [disabled]="currentFeatureSlide === totalFeatureSlides - 1"
+                    [ngClass]="currentFeatureSlide === totalFeatureSlides - 1
+                      ? (isDarkMode ? 'text-gray-600 cursor-default' : 'text-gray-300 cursor-default')
+                      : (isDarkMode ? 'text-gray-300 hover:bg-gray-600' : 'text-gray-500 hover:bg-white')">
+              ›
+            </button>
+          </div>
+
+          <!-- Slide content -->
+          <ng-container *ngFor="let slide of featureSlides; let i = index">
+            <div *ngIf="i === currentFeatureSlide">
+              <h3 class="text-xl font-bold mb-1"
+                  [ngClass]="isDarkMode ? 'text-white' : 'text-gray-900'">
+                {{ slide.title }}
+              </h3>
+              <p class="text-sm mb-4"
+                 [ngClass]="isDarkMode ? 'text-gray-400' : 'text-gray-500'">
+                {{ slide.description }}
+              </p>
+              <div class="flex flex-col gap-2.5">
+                <div *ngFor="let point of slide.points" class="flex items-start gap-3">
+                  <span class="text-xl leading-none mt-0.5">{{ point.icon }}</span>
+                  <span class="text-sm"
+                        [ngClass]="isDarkMode ? 'text-gray-300' : 'text-gray-700'">
+                    {{ point.text }}
+                  </span>
+                </div>
+              </div>
+            </div>
+          </ng-container>
+
+          <!-- Dot indicator -->
+          <div class="flex justify-center gap-1.5 mt-5">
+            <button *ngFor="let idx of getSlideIndexArray()"
+                    (click)="setFeatureSlide(idx)"
+                    class="rounded-full transition-all duration-200"
+                    [ngClass]="idx === currentFeatureSlide
+                      ? 'w-5 h-2 bg-indigo-600'
+                      : (isDarkMode ? 'w-2 h-2 bg-gray-500 hover:bg-gray-400' : 'w-2 h-2 bg-gray-300 hover:bg-gray-400')">
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── STEP 4: Rekomendasi ─────────────────────────────── -->
+      <div *ngIf="currentStep === 4"
+           class="step-content"
+           [ngClass]="animatingForward ? 'step-enter-forward' : 'step-enter-backward'">
+        <div class="mb-5">
+          <h1 class="text-2xl font-bold mb-1" [ngClass]="isDarkMode ? 'text-white' : 'text-gray-900'">
+            Oke {{ userName }}! 👇
+          </h1>
+          <p class="text-sm" [ngClass]="isDarkMode ? 'text-gray-400' : 'text-gray-500'">
+            Ini paket latihan yang cocok buat kamu.
+          </p>
+        </div>
+
+        <!-- Paket cards -->
+        <div class="flex flex-col gap-3 mb-4">
+          <ng-container *ngIf="recommendedPakets.length > 0; else noRecs">
+            <div *ngFor="let paket of recommendedPakets"
+                 class="rounded-xl border p-4 transition-all duration-200"
+                 [ngClass]="isDarkMode ? 'border-gray-600 bg-gray-700/50' : 'border-gray-200 bg-gray-50'">
+              <div class="flex items-start gap-3 mb-3">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500 to-violet-600 flex items-center justify-center text-white font-bold text-lg flex-shrink-0">
+                  {{ paket.nama_paket_soal.charAt(0) }}
+                </div>
+                <div class="flex-1 min-w-0">
+                  <div class="flex items-start justify-between gap-2">
+                    <p class="font-semibold text-sm leading-snug"
+                       [ngClass]="isDarkMode ? 'text-white' : 'text-gray-900'">
+                      {{ paket.nama_paket_soal }}
+                    </p>
+                    <span class="flex-shrink-0 text-xs px-2 py-0.5 rounded-full font-medium"
+                          [ngClass]="paket.is_premium
+                            ? (isDarkMode ? 'bg-amber-500/20 text-amber-400' : 'bg-amber-100 text-amber-700')
+                            : (isDarkMode ? 'bg-green-500/20 text-green-400' : 'bg-green-100 text-green-700')">
+                      {{ paket.is_premium ? 'Premium' : 'Gratis' }}
+                    </span>
+                  </div>
+                  <p class="text-xs mt-0.5" [ngClass]="isDarkMode ? 'text-gray-400' : 'text-gray-500'">
+                    {{ paket.jumlah_soal }} soal · ~{{ getEstimatedMinutes(paket.jumlah_soal) }} menit
+                  </p>
+                </div>
+              </div>
+              <button (click)="startPackage(paket)"
+                      class="w-full py-2 rounded-lg text-sm font-semibold bg-indigo-600 hover:bg-indigo-700 text-white transition-colors">
+                🚀 Mulai Sekarang
+              </button>
+            </div>
+          </ng-container>
+          <ng-template #noRecs>
+            <div class="text-center py-8" [ngClass]="isDarkMode ? 'text-gray-400' : 'text-gray-500'">
+              <div class="text-4xl mb-2">📚</div>
+              <p class="text-sm">Semua paket latihan siap untukmu di halaman utama!</p>
+            </div>
+          </ng-template>
+        </div>
+
+        <!-- CTA -->
+        <button (click)="startFirstPackage()"
+                class="w-full py-3 rounded-xl font-semibold text-white bg-indigo-600 hover:bg-indigo-700 transition-colors mb-2">
+          Mulai Belajar →
+        </button>
+        <button (click)="goToHome()"
+                class="w-full py-2 text-sm font-medium transition-colors"
+                [ngClass]="isDarkMode ? 'text-gray-400 hover:text-gray-200' : 'text-gray-500 hover:text-gray-700'">
+          Lihat semua paket →
+        </button>
+      </div>
+
+    </div><!-- /body -->
+
+    <!-- Footer nav (step 1–3) -->
+    <div *ngIf="currentStep < 4" class="px-6 pb-6 flex items-center gap-3">
+      <button (click)="goBack()"
+              class="px-5 py-2.5 rounded-xl text-sm font-medium transition-colors"
+              [disabled]="currentStep === 1"
+              [ngClass]="currentStep === 1
+                ? (isDarkMode ? 'text-gray-600 cursor-default' : 'text-gray-300 cursor-default')
+                : (isDarkMode ? 'text-gray-300 hover:bg-gray-700 border border-gray-600' : 'text-gray-600 hover:bg-gray-100 border border-gray-300')">
+        ‹ Kembali
+      </button>
+      <button (click)="goNext()"
+              class="flex-1 py-2.5 rounded-xl text-sm font-semibold transition-colors"
+              [disabled]="!canGoNext"
+              [ngClass]="canGoNext
+                ? 'bg-indigo-600 hover:bg-indigo-700 text-white'
+                : (isDarkMode ? 'bg-gray-700 text-gray-500 cursor-default' : 'bg-gray-200 text-gray-400 cursor-default')">
+        Selanjutnya →
+      </button>
+    </div>
+
+  </div><!-- /card -->
 </div>
