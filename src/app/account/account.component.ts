@@ -22,6 +22,8 @@ interface UserStats {
   learning_streak_days: number;
   total_correct: number;
   total_questions: number;
+  total_pomodoro_sessions: number;
+  total_pomodoro_minutes: number;
 }
 
 @Component({

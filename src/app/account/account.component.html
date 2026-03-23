@@ -170,6 +170,18 @@
             <p class="text-2xl font-bold text-green-500">{{ accuracyPercent }}%</p>
             <p class="text-xs mt-1" [ngClass]="isDarkMode ? 'text-gray-400' : 'text-gray-500'">Akurasi ({{ stats.total_correct }}/{{ stats.total_questions }})</p>
           </div>
+
+          <!-- Sesi Pomodoro -->
+          <div class="rounded-lg p-4 text-center" [ngClass]="isDarkMode ? 'bg-gray-700' : 'bg-gray-50'">
+            <p class="text-2xl font-bold text-red-500">{{ stats.total_pomodoro_sessions || 0 }}</p>
+            <p class="text-xs mt-1" [ngClass]="isDarkMode ? 'text-gray-400' : 'text-gray-500'">🍅 Sesi Pomodoro</p>
+          </div>
+
+          <!-- Menit Fokus -->
+          <div class="rounded-lg p-4 text-center" [ngClass]="isDarkMode ? 'bg-gray-700' : 'bg-gray-50'">
+            <p class="text-2xl font-bold text-red-500">{{ stats.total_pomodoro_minutes || 0 }}</p>
+            <p class="text-xs mt-1" [ngClass]="isDarkMode ? 'text-gray-400' : 'text-gray-500'">⏱ Menit Fokus</p>
+          </div>
         </div>
       </div>
 

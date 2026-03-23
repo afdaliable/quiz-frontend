@@ -6,6 +6,7 @@ import { AuthService } from '../services/auth.service';
 import { QuestionService } from '../services/question.service';
 import { Subscription } from 'rxjs';
 import { PaketSoal } from '../models/paket-soal.model';
+import { PomodoroService, PomodoroSettings, DEFAULT_SETTINGS } from '../services/pomodoro.service';
 
 const CATEGORY_CONFIG: Record<string, { headerClass: string; icon: string }> = {
   'matematika':   { headerClass: 'bg-blue-600',    icon: '🔢' },
@@ -48,6 +49,18 @@ export class WelcomeComponent implements OnInit, OnDestroy {
   attemptCount: number = 0;
   isLoadingStats: boolean = false;
 
+  // Pomodoro settings
+  pomodoroEnabled = false;
+  pomodoroPreset: 'classic' | 'short' | 'long' | 'custom' = 'classic';
+  pomodoroFocus = 25;
+  pomodoroBreak = 5;
+  readonly pomodoroPresets: Array<{ k: 'classic' | 'short' | 'long' | 'custom'; l: string }> = [
+    { k: 'classic', l: 'Klasik'  },
+    { k: 'short',   l: 'Singkat' },
+    { k: 'long',    l: 'Panjang' },
+    { k: 'custom',  l: 'Custom'  },
+  ];
+
   private userSubscription: Subscription | null = null;
 
   constructor(
@@ -55,7 +68,8 @@ export class WelcomeComponent implements OnInit, OnDestroy {
     private userService: UserService,
     private themeService: ThemeService,
     private authService: AuthService,
-    private questionService: QuestionService
+    private questionService: QuestionService,
+    private pomodoroService: PomodoroService
   ) {}
 
   ngOnInit(): void {
@@ -82,6 +96,13 @@ export class WelcomeComponent implements OnInit, OnDestroy {
     localStorage.removeItem('quizMode');
     localStorage.removeItem('isReviewMode');
 
+    // Load persisted Pomodoro settings
+    const saved = this.pomodoroService.settings;
+    this.pomodoroEnabled = saved.enabled;
+    this.pomodoroFocus = saved.focusDuration;
+    this.pomodoroBreak = saved.shortBreakDuration;
+    this.inferPreset();
+
     this.themeService.darkMode$.subscribe(isDark => (this.isDarkMode = isDark));
   }
 
@@ -99,6 +120,22 @@ export class WelcomeComponent implements OnInit, OnDestroy {
     this.router.navigate(['/']);
   }
 
+  onPomodoroPresetChange(preset: 'classic' | 'short' | 'long' | 'custom'): void {
+    this.pomodoroPreset = preset;
+    switch (preset) {
+      case 'classic': this.pomodoroFocus = 25; this.pomodoroBreak = 5;  break;
+      case 'short':   this.pomodoroFocus = 15; this.pomodoroBreak = 3;  break;
+      case 'long':    this.pomodoroFocus = 50; this.pomodoroBreak = 10; break;
+    }
+  }
+
+  private inferPreset(): void {
+    if (this.pomodoroFocus === 25 && this.pomodoroBreak === 5)   { this.pomodoroPreset = 'classic'; return; }
+    if (this.pomodoroFocus === 15 && this.pomodoroBreak === 3)   { this.pomodoroPreset = 'short';   return; }
+    if (this.pomodoroFocus === 50 && this.pomodoroBreak === 10)  { this.pomodoroPreset = 'long';    return; }
+    this.pomodoroPreset = 'custom';
+  }
+
   startQuiz(): void {
     if (this.selectedPaket) {
       const hasValidId = this.selectedPaket.id || this.selectedPaket.id_nama_paket_soal;
@@ -106,6 +143,18 @@ export class WelcomeComponent implements OnInit, OnDestroy {
         console.error('Invalid selected paket:', this.selectedPaket);
         alert('Error: Invalid quiz data. Please go back and select a quiz again.');
         return;
+      }
+
+      // Save Pomodoro settings, then start if enabled
+      this.pomodoroService.updateSettings({
+        enabled: this.pomodoroEnabled,
+        focusDuration: this.pomodoroFocus,
+        shortBreakDuration: this.pomodoroBreak,
+      });
+      if (this.pomodoroEnabled) {
+        this.pomodoroService.start();
+      } else {
+        this.pomodoroService.stop();
       }
 
       localStorage.setItem('durasi', this.selectedDurasi.toString());
