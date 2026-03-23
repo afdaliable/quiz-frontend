@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { BehaviorSubject, Observable, catchError, throwError, of } from 'rxjs';
 import { HttpClient } from '@angular/common/http';
 import { environment } from '../../environments/environment';
+import { XpSummary } from '../models/xp-system.model';
 
 @Injectable({
   providedIn: 'root'
@@ -51,6 +52,15 @@ export class UserService {
   clearUser() {
     this.currentUser.next(null);
     localStorage.removeItem('user');
+  }
+
+  getUserXpSummary(): Observable<XpSummary> {
+    const url = environment.production
+      ? `${this.baseApiUrl}/user/me/xp`
+      : '/api/user/me/xp';
+    return this.http.get<XpSummary>(url).pipe(
+      catchError(error => throwError(() => error))
+    );
   }
 
   updatePreferences(prefs: { theme: string }): void {

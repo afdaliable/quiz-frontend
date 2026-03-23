@@ -1,0 +1,72 @@
+<div class="min-h-screen transition-colors duration-200"
+  [ngClass]="isDarkMode ? 'bg-gray-950' : 'bg-gray-50'">
+  <div class="max-w-2xl mx-auto px-4 py-8">
+
+    <!-- Loading -->
+    <div *ngIf="loading" class="flex justify-center items-center h-48">
+      <div class="w-8 h-8 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin"></div>
+    </div>
+
+    <!-- Error -->
+    <div *ngIf="!loading && errorMessage"
+      class="text-center py-16 rounded-2xl"
+      [ngClass]="isDarkMode ? 'bg-gray-800 text-gray-400' : 'bg-white text-gray-500'">
+      <p class="text-lg">{{ errorMessage }}</p>
+    </div>
+
+    <!-- Profile -->
+    <div *ngIf="!loading && stats">
+
+      <!-- Header card -->
+      <div class="rounded-2xl shadow p-6 mb-4 text-center transition-colors duration-200"
+        [ngClass]="isDarkMode ? 'bg-gray-800' : 'bg-white'">
+        <div class="w-16 h-16 rounded-full bg-indigo-600 flex items-center justify-center text-white text-2xl font-bold mx-auto mb-3">
+          {{ (stats.display_name || 'U').charAt(0).toUpperCase() }}
+        </div>
+        <h1 class="text-xl font-bold transition-colors duration-200"
+          [ngClass]="isDarkMode ? 'text-white' : 'text-gray-900'">
+          {{ stats.display_name }}
+        </h1>
+      </div>
+
+      <!-- Stats grid -->
+      <div class="grid grid-cols-2 gap-4 mb-4">
+
+        <!-- XP box -->
+        <div class="rounded-2xl shadow p-4 text-center transition-colors duration-200"
+          [ngClass]="isDarkMode ? 'bg-gray-800' : 'bg-white'">
+          <p class="text-2xl font-bold text-indigo-600">{{ stats.total_xp | number }}</p>
+          <p class="text-xs mt-1 transition-colors duration-200"
+            [ngClass]="isDarkMode ? 'text-gray-400' : 'text-gray-500'">Total XP</p>
+        </div>
+
+        <!-- Level box -->
+        <div class="rounded-2xl shadow p-4 text-center transition-colors duration-200"
+          [ngClass]="isDarkMode ? 'bg-gray-800' : 'bg-white'">
+          <p class="text-2xl font-bold">{{ stats.level_icon }}</p>
+          <p class="text-sm font-semibold transition-colors duration-200"
+            [ngClass]="isDarkMode ? 'text-gray-200' : 'text-gray-800'">{{ stats.level_name }}</p>
+          <p class="text-xs mt-0.5 transition-colors duration-200"
+            [ngClass]="isDarkMode ? 'text-gray-500' : 'text-gray-400'">Level {{ stats.current_level }}</p>
+        </div>
+
+        <!-- Quizzes box -->
+        <div class="rounded-2xl shadow p-4 text-center transition-colors duration-200"
+          [ngClass]="isDarkMode ? 'bg-gray-800' : 'bg-white'">
+          <p class="text-2xl font-bold text-indigo-600">{{ stats.total_quizzes }}</p>
+          <p class="text-xs mt-1 transition-colors duration-200"
+            [ngClass]="isDarkMode ? 'text-gray-400' : 'text-gray-500'">Kuis Selesai</p>
+        </div>
+
+        <!-- Avg score box -->
+        <div class="rounded-2xl shadow p-4 text-center transition-colors duration-200"
+          [ngClass]="isDarkMode ? 'bg-gray-800' : 'bg-white'">
+          <p class="text-2xl font-bold text-indigo-600">{{ stats.avg_score | number:'1.0-0' }}</p>
+          <p class="text-xs mt-1 transition-colors duration-200"
+            [ngClass]="isDarkMode ? 'text-gray-400' : 'text-gray-500'">Rata-rata Skor</p>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>

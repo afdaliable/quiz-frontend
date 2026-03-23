@@ -5,6 +5,22 @@ import { catchError, tap } from 'rxjs/operators';
 import { environment } from '../../environments/environment';
 import { Router } from '@angular/router';
 
+export interface XpBreakdownData {
+  quiz_complete: number;
+  correct_answers: number;
+  score_bonus: number;
+  total: number;
+}
+
+export interface XpResultData {
+  xp_awarded: number;
+  total_xp: number;
+  leveled_up: boolean;
+  new_level: number;
+  new_level_name: string;
+  new_level_icon: string;
+}
+
 export interface QuizSession {
   id: string;
   user_id: string;
@@ -24,6 +40,8 @@ export interface QuizSession {
   incorrect_answers: number;
   created_at: string;
   updated_at: string;
+  xp_breakdown?: XpBreakdownData;
+  xp_result?: XpResultData;
 }
 
 export interface StartRandomSessionRequest {

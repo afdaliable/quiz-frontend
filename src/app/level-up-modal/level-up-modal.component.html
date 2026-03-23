@@ -1,0 +1,49 @@
+<div *ngIf="isVisible"
+  class="fixed inset-0 z-50 flex items-center justify-center p-4"
+  style="background: rgba(0,0,0,0.75)">
+
+  <!-- Confetti -->
+  <div *ngFor="let i of confettiPieces"
+    class="confetti-piece"
+    [style.left.%]="(i * 17 + 3) % 100"
+    [style.animation-duration]="((i % 4) + 2) + 's,' + ((i % 3) + 1) + 's'"
+    [style.animation-delay]="(i * 0.15) + 's'"
+    [style.background-color]="['#f59e0b','#10b981','#6366f1','#ef4444','#8b5cf6','#ec4899'][i % 6]">
+  </div>
+
+  <!-- Card -->
+  <div class="relative rounded-3xl shadow-2xl p-8 max-w-sm w-full text-center z-10"
+    [ngClass]="isDarkMode ? 'bg-gray-800' : 'bg-white'">
+
+    <div class="text-5xl mb-2">🎉</div>
+    <h2 class="text-2xl font-bold mb-1"
+      [ngClass]="isDarkMode ? 'text-white' : 'text-gray-900'">
+      LEVEL UP!
+    </h2>
+
+    <!-- Level transition -->
+    <div class="flex items-center justify-center gap-4 my-6">
+      <div class="text-center">
+        <div class="text-4xl mb-1">{{ oldLevel.icon }}</div>
+        <p class="text-xs font-medium" [ngClass]="isDarkMode ? 'text-gray-400' : 'text-gray-500'">
+          {{ oldLevel.name }}
+        </p>
+      </div>
+      <div class="text-2xl" [ngClass]="isDarkMode ? 'text-gray-500' : 'text-gray-400'">→</div>
+      <div class="text-center">
+        <div class="text-4xl mb-1 animate-bounce">{{ newLevel.icon }}</div>
+        <p class="text-xs font-bold text-indigo-500">{{ newLevel.name }}</p>
+      </div>
+    </div>
+
+    <p class="text-sm mb-6" [ngClass]="isDarkMode ? 'text-gray-300' : 'text-gray-600'">
+      Kamu sekarang <strong>Level {{ newLevel.level }}</strong>!<br>
+      Terus semangat belajar!
+    </p>
+
+    <button (click)="close()"
+      class="w-full py-3 rounded-xl font-semibold text-white bg-indigo-600 hover:bg-indigo-700 transition-colors">
+      Lanjutkan
+    </button>
+  </div>
+</div>

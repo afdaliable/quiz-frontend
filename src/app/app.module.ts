@@ -38,6 +38,8 @@ import { QuestionDiscussionComponent } from './question-discussion/question-disc
 import { AboutComponent } from './about/about.component';
 import { SubscriptionComponent } from './subscription/subscription.component';
 import { OnboardingComponent } from './onboarding/onboarding.component';
+import { PublicProfileComponent } from './public-profile/public-profile.component';
+import { LevelUpModalComponent } from './level-up-modal/level-up-modal.component';
 
 @NgModule({
   declarations: [
@@ -65,6 +67,8 @@ import { OnboardingComponent } from './onboarding/onboarding.component';
     AboutComponent,
     SubscriptionComponent,
     OnboardingComponent,
+    PublicProfileComponent,
+    LevelUpModalComponent,
   ],
   imports: [
     BrowserModule,
