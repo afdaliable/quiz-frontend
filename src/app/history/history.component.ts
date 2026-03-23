@@ -3,6 +3,8 @@ import { Router } from '@angular/router';
 import { ThemeService } from '../services/theme.service';
 import { QuestionService } from '../services/question.service';
 import { QuizHistoryEntry, QuizHistoryResponse } from '../models/quiz-history.model';
+import { AnalyticsService } from '../services/analytics.service';
+import { ScoreHistoryResponse, ScoreHistoryQuery } from '../models/score-history.model';
 
 @Component({
   selector: 'app-history',
@@ -19,15 +21,50 @@ export class HistoryComponent implements OnInit {
   page = 1;
   limit = 20;
 
+  // Score chart
+  scoreHistory: ScoreHistoryResponse | null = null;
+  scoreFilter: ScoreHistoryQuery = { days: 30 };
+  showMovingAverage = false;
+  loadingChart = false;
+
   constructor(
     private themeService: ThemeService,
     private questionService: QuestionService,
-    private router: Router
+    private router: Router,
+    private analyticsService: AnalyticsService
   ) {}
 
   ngOnInit(): void {
     this.themeService.darkMode$.subscribe(isDark => this.isDarkMode = isDark);
     this.loadHistory();
+    this.loadScoreHistory();
+  }
+
+  loadScoreHistory(): void {
+    this.loadingChart = true;
+    this.analyticsService.getScoreHistory(this.scoreFilter).subscribe({
+      next: (res) => { this.scoreHistory = res; this.loadingChart = false; },
+      error: () => { this.loadingChart = false; }
+    });
+  }
+
+  onScoreFilterChange(days: number): void {
+    this.scoreFilter = { ...this.scoreFilter, days };
+    this.loadScoreHistory();
+  }
+
+  get trendLabel(): string {
+    const t = this.scoreHistory?.summary.trend ?? 0;
+    if (t > 0) return `▲ +${t.toFixed(1)}`;
+    if (t < 0) return `▼ ${t.toFixed(1)}`;
+    return '→ Stabil';
+  }
+
+  get trendClass(): string {
+    const t = this.scoreHistory?.summary.trend ?? 0;
+    if (t > 0) return this.isDarkMode ? 'text-emerald-400' : 'text-emerald-600';
+    if (t < 0) return this.isDarkMode ? 'text-rose-400' : 'text-rose-600';
+    return this.isDarkMode ? 'text-gray-400' : 'text-gray-500';
   }
 
   loadHistory(): void {

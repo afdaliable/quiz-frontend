@@ -3,6 +3,8 @@ import { Router } from '@angular/router';
 import { AuthService } from '../services/auth.service';
 import { UserService } from '../services/user.service';
 import { ThemeService } from '../services/theme.service';
+import { AnalyticsService } from '../services/analytics.service';
+import { ScoreDataPoint } from '../models/score-history.model';
 import { forkJoin, Subscription } from 'rxjs';
 
 interface UserProfile {
@@ -34,13 +36,15 @@ export class AccountComponent implements OnInit, OnDestroy {
   stats: UserStats | null = null;
   errorMessage = '';
   isDarkMode = false;
+  recentScores: ScoreDataPoint[] = [];
   private themeSubscription: Subscription | null = null;
 
   constructor(
     private authService: AuthService,
     private userService: UserService,
     private router: Router,
-    private themeService: ThemeService
+    private themeService: ThemeService,
+    private analyticsService: AnalyticsService
   ) {}
 
   ngOnInit() {
@@ -53,6 +57,12 @@ export class AccountComponent implements OnInit, OnDestroy {
       this.router.navigate(['/login']);
       return;
     }
+
+    // Load sparkline — silent fail if no data yet
+    this.analyticsService.getScoreHistory({ days: 7 }).subscribe({
+      next: (res) => this.recentScores = res.data_points,
+      error: () => {}
+    });
 
     this.loading = true;
     forkJoin({
