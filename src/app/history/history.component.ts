@@ -98,6 +98,15 @@ export class HistoryComponent implements OnInit {
     );
   }
 
+  clearSearch(): void {
+    this.searchTerm = '';
+    this.filterHistory();
+  }
+
+  getNoResultBody(): string {
+    return `Tidak ada hasil untuk "${this.searchTerm}". Coba kata kunci lain atau hapus filter.`;
+  }
+
   get avgScore(): number {
     if (!this.history.length) return 0;
     return Math.round(this.history.reduce((sum, e) => sum + e.score, 0) / this.history.length);
@@ -111,5 +120,9 @@ export class HistoryComponent implements OnInit {
   goToReview(entryId: string): void {
     localStorage.setItem('attemptId', entryId);
     this.router.navigate(['/review']);
+  }
+
+  goToHome(): void {
+    this.router.navigate(['/home']);
   }
 }

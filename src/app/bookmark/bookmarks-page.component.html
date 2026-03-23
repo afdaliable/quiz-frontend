@@ -184,40 +184,27 @@
       <p class="text-sm" [ngClass]="isDarkMode ? 'text-gray-400' : 'text-gray-500'">Memuat bookmark...</p>
     </div>
 
-    <!-- ── Empty state ── -->
-    <div *ngIf="!isLoading && filteredBookmarks.length === 0" class="text-center py-20">
-      <div class="inline-flex flex-col items-center">
-        <div class="w-24 h-24 rounded-3xl flex items-center justify-center mb-5"
-          [ngClass]="isDarkMode ? 'bg-gray-800' : 'bg-amber-50'">
-          <svg class="w-12 h-12" [ngClass]="isDarkMode ? 'text-gray-600' : 'text-amber-300'"
-            fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"/>
-          </svg>
-        </div>
-        <h3 class="text-lg font-bold mb-2" [ngClass]="isDarkMode ? 'text-gray-200' : 'text-gray-800'">
-          {{ selectedCategory !== 'all' ? 'Tidak ada soal di kategori ini' : 'Belum ada bookmark' }}
-        </h3>
-        <p class="text-sm mb-6 max-w-xs" [ngClass]="isDarkMode ? 'text-gray-400' : 'text-gray-500'">
-          {{ selectedCategory !== 'all'
-            ? 'Coba pilih kategori lain.'
-            : 'Tandai soal saat mengerjakan kuis untuk mempelajarinya kembali.' }}
-        </p>
-        <button *ngIf="selectedCategory !== 'all'"
-          (click)="filterByCategory('all')"
-          class="px-5 py-2.5 rounded-xl border text-sm font-semibold transition-colors"
-          [ngClass]="isDarkMode ? 'border-gray-600 text-gray-300 hover:bg-gray-800' : 'border-gray-300 text-gray-600 hover:bg-gray-50'">
-          Lihat semua
-        </button>
-        <button *ngIf="selectedCategory === 'all'"
-          (click)="goToHome()"
-          class="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-indigo-600 text-white text-sm font-semibold hover:bg-indigo-700 transition-colors">
-          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
-          </svg>
-          Mulai Mengerjakan Kuis
-        </button>
-      </div>
-    </div>
+    <!-- ── Empty state: filter kategori aktif tapi tidak ada soal ── -->
+    <app-empty-state
+      *ngIf="!isLoading && filteredBookmarks.length === 0 && selectedCategory !== 'all'"
+      illustration="bookmark"
+      title="Tidak ada soal di kategori ini"
+      body="Coba pilih kategori lain atau lihat semua bookmark kamu."
+      linkLabel="Lihat semua"
+      [isDarkMode]="isDarkMode"
+      (linkClick)="filterByCategory('all')">
+    </app-empty-state>
+
+    <!-- ── Empty state: belum ada bookmark sama sekali ── -->
+    <app-empty-state
+      *ngIf="!isLoading && filteredBookmarks.length === 0 && selectedCategory === 'all'"
+      illustration="bookmark"
+      title="Belum ada soal tersimpan"
+      body="Saat review jawaban, ketuk ikon bookmark di setiap soal yang ingin kamu pelajari ulang."
+      ctaLabel="Mulai Kerjakan Kuis"
+      [isDarkMode]="isDarkMode"
+      (ctaClick)="goToHome()">
+    </app-empty-state>
 
     <!-- ── Kartu Soal ── -->
     <div *ngIf="!isLoading && filteredBookmarks.length > 0"

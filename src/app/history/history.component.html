@@ -61,32 +61,27 @@
       </div>
     </div>
 
-    <!-- Empty state -->
-    <div *ngIf="!isLoading && history.length === 0"
-      class="flex flex-col items-center justify-center py-20 text-center">
-      <div class="text-5xl mb-4">📚</div>
-      <h3 class="text-lg font-semibold mb-2"
-        [ngClass]="isDarkMode ? 'text-gray-200' : 'text-gray-800'">
-        Belum ada riwayat kuis
-      </h3>
-      <p class="text-sm mb-6 max-w-xs"
-        [ngClass]="isDarkMode ? 'text-gray-400' : 'text-gray-500'">
-        Kerjakan kuis pertamamu dan hasilnya akan muncul di sini.
-      </p>
-      <a routerLink="/home"
-        class="px-5 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold transition-colors">
-        Mulai Belajar
-      </a>
-    </div>
+    <!-- Empty state: belum ada riwayat -->
+    <app-empty-state
+      *ngIf="!isLoading && history.length === 0"
+      illustration="history"
+      title="Belum ada riwayat kuis"
+      body="Yuk mulai latihan pertamamu! Pilih paket soal dan lihat perkembanganmu dari sini."
+      ctaLabel="🚀 Mulai Latihan Pertama"
+      [isDarkMode]="isDarkMode"
+      (ctaClick)="goToHome()">
+    </app-empty-state>
 
-    <!-- No search results -->
-    <div *ngIf="!isLoading && history.length > 0 && filteredHistory.length === 0"
-      class="flex flex-col items-center justify-center py-12 text-center">
-      <div class="text-4xl mb-3">🔍</div>
-      <p class="text-sm" [ngClass]="isDarkMode ? 'text-gray-400' : 'text-gray-500'">
-        Tidak ada hasil untuk "<strong>{{ searchTerm }}</strong>"
-      </p>
-    </div>
+    <!-- Empty state: hasil pencarian kosong -->
+    <app-empty-state
+      *ngIf="!isLoading && history.length > 0 && filteredHistory.length === 0"
+      illustration="search"
+      title="Tidak ada hasil ditemukan"
+      [body]="getNoResultBody()"
+      ctaLabel="✕ Hapus Pencarian"
+      [isDarkMode]="isDarkMode"
+      (ctaClick)="clearSearch()">
+    </app-empty-state>
 
     <!-- History list -->
     <div *ngIf="!isLoading && filteredHistory.length > 0" class="space-y-3">

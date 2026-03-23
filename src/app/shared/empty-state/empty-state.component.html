@@ -1,0 +1,108 @@
+<div class="flex flex-col items-center text-center py-12 px-6" style="gap: 12px">
+
+  <!-- Illustration 120×120px -->
+  <div class="mb-2" style="width:120px;height:120px">
+
+    <!-- History: clock with plus sparkle -->
+    <ng-container *ngIf="illustration === 'history'">
+      <svg width="120" height="120" viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="60" cy="60" r="50" fill="#EEEDFE"/>
+        <circle cx="60" cy="63" r="22" fill="white" stroke="#AFA9EC" stroke-width="2.5"/>
+        <line x1="60" y1="63" x2="60" y2="50" stroke="#AFA9EC" stroke-width="2.5" stroke-linecap="round"/>
+        <line x1="60" y1="63" x2="70" y2="70" stroke="#AFA9EC" stroke-width="2.5" stroke-linecap="round"/>
+        <circle cx="60" cy="63" r="2.5" fill="#AFA9EC"/>
+        <!-- Plus badge top-right -->
+        <circle cx="82" cy="34" r="10" fill="#7C3AED"/>
+        <line x1="82" y1="28" x2="82" y2="40" stroke="white" stroke-width="2.5" stroke-linecap="round"/>
+        <line x1="76" y1="34" x2="88" y2="34" stroke="white" stroke-width="2.5" stroke-linecap="round"/>
+        <!-- Dots -->
+        <circle cx="34" cy="42" r="3" fill="#AFA9EC" opacity="0.5"/>
+        <circle cx="86" cy="58" r="2" fill="#AFA9EC" opacity="0.4"/>
+      </svg>
+    </ng-container>
+
+    <!-- Search: magnifying glass with X -->
+    <ng-container *ngIf="illustration === 'search'">
+      <svg width="120" height="120" viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="60" cy="60" r="50" fill="#EEEDFE"/>
+        <circle cx="53" cy="53" r="20" fill="white" stroke="#AFA9EC" stroke-width="2.5"/>
+        <line x1="46" y1="46" x2="60" y2="60" stroke="#AFA9EC" stroke-width="2.5" stroke-linecap="round"/>
+        <line x1="60" y1="46" x2="46" y2="60" stroke="#AFA9EC" stroke-width="2.5" stroke-linecap="round"/>
+        <line x1="68" y1="68" x2="82" y2="82" stroke="#AFA9EC" stroke-width="3.5" stroke-linecap="round"/>
+        <circle cx="34" cy="40" r="3" fill="#AFA9EC" opacity="0.5"/>
+        <circle cx="85" cy="46" r="2" fill="#AFA9EC" opacity="0.4"/>
+      </svg>
+    </ng-container>
+
+    <!-- Bookmark: ribbon with star -->
+    <ng-container *ngIf="illustration === 'bookmark'">
+      <svg width="120" height="120" viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="60" cy="60" r="50" fill="#EEEDFE"/>
+        <path d="M42 34h36a4 4 0 014 4v46l-22-12-22 12V38a4 4 0 014-4z" fill="white" stroke="#AFA9EC" stroke-width="2.5" stroke-linejoin="round"/>
+        <path d="M60 46l2.8 5.6 6.2.9-4.5 4.4 1.1 6.1L60 60.1l-5.6 2.9 1.1-6.1-4.5-4.4 6.2-.9z" fill="#AFA9EC"/>
+        <circle cx="82" cy="40" r="3" fill="#AFA9EC" opacity="0.5"/>
+        <circle cx="34" cy="52" r="2" fill="#AFA9EC" opacity="0.4"/>
+      </svg>
+    </ng-container>
+
+    <!-- Leaderboard: trophy with question mark -->
+    <ng-container *ngIf="illustration === 'leaderboard'">
+      <svg width="120" height="120" viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="60" cy="60" r="50" fill="#EEEDFE"/>
+        <path d="M42 32h36v28c0 10-8 18-18 18s-18-8-18-18V32z" fill="white" stroke="#AFA9EC" stroke-width="2.5"/>
+        <path d="M42 44H34a8 8 0 008 8" stroke="#AFA9EC" stroke-width="2.5" stroke-linecap="round"/>
+        <path d="M78 44h8a8 8 0 01-8 8" stroke="#AFA9EC" stroke-width="2.5" stroke-linecap="round"/>
+        <line x1="60" y1="78" x2="60" y2="86" stroke="#AFA9EC" stroke-width="2.5" stroke-linecap="round"/>
+        <rect x="48" y="86" width="24" height="4" rx="2" fill="#AFA9EC"/>
+        <!-- Question mark -->
+        <path d="M57 50c0-1.7 1.3-3 3-3s3 1.3 3 3c0 1.5-1.5 2.5-3 3.5" stroke="#AFA9EC" stroke-width="2.5" stroke-linecap="round"/>
+        <circle cx="60" cy="59" r="1.5" fill="#AFA9EC"/>
+      </svg>
+    </ng-container>
+
+    <!-- Notification: bell with Zzz -->
+    <ng-container *ngIf="illustration === 'notification'">
+      <svg width="120" height="120" viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="60" cy="60" r="50" fill="#EEEDFE"/>
+        <path d="M60 30c-11 0-20 9-20 20v14l-6 8h52l-6-8V50c0-11-9-20-20-20z" fill="white" stroke="#AFA9EC" stroke-width="2.5" stroke-linejoin="round"/>
+        <path d="M55 72c0 2.8 2.2 5 5 5s5-2.2 5-5" stroke="#AFA9EC" stroke-width="2.5" stroke-linecap="round"/>
+        <line x1="60" y1="24" x2="60" y2="30" stroke="#AFA9EC" stroke-width="2.5" stroke-linecap="round"/>
+        <!-- Zzz -->
+        <text x="76" y="44" font-size="10" font-weight="700" fill="#7C3AED" font-family="system-ui">Z</text>
+        <text x="82" y="36" font-size="8" font-weight="700" fill="#AFA9EC" font-family="system-ui">z</text>
+        <text x="87" y="30" font-size="6" font-weight="700" fill="#AFA9EC" font-family="system-ui">z</text>
+      </svg>
+    </ng-container>
+
+  </div>
+
+  <!-- Title -->
+  <h3 class="text-lg font-semibold leading-snug"
+    [ngClass]="isDarkMode ? 'text-gray-100' : 'text-gray-800'">
+    {{ title }}
+  </h3>
+
+  <!-- Body -->
+  <p *ngIf="body"
+    class="text-sm leading-relaxed"
+    style="max-width:280px"
+    [ngClass]="isDarkMode ? 'text-gray-400' : 'text-gray-500'">
+    {{ body }}
+  </p>
+
+  <!-- Primary CTA -->
+  <button *ngIf="ctaLabel"
+    (click)="ctaClick.emit()"
+    class="mt-2 px-5 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold transition-colors">
+    {{ ctaLabel }}
+  </button>
+
+  <!-- Secondary link -->
+  <button *ngIf="linkLabel"
+    (click)="linkClick.emit()"
+    class="text-sm font-medium transition-colors"
+    [ngClass]="isDarkMode ? 'text-indigo-400 hover:text-indigo-300' : 'text-indigo-600 hover:text-indigo-700'">
+    {{ linkLabel }} →
+  </button>
+
+</div>
