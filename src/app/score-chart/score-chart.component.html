@@ -1,0 +1,12 @@
+<div [class]="compact ? 'w-full' : 'w-full'" [style.position]="'relative'">
+  <ng-container *ngIf="hasEnoughData; else emptyState">
+    <canvas #chartCanvas [style.height]="compact ? '80px' : null"></canvas>
+  </ng-container>
+  <ng-template #emptyState>
+    <div *ngIf="!compact" class="flex flex-col items-center justify-center py-8 text-center">
+      <p class="text-sm text-gray-400">
+        Selesaikan minimal 3 sesi kuis untuk melihat grafik perkembangan skor.
+      </p>
+    </div>
+  </ng-template>
+</div>
