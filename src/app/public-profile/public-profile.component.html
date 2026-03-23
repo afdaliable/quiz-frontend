@@ -1,0 +1,205 @@
+<div class="min-h-screen transition-colors duration-200" [ngClass]="isDarkMode ? 'bg-gray-900' : 'bg-gray-50'">
+  <div class="max-w-2xl mx-auto px-4 py-8">
+
+    <!-- Loading skeleton -->
+    <div *ngIf="isLoading" class="space-y-4">
+      <div class="h-36 rounded-2xl animate-pulse" [ngClass]="isDarkMode ? 'bg-gray-800' : 'bg-gray-200'"></div>
+      <div class="grid grid-cols-4 gap-3">
+        <div *ngFor="let i of [1,2,3,4]" class="h-20 rounded-xl animate-pulse" [ngClass]="isDarkMode ? 'bg-gray-800' : 'bg-gray-200'"></div>
+      </div>
+      <div class="h-48 rounded-2xl animate-pulse" [ngClass]="isDarkMode ? 'bg-gray-800' : 'bg-gray-200'"></div>
+    </div>
+
+    <!-- Not found -->
+    <div *ngIf="!isLoading && isNotFound" class="text-center py-20">
+      <div class="text-6xl mb-4">🔍</div>
+      <h2 class="text-xl font-bold mb-2" [ngClass]="isDarkMode ? 'text-gray-100' : 'text-gray-800'">
+        Profil tidak ditemukan
+      </h2>
+      <p class="text-sm mb-6" [ngClass]="isDarkMode ? 'text-gray-400' : 'text-gray-500'">
+        Username ini tidak ada atau sudah tidak aktif.
+      </p>
+      <button (click)="router.navigate(['/home'])"
+        class="px-5 py-2.5 rounded-xl bg-indigo-600 text-white text-sm font-semibold hover:bg-indigo-700 transition-colors">
+        Kembali ke Beranda
+      </button>
+    </div>
+
+    <!-- Private profile -->
+    <div *ngIf="!isLoading && isPrivate" class="text-center py-20">
+      <div class="text-6xl mb-4">🔒</div>
+      <h2 class="text-xl font-bold mb-2" [ngClass]="isDarkMode ? 'text-gray-100' : 'text-gray-800'">
+        Profil ini bersifat privat
+      </h2>
+      <p class="text-sm" [ngClass]="isDarkMode ? 'text-gray-400' : 'text-gray-500'">
+        User ini memilih untuk tidak menampilkan profil publiknya.
+      </p>
+    </div>
+
+    <!-- Profile content -->
+    <ng-container *ngIf="!isLoading && profile">
+      <div #profileCard>
+
+        <!-- Header Card -->
+        <div class="rounded-2xl p-6 mb-4 transition-colors duration-200"
+          [ngClass]="isDarkMode ? 'bg-gray-800' : 'bg-white shadow-sm'">
+          <div class="flex items-start gap-4">
+            <!-- Avatar -->
+            <div class="w-20 h-20 rounded-full overflow-hidden flex-shrink-0 ring-2 ring-indigo-200">
+              <img *ngIf="profile.picture_url" [src]="profile.picture_url" alt="Avatar" class="w-full h-full object-cover">
+              <div *ngIf="!profile.picture_url"
+                class="w-full h-full flex items-center justify-center bg-indigo-600 text-white text-3xl font-bold">
+                {{ profile.display_name.charAt(0).toUpperCase() }}
+              </div>
+            </div>
+
+            <!-- Info -->
+            <div class="flex-1 min-w-0">
+              <h1 class="text-xl font-bold truncate" [ngClass]="isDarkMode ? 'text-white' : 'text-gray-900'">
+                {{ profile.display_name }}
+              </h1>
+              <p class="text-sm mt-0.5 font-medium" [ngClass]="isDarkMode ? 'text-indigo-400' : 'text-indigo-600'">
+                &#64;{{ profile.username }}
+              </p>
+              <p class="text-xs mt-1" [ngClass]="isDarkMode ? 'text-gray-400' : 'text-gray-500'">
+                Bergabung {{ formatJoinDate(profile.joined_at) }}
+              </p>
+            </div>
+
+            <!-- Share button -->
+            <button (click)="showShare = true"
+              class="flex items-center gap-2 px-4 py-2 rounded-xl bg-indigo-600 text-white text-sm font-semibold hover:bg-indigo-700 transition-colors flex-shrink-0">
+              <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round"
+                  d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m9.032 4.026a3 3 0 10-5.432 1.658M6.684 7.658A3 3 0 1012 6m0 0a3 3 0 105.316 1.342"/>
+              </svg>
+              Bagikan
+            </button>
+          </div>
+        </div>
+
+        <!-- Stats Grid -->
+        <div *ngIf="profile.stats" class="grid grid-cols-4 gap-3 mb-4">
+          <div class="rounded-xl p-3 text-center transition-colors duration-200"
+            [ngClass]="isDarkMode ? 'bg-gray-800' : 'bg-white shadow-sm'">
+            <p class="text-xl font-bold" [ngClass]="isDarkMode ? 'text-indigo-300' : 'text-indigo-600'">
+              {{ profile.stats.total_quizzes }}
+            </p>
+            <p class="text-xs mt-0.5" [ngClass]="isDarkMode ? 'text-gray-400' : 'text-gray-500'">Kuis</p>
+          </div>
+          <div class="rounded-xl p-3 text-center transition-colors duration-200"
+            [ngClass]="isDarkMode ? 'bg-gray-800' : 'bg-white shadow-sm'">
+            <p class="text-xl font-bold" [ngClass]="isDarkMode ? 'text-indigo-300' : 'text-indigo-600'">
+              {{ profile.stats.avg_score | number:'1.0-1' }}
+            </p>
+            <p class="text-xs mt-0.5" [ngClass]="isDarkMode ? 'text-gray-400' : 'text-gray-500'">Rata-rata</p>
+          </div>
+          <div class="rounded-xl p-3 text-center transition-colors duration-200"
+            [ngClass]="isDarkMode ? 'bg-gray-800' : 'bg-white shadow-sm'">
+            <p class="text-xl font-bold" [ngClass]="isDarkMode ? 'text-indigo-300' : 'text-indigo-600'">
+              {{ profile.stats.best_score }}
+            </p>
+            <p class="text-xs mt-0.5" [ngClass]="isDarkMode ? 'text-gray-400' : 'text-gray-500'">Terbaik</p>
+          </div>
+          <div class="rounded-xl p-3 text-center transition-colors duration-200"
+            [ngClass]="isDarkMode ? 'bg-gray-800' : 'bg-white shadow-sm'">
+            <p class="text-xl font-bold" [ngClass]="isDarkMode ? 'text-orange-400' : 'text-orange-500'">
+              {{ profile.stats.learning_streak_days }}🔥
+            </p>
+            <p class="text-xs mt-0.5" [ngClass]="isDarkMode ? 'text-gray-400' : 'text-gray-500'">Streak</p>
+          </div>
+        </div>
+
+        <!-- Badges -->
+        <div *ngIf="profile.badges && profile.badges.length > 0"
+          class="rounded-2xl p-5 mb-4 transition-colors duration-200"
+          [ngClass]="isDarkMode ? 'bg-gray-800' : 'bg-white shadow-sm'">
+          <h2 class="text-sm font-semibold mb-4" [ngClass]="isDarkMode ? 'text-gray-300' : 'text-gray-700'">
+            🏆 Pencapaian
+          </h2>
+          <div class="grid grid-cols-3 sm:grid-cols-6 gap-3">
+            <div *ngFor="let badge of profile.badges"
+              class="flex flex-col items-center gap-1 p-3 rounded-xl text-center transition-all"
+              [ngClass]="badge.earned
+                ? (isDarkMode ? 'bg-indigo-900/30 border border-indigo-700/40' : 'bg-indigo-50 border border-indigo-100')
+                : (isDarkMode ? 'bg-gray-700/30 opacity-40' : 'bg-gray-100 opacity-40')"
+              [title]="badge.description">
+              <span class="text-2xl">{{ badge.icon }}</span>
+              <span class="text-xs font-medium leading-tight"
+                [ngClass]="isDarkMode ? 'text-gray-300' : 'text-gray-700'">
+                {{ badge.name }}
+              </span>
+              <span class="text-xs">{{ badge.earned ? '✅' : '🔒' }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Best Scores per Category -->
+        <div *ngIf="profile.best_scores && profile.best_scores.length > 0"
+          class="rounded-2xl p-5 transition-colors duration-200"
+          [ngClass]="isDarkMode ? 'bg-gray-800' : 'bg-white shadow-sm'">
+          <h2 class="text-sm font-semibold mb-4" [ngClass]="isDarkMode ? 'text-gray-300' : 'text-gray-700'">
+            📊 Skor Terbaik per Kategori
+          </h2>
+          <div *ngFor="let group of groupByCategory(profile.best_scores)" class="mb-4 last:mb-0">
+            <p class="text-xs font-semibold uppercase tracking-wide mb-2"
+              [ngClass]="isDarkMode ? 'text-indigo-400' : 'text-indigo-600'">
+              {{ group.category }}
+            </p>
+            <div *ngFor="let item of group.items"
+              class="flex items-center justify-between py-2 border-b last:border-0"
+              [ngClass]="isDarkMode ? 'border-gray-700' : 'border-gray-100'">
+              <span class="text-sm flex-1" [ngClass]="isDarkMode ? 'text-gray-300' : 'text-gray-700'">
+                {{ item.total_attempts }} percobaan
+              </span>
+              <span class="text-sm font-bold ml-4" [ngClass]="getScoreColor(item.best_score)">
+                {{ item.best_score }}/100
+              </span>
+            </div>
+          </div>
+        </div>
+
+      </div><!-- /#profileCard -->
+    </ng-container>
+
+  </div><!-- /max-w-2xl -->
+</div>
+
+<!-- Share Modal -->
+<div *ngIf="showShare"
+  class="fixed inset-0 z-50 flex items-end justify-center p-4 sm:items-center"
+  (click)="showShare = false">
+  <div class="absolute inset-0 bg-black/40 backdrop-blur-sm"></div>
+  <div class="relative rounded-2xl shadow-2xl p-6 w-full max-w-sm"
+    [ngClass]="isDarkMode ? 'bg-gray-800' : 'bg-white'"
+    (click)="$event.stopPropagation()">
+    <h3 class="text-base font-bold mb-4" [ngClass]="isDarkMode ? 'text-white' : 'text-gray-900'">
+      Bagikan Profil
+    </h3>
+    <div class="space-y-2">
+      <button (click)="copyLink()"
+        class="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-colors text-left"
+        [ngClass]="isDarkMode ? 'bg-gray-700 hover:bg-gray-600 text-gray-200' : 'bg-gray-50 hover:bg-gray-100 text-gray-700'">
+        <span class="text-xl">{{ copySuccess ? '✅' : '📋' }}</span>
+        {{ copySuccess ? 'Link berhasil disalin!' : 'Salin Link' }}
+      </button>
+      <a [href]="getWhatsAppUrl()" target="_blank" rel="noopener"
+        class="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium bg-green-50 hover:bg-green-100 text-green-700 transition-colors">
+        <span class="text-xl">💬</span> Bagikan ke WhatsApp
+      </a>
+      <a [href]="getTwitterUrl()" target="_blank" rel="noopener"
+        class="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium bg-sky-50 hover:bg-sky-100 text-sky-700 transition-colors">
+        <span class="text-xl">𝕏</span> Bagikan ke X / Twitter
+      </a>
+      <button (click)="downloadCard()"
+        class="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium bg-indigo-50 hover:bg-indigo-100 text-indigo-700 transition-colors text-left">
+        <span class="text-xl">📸</span> Download Kartu Profil (PNG)
+      </button>
+    </div>
+    <button (click)="showShare = false"
+      class="mt-4 w-full py-2.5 rounded-xl text-sm font-semibold border transition-colors"
+      [ngClass]="isDarkMode ? 'border-gray-600 text-gray-400 hover:bg-gray-700' : 'border-gray-200 text-gray-500 hover:bg-gray-50'">
+      Tutup
+    </button>
+  </div>
+</div>

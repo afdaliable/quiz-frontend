@@ -72,6 +72,51 @@
             </div>
           </div>
         </div>
+
+        <!-- Username Editor -->
+        <div class="mt-5 pt-5 border-t" [ngClass]="isDarkMode ? 'border-gray-700' : 'border-gray-100'">
+          <div class="flex items-center justify-between mb-2">
+            <p class="text-xs font-medium" [ngClass]="isDarkMode ? 'text-gray-400' : 'text-gray-500'">Username Publik</p>
+            <button (click)="editingUsername = !editingUsername; newUsername = ''; usernameStatus = 'idle'; usernameError = ''"
+              class="text-xs font-medium text-indigo-500 hover:text-indigo-600">
+              {{ editingUsername ? 'Batal' : 'Ubah' }}
+            </button>
+          </div>
+
+          <!-- Display mode -->
+          <div *ngIf="!editingUsername" class="flex items-center gap-2">
+            <span class="text-sm" [ngClass]="isDarkMode ? 'text-gray-300' : 'text-gray-700'">
+              {{ profile.username ? '@' + profile.username : 'Belum diset' }}
+            </span>
+            <a *ngIf="profile.username" [routerLink]="['/u', profile.username]"
+              class="text-xs text-indigo-500 hover:underline">↗ Lihat profil</a>
+          </div>
+
+          <!-- Edit mode -->
+          <div *ngIf="editingUsername">
+            <div class="relative mt-1">
+              <span class="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-gray-400">&#64;</span>
+              <input type="text" [value]="newUsername"
+                (input)="onUsernameInput($any($event.target).value)"
+                placeholder="username_kamu"
+                maxlength="30"
+                class="w-full pl-7 pr-10 py-2 rounded-lg text-sm border focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                [ngClass]="isDarkMode ? 'bg-gray-700 border-gray-600 text-gray-100' : 'bg-white border-gray-300 text-gray-800'"/>
+              <div class="absolute right-3 top-1/2 -translate-y-1/2 text-sm">
+                <span *ngIf="usernameStatus === 'checking'" class="text-gray-400">⏳</span>
+                <span *ngIf="usernameStatus === 'available'" class="text-emerald-500">✓</span>
+                <span *ngIf="usernameStatus === 'taken' || usernameStatus === 'invalid'" class="text-red-500">✗</span>
+              </div>
+            </div>
+            <p *ngIf="usernameError" class="text-xs text-red-500 mt-1">{{ usernameError }}</p>
+            <p *ngIf="usernameStatus === 'available'" class="text-xs text-emerald-500 mt-1">Username tersedia!</p>
+            <button (click)="saveUsername()"
+              [disabled]="usernameStatus !== 'available' || savingUsername"
+              class="mt-3 w-full py-2 rounded-xl text-sm font-semibold bg-indigo-600 text-white disabled:opacity-50 hover:bg-indigo-700 transition-colors">
+              {{ savingUsername ? 'Menyimpan...' : 'Simpan Username' }}
+            </button>
+          </div>
+        </div>
       </div>
 
       <!-- Subscription Widget -->
@@ -126,6 +171,39 @@
               [ngClass]="isDarkMode ? 'border-amber-600/40 text-amber-400 hover:bg-amber-500/10' : 'border-amber-300 text-amber-700 hover:bg-amber-50'">
               Kelola →
             </a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Privacy Settings Card -->
+      <div *ngIf="profile" class="rounded-lg shadow-lg p-6 sm:p-8 transition-colors duration-200" [ngClass]="isDarkMode ? 'bg-gray-800' : 'bg-white'">
+        <h3 class="text-lg font-semibold mb-5" [ngClass]="isDarkMode ? 'text-white' : 'text-gray-900'">🔒 Privasi Profil Publik</h3>
+
+        <!-- Profile visibility toggle -->
+        <label class="flex items-center justify-between mb-4 cursor-pointer">
+          <div>
+            <p class="text-sm font-medium" [ngClass]="isDarkMode ? 'text-gray-200' : 'text-gray-800'">Profil Publik</p>
+            <p class="text-xs" [ngClass]="isDarkMode ? 'text-gray-400' : 'text-gray-500'">Siapapun bisa melihat profil kamu di /u/username</p>
+          </div>
+          <div class="relative">
+            <input type="checkbox" class="sr-only" [(ngModel)]="profilePublic"
+              (change)="saveProfileVisibility(profilePublic)">
+            <div class="w-10 h-6 rounded-full transition-colors" [ngClass]="profilePublic ? 'bg-indigo-600' : (isDarkMode ? 'bg-gray-600' : 'bg-gray-300')">
+              <div class="absolute top-1 left-1 w-4 h-4 bg-white rounded-full shadow transition-transform"
+                [ngClass]="profilePublic ? 'translate-x-4' : 'translate-x-0'"></div>
+            </div>
+          </div>
+        </label>
+
+        <div class="border-t pt-4" [ngClass]="isDarkMode ? 'border-gray-700' : 'border-gray-100'">
+          <p class="text-xs font-medium mb-3" [ngClass]="isDarkMode ? 'text-gray-400' : 'text-gray-500'">Yang ditampilkan di profil publik:</p>
+          <div class="space-y-3">
+            <label *ngFor="let opt of privacyOptions" class="flex items-center justify-between cursor-pointer">
+              <span class="text-sm" [ngClass]="isDarkMode ? 'text-gray-300' : 'text-gray-700'">{{ opt.label }}</span>
+              <input type="checkbox" [(ngModel)]="privacy[opt.key]"
+                (change)="savePrivacy(opt.key, privacy[opt.key])"
+                class="w-4 h-4 rounded accent-indigo-600"/>
+            </label>
           </div>
         </div>
       </div>
