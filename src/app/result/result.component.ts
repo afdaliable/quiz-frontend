@@ -2,6 +2,7 @@ import { Component, OnInit, ElementRef, ViewChild } from '@angular/core';
 import { Router } from '@angular/router';
 import { UserService } from '../services/user.service';
 import { ThemeService } from '../services/theme.service';
+import { XpBreakdown, XpAwardResult, LEVEL_CONFIGS, LevelInfo } from '../models/xp-system.model';
 import html2canvas from 'html2canvas';
 
 interface PaketSoal {
@@ -35,6 +36,13 @@ export class ResultComponent implements OnInit {
   motivationMessage: string = '';
   wrongQuestions: number[] = [];
   celebrationActive: boolean = false;
+
+  xpBreakdown: XpBreakdown | null = null;
+  xpResult: XpAwardResult | null = null;
+  showLevelUpModal: boolean = false;
+  levelUpOldLevel: LevelInfo | null = null;
+  levelUpNewLevel: LevelInfo | null = null;
+  animatedXpTotal: number = 0;
 
   constructor(
     private router: Router,
@@ -80,6 +88,47 @@ export class ResultComponent implements OnInit {
       this.celebrationActive = true;
       setTimeout(() => (this.celebrationActive = false), 5000);
     }
+
+    const xpBreakdownData = localStorage.getItem('xpBreakdown');
+    if (xpBreakdownData) {
+      this.xpBreakdown = JSON.parse(xpBreakdownData);
+    }
+
+    const xpResultData = localStorage.getItem('xpResult');
+    if (xpResultData) {
+      this.xpResult = JSON.parse(xpResultData);
+      this.animatedXpTotal = (this.xpResult?.total_xp ?? 0) - (this.xpResult?.xp_awarded ?? 0);
+
+      if (this.xpResult!.leveled_up) {
+        const oldLevelNum = this.xpResult!.new_level - 1;
+        this.levelUpOldLevel = LEVEL_CONFIGS.find(l => l.level === oldLevelNum) || null;
+        this.levelUpNewLevel = LEVEL_CONFIGS.find(l => l.level === this.xpResult!.new_level) || null;
+        setTimeout(() => { this.showLevelUpModal = true; }, 800);
+      }
+
+      this.startXpAnimation();
+    }
+  }
+
+  startXpAnimation(): void {
+    if (!this.xpResult) return;
+    const target = this.xpResult.total_xp;
+    const start = target - this.xpResult.xp_awarded;
+    const duration = 1500;
+    const startTime = performance.now();
+
+    const tick = (now: number) => {
+      const elapsed = now - startTime;
+      const progress = Math.min(elapsed / duration, 1);
+      const eased = 1 - Math.pow(1 - progress, 3);
+      this.animatedXpTotal = Math.round(start + (target - start) * eased);
+      if (progress < 1) requestAnimationFrame(tick);
+    };
+    requestAnimationFrame(tick);
+  }
+
+  onLevelUpModalClosed(): void {
+    this.showLevelUpModal = false;
   }
 
   getMotivationMessage(): string {

@@ -3,6 +3,7 @@ import { Router } from '@angular/router';
 import { AuthService } from '../services/auth.service';
 import { UserService } from '../services/user.service';
 import { ThemeService } from '../services/theme.service';
+import { XpSummary } from '../models/xp-system.model';
 import { forkJoin, Subscription } from 'rxjs';
 
 interface UserProfile {
@@ -35,6 +36,9 @@ export class AccountComponent implements OnInit, OnDestroy {
   errorMessage = '';
   isDarkMode = false;
   private themeSubscription: Subscription | null = null;
+
+  xpSummary: XpSummary | null = null;
+  xpLoading = true;
 
   constructor(
     private authService: AuthService,
@@ -75,6 +79,16 @@ export class AccountComponent implements OnInit, OnDestroy {
         console.error('Failed to load profile data:', err);
         this.errorMessage = 'Gagal memuat data profil. Silakan coba lagi.';
         this.loading = false;
+      }
+    });
+
+    this.userService.getUserXpSummary().subscribe({
+      next: (xp) => {
+        this.xpSummary = xp;
+        this.xpLoading = false;
+      },
+      error: () => {
+        this.xpLoading = false;
       }
     });
   }

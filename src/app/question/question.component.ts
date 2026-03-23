@@ -697,6 +697,12 @@ export class QuestionComponent implements OnInit, OnDestroy {
         next: (completedSession) => {
           console.log('Quiz session completed:', completedSession);
           localStorage.setItem('completedSessionId', completedSession.id);
+          if (completedSession.xp_breakdown) {
+            localStorage.setItem('xpBreakdown', JSON.stringify(completedSession.xp_breakdown));
+          }
+          if (completedSession.xp_result) {
+            localStorage.setItem('xpResult', JSON.stringify(completedSession.xp_result));
+          }
           console.log('Navigating to result page...');
           this.router.navigate(['/result']);
         },

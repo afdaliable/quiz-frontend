@@ -130,6 +130,70 @@
         </div>
       </div>
 
+      <!-- XP & Level Widget -->
+      <div class="rounded-lg shadow-lg p-5 transition-colors duration-200"
+        [ngClass]="isDarkMode ? 'bg-gray-800' : 'bg-white'">
+
+        <!-- Loading state -->
+        <div *ngIf="xpLoading" class="animate-pulse space-y-3">
+          <div class="h-4 rounded w-1/3" [ngClass]="isDarkMode ? 'bg-gray-700' : 'bg-gray-200'"></div>
+          <div class="h-8 rounded w-full" [ngClass]="isDarkMode ? 'bg-gray-700' : 'bg-gray-200'"></div>
+          <div class="h-3 rounded w-full" [ngClass]="isDarkMode ? 'bg-gray-700' : 'bg-gray-200'"></div>
+        </div>
+
+        <!-- Loaded state -->
+        <div *ngIf="!xpLoading && xpSummary">
+          <!-- Level header -->
+          <div class="flex items-center justify-between mb-4">
+            <div class="flex items-center gap-2">
+              <span class="text-2xl">{{ xpSummary.level_icon }}</span>
+              <div>
+                <p class="text-xs font-medium" [ngClass]="isDarkMode ? 'text-gray-400' : 'text-gray-500'">
+                  Level {{ xpSummary.current_level }}
+                </p>
+                <p class="text-base font-bold" [ngClass]="isDarkMode ? 'text-white' : 'text-gray-900'">
+                  {{ xpSummary.level_name }}
+                </p>
+              </div>
+            </div>
+            <div class="text-right">
+              <p class="text-xs" [ngClass]="isDarkMode ? 'text-gray-400' : 'text-gray-500'">Total XP</p>
+              <p class="text-sm font-bold" [ngClass]="isDarkMode ? 'text-indigo-400' : 'text-indigo-600'">
+                {{ xpSummary.total_xp | number }}
+              </p>
+            </div>
+          </div>
+
+          <!-- Progress bar -->
+          <div class="mb-3">
+            <div class="flex justify-between text-xs mb-1"
+              [ngClass]="isDarkMode ? 'text-gray-400' : 'text-gray-500'">
+              <span>{{ xpSummary.xp_in_level | number }} XP</span>
+              <span *ngIf="xpSummary.xp_to_next_level">
+                perlu {{ xpSummary.xp_to_next_level | number }} XP lagi
+              </span>
+              <span *ngIf="!xpSummary.xp_to_next_level" class="text-amber-500 font-semibold">
+                Level Maksimal 👑
+              </span>
+            </div>
+            <div class="h-3 rounded-full overflow-hidden"
+              [ngClass]="isDarkMode ? 'bg-gray-700' : 'bg-gray-100'">
+              <div class="h-full rounded-full transition-all duration-700 bg-gradient-to-r from-indigo-500 to-purple-500"
+                [style.width.%]="xpSummary.progress * 100">
+              </div>
+            </div>
+          </div>
+
+          <!-- Rank -->
+          <p class="text-xs" [ngClass]="isDarkMode ? 'text-gray-500' : 'text-gray-400'">
+            Peringkat global:
+            <span class="font-semibold" [ngClass]="isDarkMode ? 'text-gray-300' : 'text-gray-600'">
+              #{{ xpSummary.global_rank }}
+            </span>
+          </p>
+        </div>
+      </div>
+
       <!-- Statistics Card -->
       <div *ngIf="stats" class="rounded-lg shadow-lg p-6 sm:p-8 transition-colors duration-200" [ngClass]="isDarkMode ? 'bg-gray-800' : 'bg-white'">
         <h3 class="text-lg font-semibold mb-5" [ngClass]="isDarkMode ? 'text-white' : 'text-gray-900'">Statistik Belajar</h3>

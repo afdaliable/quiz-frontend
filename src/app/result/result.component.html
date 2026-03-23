@@ -1,3 +1,12 @@
+<!-- Level-Up Modal -->
+<app-level-up-modal
+  *ngIf="showLevelUpModal && levelUpOldLevel && levelUpNewLevel"
+  [oldLevel]="levelUpOldLevel!"
+  [newLevel]="levelUpNewLevel!"
+  [isDarkMode]="isDarkMode"
+  (closed)="onLevelUpModalClosed()">
+</app-level-up-modal>
+
 <!-- Celebration confetti (score >= 80, exam mode only) -->
 <ng-container *ngIf="celebrationActive && quizMode === 'exam'">
   <div *ngFor="let i of [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20]"
@@ -103,6 +112,64 @@
           <div class="rounded-xl p-4 text-center">
             <p class="text-2xl font-bold text-rose-500 mb-1">{{ incorrectAnswers }}</p>
             <p class="text-xs" [ngClass]="isDarkMode ? 'text-gray-400' : 'text-gray-500'">Salah</p>
+          </div>
+        </div>
+
+        <!-- XP Diperoleh -->
+        <div *ngIf="xpBreakdown && xpResult && quizMode === 'exam'"
+          class="mb-6 rounded-xl p-4 border"
+          [ngClass]="isDarkMode
+            ? 'bg-indigo-900/20 border-indigo-700/40'
+            : 'bg-indigo-50 border-indigo-100'">
+
+          <h3 class="text-sm font-semibold mb-3 flex items-center gap-2"
+            [ngClass]="isDarkMode ? 'text-indigo-300' : 'text-indigo-700'">
+            <span>✨</span> XP Diperoleh
+          </h3>
+
+          <div class="space-y-1.5 text-xs mb-3">
+            <div class="flex justify-between"
+              [ngClass]="isDarkMode ? 'text-gray-300' : 'text-gray-600'">
+              <span>Menyelesaikan kuis</span>
+              <span class="font-semibold text-indigo-500">+{{ xpBreakdown.quiz_complete }} XP</span>
+            </div>
+            <div *ngIf="xpBreakdown.correct_answers > 0"
+              class="flex justify-between"
+              [ngClass]="isDarkMode ? 'text-gray-300' : 'text-gray-600'">
+              <span>Jawaban benar ({{ correctAnswers }} soal)</span>
+              <span class="font-semibold text-indigo-500">+{{ xpBreakdown.correct_answers }} XP</span>
+            </div>
+            <div *ngIf="xpBreakdown.score_bonus > 0"
+              class="flex justify-between"
+              [ngClass]="isDarkMode ? 'text-gray-300' : 'text-gray-600'">
+              <span>Bonus skor {{ points >= 100 ? '= 100' : '≥ 80' }}</span>
+              <span class="font-semibold text-emerald-500">+{{ xpBreakdown.score_bonus }} XP</span>
+            </div>
+            <div class="border-t pt-1.5"
+              [ngClass]="isDarkMode ? 'border-indigo-700/40' : 'border-indigo-200'">
+              <div class="flex justify-between font-bold text-sm">
+                <span [ngClass]="isDarkMode ? 'text-white' : 'text-gray-900'">Total sesi ini</span>
+                <span class="text-indigo-500">+{{ xpResult.xp_awarded }} XP</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="text-xs mb-2" [ngClass]="isDarkMode ? 'text-gray-400' : 'text-gray-500'">
+            Total XP kamu:
+            <span class="font-semibold" [ngClass]="isDarkMode ? 'text-gray-200' : 'text-gray-700'">
+              {{ xpResult.total_xp - xpResult.xp_awarded | number }}
+            </span>
+            →
+            <span class="font-bold text-indigo-500">{{ animatedXpTotal | number }}</span>
+          </div>
+
+          <div class="text-xs flex items-center gap-2"
+            [ngClass]="isDarkMode ? 'text-gray-400' : 'text-gray-500'">
+            <span>{{ xpResult.new_level_icon }} Lv.{{ xpResult.new_level }} {{ xpResult.new_level_name }}</span>
+            <span *ngIf="xpResult.leveled_up"
+              class="px-1.5 py-0.5 rounded text-xs font-bold bg-indigo-500 text-white">
+              LEVEL UP!
+            </span>
           </div>
         </div>
 
