@@ -8,6 +8,7 @@ import { UserService } from '../services/user.service';
 import { ThemeService } from '../services/theme.service';
 import { PaketSoal } from '../models/paket-soal.model';
 import { QuizSessionService, QuizSession } from '../services/quiz-session.service';
+import { PomodoroService } from '../services/pomodoro.service';
 
 @Component({
   selector: 'app-question',
@@ -73,7 +74,8 @@ export class QuestionComponent implements OnInit, OnDestroy {
     private router: Router,
     private userService: UserService,
     private themeService: ThemeService,
-    private quizSessionService: QuizSessionService
+    private quizSessionService: QuizSessionService,
+    public pomodoroService: PomodoroService
   ) {}
 
   ngOnInit(): void {
@@ -475,6 +477,10 @@ export class QuestionComponent implements OnInit, OnDestroy {
   }
 
   answer(currentQno: number, option: number) {
+    // Only record first-time answers for Pomodoro
+    if (!this.answeredQuestions[currentQno]) {
+      this.pomodoroService.recordAnswer();
+    }
     this.selectedAnswers[currentQno] = option;
     this.answeredQuestions[currentQno] = true;
 
