@@ -172,7 +172,7 @@
       <!-- Main question area -->
       <div class="w-full lg:flex-1">
         <div class="rounded-2xl p-6 sm:p-8 transition-colors duration-200 border"
-          [ngClass]="isDarkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-100 shadow-sm'">
+          [ngClass]="[isDarkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-100 shadow-sm', questionCardClass]">
 
           <!-- Marked badge only (nomor soal sudah ada di header progress) -->
           <div *ngIf="markedQuestions[currentQuestion]" class="mb-4">
@@ -322,10 +322,10 @@
           <!-- Navigation -->
           <div class="flex justify-between items-center mt-8 pt-6 border-t"
             [ngClass]="isDarkMode ? 'border-gray-700' : 'border-gray-100'">
-            <button (click)="prevQuestion()" [disabled]="currentQuestion === 0"
+            <button (click)="prevQuestion()" [disabled]="currentQuestion === 0 || isAnimating"
               aria-label="Soal sebelumnya"
               class="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold transition-colors duration-200"
-              [ngClass]="currentQuestion === 0
+              [ngClass]="currentQuestion === 0 || isAnimating
                 ? 'opacity-30 cursor-not-allowed pointer-events-none ' + (isDarkMode ? 'bg-gray-700 text-gray-500' : 'bg-gray-200 text-gray-400')
                 : (isDarkMode ? 'bg-gray-700 text-white hover:bg-gray-600' : 'bg-gray-100 text-gray-700 hover:bg-gray-200')">
               <svg class="w-4 h-4" aria-hidden="true" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -334,10 +334,10 @@
               Sebelumnya
             </button>
 
-            <button (click)="nextQuestion()" [disabled]="currentQuestion === questionList.length - 1"
+            <button (click)="nextQuestion()" [disabled]="currentQuestion === questionList.length - 1 || isAnimating"
               aria-label="Soal selanjutnya"
               class="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold transition-colors duration-200"
-              [ngClass]="currentQuestion === questionList.length - 1
+              [ngClass]="currentQuestion === questionList.length - 1 || isAnimating
                 ? 'opacity-30 cursor-not-allowed pointer-events-none ' + (isDarkMode ? 'bg-gray-700 text-gray-500' : 'bg-gray-200 text-gray-400')
                 : 'bg-indigo-600 text-white hover:bg-indigo-700'">
               {{ quizMode === 'exam' ? 'Selanjutnya' : 'Soal Berikutnya' }}
