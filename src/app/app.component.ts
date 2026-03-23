@@ -3,6 +3,7 @@ import { UserService } from './services/user.service';
 import { Router, NavigationEnd, NavigationStart, NavigationCancel, NavigationError } from '@angular/router';
 import { Observable, filter, Subscription } from 'rxjs';
 import { AuthService } from './services/auth.service';
+import { ThemeService } from './services/theme.service';
 
 @Component({
   selector: 'app-root',
@@ -23,11 +24,17 @@ export class AppComponent implements OnInit, OnDestroy {
   constructor(
     private userService: UserService,
     private router: Router,
-    private authService: AuthService
+    private authService: AuthService,
+    private themeService: ThemeService
   ) {}
 
   ngOnInit() {
     this.user$ = this.authService.user$;
+
+    // Sync tema dari backend jika sudah login saat app pertama kali dibuka
+    if (this.authService.getToken()) {
+      this.themeService.loadFromBackend();
+    }
 
     // Track navigation for loading indicator + URL tracking
     const routerSub = this.router.events.subscribe((event: any) => {
@@ -57,7 +64,12 @@ export class AppComponent implements OnInit, OnDestroy {
     // Listen for auth state changes
     const authSub = this.authService.user$.subscribe(user => {
       console.log('Auth state changed:', user ? 'Logged in' : 'Logged out');
-      
+
+      // Sync tema dari backend setiap kali user login
+      if (user) {
+        this.themeService.loadFromBackend();
+      }
+
       // Skip redirection if we're on an auth callback page
       if (this.currentUrl.includes('/auth/callback')) {
         console.log('On auth callback page, skipping redirection');
