@@ -52,7 +52,7 @@ export class UserService {
     );
   }
 
-  updatePreferences(body: { pomodoro?: any; theme?: { dark_mode: boolean } }): Observable<any> {
+  updatePreferences(body: { pomodoro?: any; theme?: { dark_mode?: boolean; easy_reading?: boolean } }): Observable<any> {
     return this.http.put(this.getApiUrl('user/preferences'), body, this.getHttpOptions()).pipe(
       catchError(() => of(null))
     );

@@ -34,18 +34,23 @@ export class AccountComponent implements OnInit, OnDestroy {
   stats: UserStats | null = null;
   errorMessage = '';
   isDarkMode = false;
+  isEasyReading = false;
   private themeSubscription: Subscription | null = null;
+  private easyReadingSubscription: Subscription | null = null;
 
   constructor(
     private authService: AuthService,
     private userService: UserService,
     private router: Router,
-    private themeService: ThemeService
+    readonly themeService: ThemeService
   ) {}
 
   ngOnInit() {
     this.themeSubscription = this.themeService.darkMode$.subscribe(
       isDark => this.isDarkMode = isDark
+    );
+    this.easyReadingSubscription = this.themeService.easyReading$.subscribe(
+      val => this.isEasyReading = val
     );
 
     const token = this.authService.getToken();
@@ -80,9 +85,12 @@ export class AccountComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy() {
-    if (this.themeSubscription) {
-      this.themeSubscription.unsubscribe();
-    }
+    this.themeSubscription?.unsubscribe();
+    this.easyReadingSubscription?.unsubscribe();
+  }
+
+  toggleEasyReading(): void {
+    this.themeService.toggleEasyReading();
   }
 
   get accuracyPercent(): number {

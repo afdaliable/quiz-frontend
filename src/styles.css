@@ -23,6 +23,27 @@
   border-radius: 0.5rem;
 }
 
+/* ── Mode Baca Mudah ─────────────────────────────────────── */
+html.easy-reading {
+  font-size: 18px;        /* scale semua unit rem +12.5% */
+}
+
+html.easy-reading body {
+  line-height: 1.85;
+  letter-spacing: 0.012em;
+  word-spacing: 0.04em;
+}
+
+/* Override Tailwind leading classes agar tetap lega */
+html.easy-reading .leading-none    { line-height: 1.4 !important; }
+html.easy-reading .leading-tight   { line-height: 1.5 !important; }
+html.easy-reading .leading-snug    { line-height: 1.6 !important; }
+html.easy-reading .leading-normal  { line-height: 1.85 !important; }
+html.easy-reading .leading-relaxed { line-height: 2.0 !important; }
+
+/* Padding vertikal opsi kuis sedikit lebih longgar */
+html.easy-reading .quiz-option { padding-top: 1rem !important; padding-bottom: 1rem !important; }
+
 @layer base {
   body {
     font-family: 'Inter', system-ui, -apple-system, sans-serif;
