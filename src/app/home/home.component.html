@@ -60,6 +60,35 @@
     </div>
   </div>
 
+  <!-- Daily Challenge Banner -->
+  <div *ngIf="!loadingDaily && dailyChallenge" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-3">
+    <a routerLink="/daily"
+      class="flex items-center gap-4 rounded-2xl p-4 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md cursor-pointer"
+      [ngClass]="isDarkMode ? 'bg-gray-800 border border-gray-700' : 'bg-white border border-gray-100'">
+      <div class="w-10 h-10 flex-shrink-0 flex items-center justify-center rounded-xl text-xl"
+        [ngClass]="isDarkMode ? 'bg-indigo-500/20' : 'bg-indigo-50'">
+        🎯
+      </div>
+      <div class="flex-1 min-w-0">
+        <p class="text-sm font-semibold" [ngClass]="isDarkMode ? 'text-white' : 'text-gray-900'">
+          Tantangan Hari Ini
+        </p>
+        <p class="text-xs mt-0.5 truncate" [ngClass]="isDarkMode ? 'text-gray-400' : 'text-gray-500'">
+          <ng-container *ngIf="dailyChallenge.already_answered; else notYetAnswered">
+            ✅ Sudah dijawab — lihat leaderboard
+          </ng-container>
+          <ng-template #notYetAnswered>
+            Berganti dalam {{ dailyCountdown }}
+          </ng-template>
+        </p>
+      </div>
+      <svg class="w-4 h-4 flex-shrink-0" [ngClass]="isDarkMode ? 'text-gray-500' : 'text-gray-400'"
+        fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+      </svg>
+    </a>
+  </div>
+
   <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
 
     <!-- Category Pills (horizontal scroll) -->

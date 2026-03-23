@@ -3,6 +3,8 @@ import { Router } from '@angular/router';
 import { AuthService } from '../services/auth.service';
 import { UserService } from '../services/user.service';
 import { ThemeService } from '../services/theme.service';
+import { DailyChallengeService } from '../services/daily-challenge.service';
+import { UserChallengeStats } from '../models/daily-challenge.model';
 import { forkJoin, Subscription } from 'rxjs';
 
 interface UserProfile {
@@ -32,6 +34,7 @@ export class AccountComponent implements OnInit, OnDestroy {
   loading = false;
   profile: UserProfile | null = null;
   stats: UserStats | null = null;
+  dailyStreak: UserChallengeStats | null = null;
   errorMessage = '';
   isDarkMode = false;
   private themeSubscription: Subscription | null = null;
@@ -40,7 +43,8 @@ export class AccountComponent implements OnInit, OnDestroy {
     private authService: AuthService,
     private userService: UserService,
     private router: Router,
-    private themeService: ThemeService
+    private themeService: ThemeService,
+    private dailyChallengeService: DailyChallengeService
   ) {}
 
   ngOnInit() {
@@ -55,6 +59,11 @@ export class AccountComponent implements OnInit, OnDestroy {
     }
 
     this.loading = true;
+    this.dailyChallengeService.getStreak().subscribe({
+      next: (streak) => { this.dailyStreak = streak; },
+      error: () => {}
+    });
+
     forkJoin({
       profile: this.userService.getUserProfile(),
       stats: this.userService.getUserStats()

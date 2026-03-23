@@ -22,6 +22,7 @@ import { AboutComponent } from './about/about.component';
 import { SubscriptionComponent } from './subscription/subscription.component';
 import { OnboardingComponent } from './onboarding/onboarding.component';
 import { OnboardingGuard } from './auth/onboarding.guard';
+import { DailyComponent } from './daily/daily.component';
 
 const routes: Routes = [
   {
@@ -86,6 +87,11 @@ const routes: Routes = [
   {
     path: 'history',
     component: HistoryComponent,
+    canActivate: [AuthGuard]
+  },
+  {
+    path: 'daily',
+    component: DailyComponent,
     canActivate: [AuthGuard]
   },
   {

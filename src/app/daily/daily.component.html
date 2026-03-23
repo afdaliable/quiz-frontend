@@ -1,0 +1,215 @@
+<div class="min-h-screen transition-colors duration-200"
+  [ngClass]="isDarkMode ? 'bg-gray-900' : 'bg-gray-50'">
+  <div class="max-w-2xl mx-auto px-4 sm:px-6 py-8 pb-24">
+
+    <!-- Header -->
+    <div class="mb-6">
+      <h1 class="text-2xl font-bold" [ngClass]="isDarkMode ? 'text-white' : 'text-gray-900'">
+        🎯 Tantangan Hari Ini
+      </h1>
+      <p class="text-sm mt-1" [ngClass]="isDarkMode ? 'text-gray-400' : 'text-gray-500'">
+        Berganti dalam: <span class="font-semibold tabular-nums">{{ countdownDisplay }}</span>
+      </p>
+    </div>
+
+    <!-- Error state -->
+    <div *ngIf="error"
+      class="mb-4 p-3 rounded-xl text-sm font-medium bg-rose-50 text-rose-700 border border-rose-200">
+      {{ error }}
+    </div>
+
+    <!-- Loading skeleton -->
+    <div *ngIf="isLoading" class="space-y-4">
+      <div class="h-48 rounded-2xl animate-pulse"
+        [ngClass]="isDarkMode ? 'bg-gray-800' : 'bg-gray-200'"></div>
+      <div *ngFor="let i of [1,2,3,4]" class="h-14 rounded-xl animate-pulse"
+        [ngClass]="isDarkMode ? 'bg-gray-800' : 'bg-gray-200'"></div>
+    </div>
+
+    <!-- Challenge card -->
+    <div *ngIf="!isLoading && challenge" class="space-y-4">
+
+      <!-- Meta -->
+      <div class="flex items-center gap-3 flex-wrap">
+        <span class="px-2.5 py-1 rounded-lg text-xs font-semibold"
+          [ngClass]="isDarkMode ? 'bg-indigo-500/20 text-indigo-300' : 'bg-indigo-50 text-indigo-600'">
+          {{ categoryLabel }}
+        </span>
+        <span class="text-xs" [ngClass]="isDarkMode ? 'text-gray-500' : 'text-gray-400'">
+          👥 {{ totalAttempts | number }} sudah menjawab
+        </span>
+        <span class="text-xs" [ngClass]="isDarkMode ? 'text-gray-500' : 'text-gray-400'">
+          📅 {{ challengeDate }}
+        </span>
+      </div>
+
+      <!-- Question card -->
+      <div class="rounded-2xl p-5 sm:p-6"
+        [ngClass]="isDarkMode ? 'bg-gray-800' : 'bg-white border border-gray-100 shadow-sm'">
+        <p class="text-sm sm:text-base leading-relaxed font-medium"
+          [ngClass]="isDarkMode ? 'text-gray-100' : 'text-gray-800'">
+          {{ questionText }}
+        </p>
+      </div>
+
+      <!-- Options — unanswered -->
+      <div *ngIf="!hasAnswered" class="space-y-2.5">
+        <button *ngFor="let opt of options"
+          (click)="selectOption(opt.key)"
+          class="w-full text-left px-4 py-3.5 rounded-xl text-sm font-medium border transition-all duration-150"
+          [ngClass]="selectedAnswer === opt.key
+            ? (isDarkMode ? 'bg-indigo-600/30 border-indigo-500 text-indigo-200' : 'bg-indigo-50 border-indigo-400 text-indigo-700')
+            : (isDarkMode ? 'bg-gray-800 border-gray-700 text-gray-300 hover:border-indigo-500/50' : 'bg-white border-gray-200 text-gray-700 hover:border-indigo-300')">
+          <span class="font-bold mr-2 opacity-60">{{ opt.label }}</span>
+          {{ opt.text }}
+        </button>
+      </div>
+
+      <!-- Options — revealed after submit -->
+      <div *ngIf="hasAnswered" class="space-y-2.5">
+        <div *ngFor="let opt of options"
+          class="px-4 py-3.5 rounded-xl text-sm font-medium border"
+          [ngClass]="{
+            'bg-emerald-50 border-emerald-400 text-emerald-700': !isDarkMode && opt.key === revealedCorrectAnswer,
+            'bg-rose-50 border-rose-400 text-rose-700': !isDarkMode && opt.key === selectedAnswer && opt.key !== revealedCorrectAnswer,
+            'bg-gray-50 border-gray-200 text-gray-400 opacity-50': !isDarkMode && opt.key !== revealedCorrectAnswer && opt.key !== selectedAnswer,
+            'bg-emerald-900/30 border-emerald-500 text-emerald-300': isDarkMode && opt.key === revealedCorrectAnswer,
+            'bg-rose-900/30 border-rose-500 text-rose-300': isDarkMode && opt.key === selectedAnswer && opt.key !== revealedCorrectAnswer,
+            'bg-gray-800 border-gray-700 text-gray-500 opacity-50': isDarkMode && opt.key !== revealedCorrectAnswer && opt.key !== selectedAnswer
+          }">
+          <span class="font-bold mr-2 opacity-60">{{ opt.label }}</span>
+          {{ opt.text }}
+          <span *ngIf="opt.key === revealedCorrectAnswer" class="ml-2 font-bold">✓</span>
+          <span *ngIf="opt.key === selectedAnswer && opt.key !== revealedCorrectAnswer" class="ml-2 font-bold">✗</span>
+        </div>
+      </div>
+
+      <!-- Timer + submit button -->
+      <div *ngIf="!hasAnswered" class="flex items-center justify-between">
+        <span class="text-sm font-mono font-semibold tabular-nums"
+          [ngClass]="isDarkMode ? 'text-gray-400' : 'text-gray-500'">
+          ⏱ {{ formatElapsed(elapsedSeconds) }}
+        </span>
+        <button
+          (click)="confirmAnswer()"
+          [disabled]="!selectedAnswer || isSubmitting"
+          class="px-6 py-2.5 rounded-xl text-sm font-semibold transition-colors"
+          [ngClass]="!selectedAnswer || isSubmitting
+            ? 'opacity-40 cursor-not-allowed ' + (isDarkMode ? 'bg-gray-700 text-gray-500' : 'bg-gray-100 text-gray-400')
+            : 'bg-indigo-600 hover:bg-indigo-700 text-white'">
+          {{ isSubmitting ? 'Mengirim...' : 'Konfirmasi Jawaban' }}
+        </button>
+      </div>
+
+      <!-- Result panel -->
+      <div *ngIf="hasAnswered && result"
+        class="rounded-2xl p-5"
+        [ngClass]="result.is_correct
+          ? (isDarkMode ? 'bg-emerald-900/20 border border-emerald-700/50' : 'bg-emerald-50 border border-emerald-200')
+          : (isDarkMode ? 'bg-rose-900/20 border border-rose-700/50' : 'bg-rose-50 border border-rose-200')">
+
+        <div class="flex items-center gap-3 mb-3">
+          <span class="text-2xl">{{ result.is_correct ? '✅' : '❌' }}</span>
+          <div>
+            <p class="font-bold text-base"
+              [ngClass]="result.is_correct ? 'text-emerald-600' : 'text-rose-600'">
+              {{ result.is_correct ? 'Jawaban Benar!' : 'Jawaban Kurang Tepat' }}
+            </p>
+            <p class="text-xs mt-0.5" [ngClass]="isDarkMode ? 'text-gray-400' : 'text-gray-500'">
+              Skor: <strong>{{ result.score | number }}</strong> poin
+            </p>
+          </div>
+        </div>
+
+        <!-- Ranking -->
+        <div class="flex items-center gap-2 mb-4 py-2.5 px-3 rounded-xl"
+          [ngClass]="isDarkMode ? 'bg-gray-800' : 'bg-white'">
+          <span class="text-xl font-bold">{{ rankLabel(result.rank) }}</span>
+          <span class="text-sm" [ngClass]="isDarkMode ? 'text-gray-300' : 'text-gray-700'">
+            <strong>#{{ result.rank }}</strong> dari
+            <strong>{{ result.total_participants | number }}</strong> peserta
+          </span>
+        </div>
+
+        <!-- Leaderboard toggle -->
+        <button (click)="toggleLeaderboard()"
+          class="text-sm font-semibold transition-colors"
+          [ngClass]="isDarkMode ? 'text-indigo-400 hover:text-indigo-300' : 'text-indigo-600 hover:text-indigo-700'">
+          {{ showLeaderboard ? 'Sembunyikan' : 'Lihat' }} Leaderboard ↓
+        </button>
+      </div>
+
+      <!-- Leaderboard -->
+      <div *ngIf="showLeaderboard && hasAnswered" class="rounded-2xl overflow-hidden"
+        [ngClass]="isDarkMode ? 'bg-gray-800' : 'bg-white border border-gray-100 shadow-sm'">
+
+        <div class="px-5 py-3 border-b flex items-center justify-between"
+          [ngClass]="isDarkMode ? 'border-gray-700' : 'border-gray-100'">
+          <span class="font-semibold text-sm" [ngClass]="isDarkMode ? 'text-white' : 'text-gray-800'">
+            🏆 Leaderboard Hari Ini
+          </span>
+          <span *ngIf="loadingLeaderboard" class="text-xs animate-pulse"
+            [ngClass]="isDarkMode ? 'text-gray-500' : 'text-gray-400'">
+            Memperbarui...
+          </span>
+        </div>
+
+        <!-- Loading shimmer -->
+        <div *ngIf="loadingLeaderboard && !leaderboard" class="p-4 space-y-2">
+          <div *ngFor="let i of [1,2,3,4,5]" class="h-10 rounded-lg animate-pulse"
+            [ngClass]="isDarkMode ? 'bg-gray-700' : 'bg-gray-100'"></div>
+        </div>
+
+        <!-- Entries -->
+        <div *ngIf="leaderboard" class="divide-y"
+          [ngClass]="isDarkMode ? 'divide-gray-700' : 'divide-gray-50'">
+          <div *ngFor="let entry of leaderboard.entries"
+            class="flex items-center px-5 py-3 gap-3"
+            [ngClass]="entry.is_current_user
+              ? (isDarkMode ? 'bg-indigo-900/20' : 'bg-indigo-50')
+              : ''">
+            <span class="w-8 text-center text-sm font-bold"
+              [ngClass]="isDarkMode ? 'text-gray-400' : 'text-gray-500'">
+              {{ rankLabel(entry.rank) }}
+            </span>
+            <span class="flex-1 text-sm font-medium truncate"
+              [ngClass]="entry.is_current_user
+                ? 'text-indigo-600'
+                : (isDarkMode ? 'text-gray-200' : 'text-gray-800')">
+              {{ entry.display_name }}
+              <span *ngIf="entry.is_current_user" class="text-xs ml-1 opacity-60">(Kamu)</span>
+            </span>
+            <span class="text-xs" [ngClass]="isDarkMode ? 'text-gray-500' : 'text-gray-400'">
+              {{ formatTime(entry.time_taken_ms) }}
+            </span>
+            <span class="text-sm font-bold w-16 text-right"
+              [ngClass]="isDarkMode ? 'text-white' : 'text-gray-800'">
+              {{ entry.score | number }}
+            </span>
+          </div>
+        </div>
+
+        <div class="px-5 py-2.5 text-xs text-center"
+          [ngClass]="isDarkMode ? 'text-gray-600' : 'text-gray-400'">
+          {{ leaderboard?.total_participants | number }} peserta total
+          · diperbarui tiap 30 detik
+        </div>
+      </div>
+
+    </div>
+
+    <!-- No challenge -->
+    <div *ngIf="!isLoading && !challenge && !error"
+      class="flex flex-col items-center justify-center py-20 text-center">
+      <div class="text-5xl mb-4">🗓️</div>
+      <h3 class="text-lg font-semibold mb-2"
+        [ngClass]="isDarkMode ? 'text-gray-200' : 'text-gray-800'">
+        Belum ada tantangan hari ini
+      </h3>
+      <p class="text-sm" [ngClass]="isDarkMode ? 'text-gray-400' : 'text-gray-500'">
+        Cek kembali nanti — tantangan baru akan tersedia setiap hari.
+      </p>
+    </div>
+
+  </div>
+</div>

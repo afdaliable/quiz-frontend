@@ -11,6 +11,8 @@ import { OnboardingService } from '../services/onboarding.service';
 import { Subscription } from 'rxjs';
 import { QuizHistoryEntry } from '../models/quiz-history.model';
 import { QuizSessionService } from '../services/quiz-session.service';
+import { DailyChallengeService } from '../services/daily-challenge.service';
+import { DailyChallengeResponse } from '../models/daily-challenge.model';
 
 @Component({
   selector: 'app-home',
@@ -52,6 +54,12 @@ export class HomeComponent implements OnInit, OnDestroy {
   randomCategory: string = '';
   isStartingRandom: boolean = false;
 
+  // Daily Challenge banner
+  dailyChallenge: DailyChallengeResponse | null = null;
+  loadingDaily = false;
+  dailyCountdown = '--:--:--';
+  private dailyCountdownInterval: ReturnType<typeof setInterval> | null = null;
+
   // Personalization
   personalizedPakets: PaketSoal[] = [];
   onboardingGoals: string[] = [];
@@ -65,7 +73,8 @@ export class HomeComponent implements OnInit, OnDestroy {
     private authService: AuthService,
     private premiumService: PremiumService,
     private quizSessionService: QuizSessionService,
-    private onboardingService: OnboardingService
+    private onboardingService: OnboardingService,
+    private dailyChallengeService: DailyChallengeService
   ) {}
 
   ngOnInit(): void {
@@ -86,6 +95,7 @@ export class HomeComponent implements OnInit, OnDestroy {
       this.loadPaketSoal();
       this.loadUserStats();
       this.loadLatestHistory();
+      this.loadDailyBanner();
 
       // Add a longer delay before checking premium status to ensure session is fully established
       setTimeout(() => {
@@ -120,10 +130,37 @@ export class HomeComponent implements OnInit, OnDestroy {
   }
   
   ngOnDestroy(): void {
-    // Clean up subscription
     if (this.userSubscription) {
       this.userSubscription.unsubscribe();
     }
+    if (this.dailyCountdownInterval) {
+      clearInterval(this.dailyCountdownInterval);
+    }
+  }
+
+  loadDailyBanner(): void {
+    this.loadingDaily = true;
+    this.dailyChallengeService.getTodayChallenge().subscribe({
+      next: (data) => {
+        this.dailyChallenge = data;
+        this.loadingDaily = false;
+        this.updateDailyCountdown();
+        this.dailyCountdownInterval = setInterval(() => this.updateDailyCountdown(), 1000);
+      },
+      error: () => { this.loadingDaily = false; }  // silent fail
+    });
+  }
+
+  private updateDailyCountdown(): void {
+    const now = new Date();
+    const nextMidnightWib = new Date();
+    nextMidnightWib.setUTCHours(17, 0, 0, 0);
+    if (now >= nextMidnightWib) nextMidnightWib.setUTCDate(nextMidnightWib.getUTCDate() + 1);
+    const diffMs = nextMidnightWib.getTime() - now.getTime();
+    const h = Math.floor(diffMs / 3_600_000).toString().padStart(2, '0');
+    const m = Math.floor((diffMs % 3_600_000) / 60_000).toString().padStart(2, '0');
+    const s = Math.floor((diffMs % 60_000) / 1_000).toString().padStart(2, '0');
+    this.dailyCountdown = `${h}:${m}:${s}`;
   }
 
   loadCategories(): void {
