@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, HostListener } from '@angular/core';
 import { Router } from '@angular/router';
 import { UserService } from '../services/user.service';
 import { QuestionService } from '../services/question.service';
@@ -148,6 +148,27 @@ export class ReviewComponent implements OnInit, OnDestroy {
         this.bookmarkedQuestions = new Set(bookmarkIds);
       }
     );
+  }
+
+  @HostListener('document:keydown', ['$event'])
+  handleKeyboardEvent(event: KeyboardEvent): void {
+    const target = event.target as HTMLElement;
+    if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.tagName === 'SELECT') return;
+    if (target.tagName === 'BUTTON' || target.tagName === 'A') return;
+
+    switch (event.key) {
+      case 'n': case 'N':
+      case 'ArrowRight':
+        this.nextQuestion(); break;
+      case 'p': case 'P':
+      case 'ArrowLeft':
+        this.prevQuestion(); break;
+      case 'b': case 'B':
+        this.toggleCurrentBookmark(); break;
+      case 'e': case 'E':
+        event.preventDefault();
+        this.toggleExplanation(); break;
+    }
   }
 
   /** Toggle bookmark untuk soal yang sedang aktif (dipanggil dari navigation panel) */
