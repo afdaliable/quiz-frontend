@@ -38,6 +38,7 @@ import { QuestionDiscussionComponent } from './question-discussion/question-disc
 import { AboutComponent } from './about/about.component';
 import { SubscriptionComponent } from './subscription/subscription.component';
 import { OnboardingComponent } from './onboarding/onboarding.component';
+import { PomodoroWidgetComponent } from './pomodoro-widget/pomodoro-widget.component';
 
 @NgModule({
   declarations: [
@@ -65,6 +66,7 @@ import { OnboardingComponent } from './onboarding/onboarding.component';
     AboutComponent,
     SubscriptionComponent,
     OnboardingComponent,
+    PomodoroWidgetComponent,
   ],
   imports: [
     BrowserModule,
