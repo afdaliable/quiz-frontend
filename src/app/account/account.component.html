@@ -130,6 +130,16 @@
         </div>
       </div>
 
+      <!-- Sparkline — Skor 7 Hari Terakhir -->
+      <div *ngIf="recentScores.length >= 3"
+        class="rounded-lg shadow-lg p-4 transition-colors duration-200"
+        [ngClass]="isDarkMode ? 'bg-gray-800' : 'bg-white'">
+        <p class="text-xs font-medium mb-2" [ngClass]="isDarkMode ? 'text-gray-400' : 'text-gray-500'">
+          Skor 7 Hari Terakhir
+        </p>
+        <app-score-chart [dataPoints]="recentScores" [compact]="true"></app-score-chart>
+      </div>
+
       <!-- Statistics Card -->
       <div *ngIf="stats" class="rounded-lg shadow-lg p-6 sm:p-8 transition-colors duration-200" [ngClass]="isDarkMode ? 'bg-gray-800' : 'bg-white'">
         <h3 class="text-lg font-semibold mb-5" [ngClass]="isDarkMode ? 'text-white' : 'text-gray-900'">Statistik Belajar</h3>

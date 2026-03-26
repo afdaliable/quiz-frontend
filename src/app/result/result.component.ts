@@ -2,6 +2,8 @@ import { Component, OnInit, ElementRef, ViewChild } from '@angular/core';
 import { Router } from '@angular/router';
 import { UserService } from '../services/user.service';
 import { ThemeService } from '../services/theme.service';
+import { AnalyticsService } from '../services/analytics.service';
+import { ScoreDataPoint } from '../models/score-history.model';
 import html2canvas from 'html2canvas';
 
 interface PaketSoal {
@@ -35,11 +37,13 @@ export class ResultComponent implements OnInit {
   motivationMessage: string = '';
   wrongQuestions: number[] = [];
   celebrationActive: boolean = false;
+  paketScoreHistory: ScoreDataPoint[] = [];
 
   constructor(
     private router: Router,
     private userService: UserService,
-    private themeService: ThemeService
+    private themeService: ThemeService,
+    private analyticsService: AnalyticsService
   ) {}
 
   ngOnInit(): void {
@@ -79,6 +83,15 @@ export class ResultComponent implements OnInit {
     if (this.points >= 80) {
       this.celebrationActive = true;
       setTimeout(() => (this.celebrationActive = false), 5000);
+    }
+
+    // Load mini chart per paket (paket_soal_id tersedia setelah AFD-128 di-deploy)
+    const paketSoalId: number | null = this.selectedPaket?.id_nama_paket_soal ?? null;
+    if (paketSoalId) {
+      this.analyticsService.getScoreHistory({ package_id: paketSoalId }).subscribe({
+        next: (res) => this.paketScoreHistory = res.data_points,
+        error: () => {}  // silent — mini chart bukan fitur kritis
+      });
     }
   }
 
