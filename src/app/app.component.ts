@@ -84,13 +84,14 @@ export class AppComponent implements OnInit, OnDestroy {
         }
       } else {
         // If not logged in and not on login page, go to login
+        const currentPath = this.currentUrl || window.location.pathname;
         const isPublicPage =
-          this.currentUrl === '/login' ||
-          this.currentUrl.includes('/auth/callback') ||
-          this.currentUrl.startsWith('/u/') ||
-          this.currentUrl === '/about' ||
-          this.currentUrl === '/invalid-session' ||
-          this.currentUrl.startsWith('/aktivasi-berlangganan');
+          currentPath === '/login' ||
+          currentPath.includes('/auth/callback') ||
+          currentPath.startsWith('/u/') ||
+          currentPath === '/about' ||
+          currentPath === '/invalid-session' ||
+          currentPath.startsWith('/aktivasi-berlangganan');
         
         if (!isPublicPage) {
           console.log('Not logged in on protected page, redirecting to login');
