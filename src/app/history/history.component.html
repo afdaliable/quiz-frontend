@@ -42,7 +42,7 @@
           <span [ngClass]="isDarkMode ? 'text-gray-300' : 'text-gray-700'" class="font-semibold">Perkembangan Skor</span>
           <ng-container *ngIf="scoreHistory?.summary">
             <span [ngClass]="isDarkMode ? 'text-gray-400' : 'text-gray-500'">
-              Avg: <strong [ngClass]="isDarkMode ? 'text-white' : 'text-gray-800'">{{ scoreHistory!.summary.average | number:'1.1-1' }}</strong>
+              Avg: <strong [ngClass]="isDarkMode ? 'text-white' : 'text-gray-800'">{{ displayAverage | number:'1.1-1' }}</strong>
             </span>
             <span [ngClass]="isDarkMode ? 'text-gray-400' : 'text-gray-500'">
               Terbaik: <strong [ngClass]="isDarkMode ? 'text-white' : 'text-gray-800'">{{ scoreHistory!.summary.highest }}</strong>

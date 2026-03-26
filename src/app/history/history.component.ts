@@ -23,7 +23,7 @@ export class HistoryComponent implements OnInit {
 
   // Score chart
   scoreHistory: ScoreHistoryResponse | null = null;
-  scoreFilter: ScoreHistoryQuery = { days: 30 };
+  scoreFilter: ScoreHistoryQuery = { days: 7 };
   showMovingAverage = false;
   loadingChart = false;
 
@@ -51,6 +51,13 @@ export class HistoryComponent implements OnInit {
   onScoreFilterChange(days: number): void {
     this.scoreFilter = { ...this.scoreFilter, days };
     this.loadScoreHistory();
+  }
+
+  get displayAverage(): number {
+    const pts = this.scoreHistory?.data_points;
+    if (!pts?.length) return 0;
+    const sum = pts.reduce((acc, p) => acc + p.score, 0);
+    return Math.round((sum / pts.length) * 10) / 10;
   }
 
   get trendLabel(): string {
