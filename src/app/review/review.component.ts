@@ -44,6 +44,8 @@ export class ReviewComponent implements OnInit, OnDestroy {
   isDarkMode: boolean = false;
   bookmarkedQuestions: Set<string> = new Set();
   bookmarkLoading: boolean = false;
+  isAnimating: boolean = false;
+  questionCardClass: string = '';
 
   // Toast state
   toastMessage: string = '';
@@ -103,23 +105,45 @@ export class ReviewComponent implements OnInit, OnDestroy {
 
   goToQuestion(index: number): void {
     if (index >= 0 && index < this.questionList.length) {
-      this.currentQuestion = index;
-      this.showExplanation = true;
+      this.navigateWithAnimation(index, 'direct');
     }
   }
 
   prevQuestion(): void {
     if (this.currentQuestion > 0) {
-      this.currentQuestion--;
-      this.showExplanation = true;
+      this.navigateWithAnimation(this.currentQuestion - 1, 'backward');
     }
   }
 
   nextQuestion(): void {
     if (this.currentQuestion < this.questionList.length - 1) {
-      this.currentQuestion++;
-      this.showExplanation = true;
+      this.navigateWithAnimation(this.currentQuestion + 1, 'forward');
     }
+  }
+
+  private navigateWithAnimation(targetIndex: number, direction: 'forward' | 'backward' | 'direct'): void {
+    if (this.isAnimating) return;
+    this.isAnimating = true;
+
+    const leaveClass = direction === 'forward' ? 'question-leave-left'
+      : direction === 'backward' ? 'question-leave-right'
+      : 'question-fade-out';
+    const enterClass = direction === 'forward' ? 'question-enter-right'
+      : direction === 'backward' ? 'question-enter-left'
+      : 'question-fade-in';
+
+    this.questionCardClass = leaveClass;
+
+    setTimeout(() => {
+      this.currentQuestion = targetIndex;
+      this.showExplanation = true;
+      this.questionCardClass = enterClass;
+
+      setTimeout(() => {
+        this.questionCardClass = '';
+        this.isAnimating = false;
+      }, 220);
+    }, 200);
   }
 
   toggleExplanation(): void {

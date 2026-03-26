@@ -67,6 +67,11 @@ export class QuestionComponent implements OnInit, OnDestroy {
   showKeyboardHint: boolean = false;
   private keyboardHintTimer: any;
 
+  // Question slide animation
+  isAnimating: boolean = false;
+  questionCardClass: string = '';
+  private slideDirection: 'forward' | 'backward' | 'direct' = 'forward';
+
   constructor(
     private questionService: QuestionService,
     private route: ActivatedRoute,
@@ -451,10 +456,9 @@ export class QuestionComponent implements OnInit, OnDestroy {
   }
 
   nextQuestion() {
+    if (this.isAnimating) return;
     if (this.currentQuestion < this.questionList.length - 1) {
-      this.currentQuestion++;
-      this.getProgressPercent();
-      this.resetAnswerCheck();
+      this.navigateWithAnimation(this.currentQuestion + 1, 'forward');
     } else if (this.quizMode === 'exam') {
       this.isQuizCompleted = true;
       this.stopTimer();
@@ -463,8 +467,44 @@ export class QuestionComponent implements OnInit, OnDestroy {
   }
 
   prevQuestion() {
-    this.currentQuestion--;
-    this.resetAnswerCheck();
+    if (this.isAnimating) return;
+    if (this.currentQuestion > 0) {
+      this.navigateWithAnimation(this.currentQuestion - 1, 'backward');
+    }
+  }
+
+  private navigateWithAnimation(targetIndex: number, direction: 'forward' | 'backward' | 'direct'): void {
+    if (this.isAnimating || targetIndex === this.currentQuestion) return;
+
+    this.isAnimating = true;
+    this.slideDirection = direction;
+
+    // Apply leave animation
+    this.questionCardClass = direction === 'forward'
+      ? 'question-leave-left'
+      : direction === 'backward'
+      ? 'question-leave-right'
+      : 'question-fade-out';
+
+    // After leave animation, switch content and enter
+    setTimeout(() => {
+      this.currentQuestion = targetIndex;
+      this.getProgressPercent();
+      this.resetAnswerCheck();
+
+      // Apply enter animation
+      this.questionCardClass = direction === 'forward'
+        ? 'question-enter-right'
+        : direction === 'backward'
+        ? 'question-enter-left'
+        : 'question-fade-in';
+
+      // Clear animation class after enter completes
+      setTimeout(() => {
+        this.questionCardClass = '';
+        this.isAnimating = false;
+      }, 220);
+    }, 200);
   }
 
   answerByKey(optionIndex: number): void {
@@ -593,9 +633,8 @@ export class QuestionComponent implements OnInit, OnDestroy {
   }
 
   goToQuestion(index: number) {
-    this.currentQuestion = index;
-    this.getProgressPercent();
-    this.resetAnswerCheck();
+    if (index === this.currentQuestion) return;
+    this.navigateWithAnimation(index, 'direct');
   }
 
   startTimer() {
