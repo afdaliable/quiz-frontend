@@ -98,7 +98,7 @@ export class ScoreChartComponent implements OnChanges, OnDestroy {
           tooltip: {
             enabled: !this.compact,
             callbacks: {
-              afterBody: (items) => {
+              afterBody: (items: any[]) => {
                 const pt = this.dataPoints[items[0]?.dataIndex];
                 return pt ? [`Paket: ${pt.package_name}`, `Benar: ${pt.correct} | Salah: ${pt.incorrect}`] : [];
               }
