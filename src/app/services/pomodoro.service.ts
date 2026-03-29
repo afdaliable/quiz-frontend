@@ -19,6 +19,7 @@ const SESSION_STATS_KEY = 'pomodoroSessionStats';
 export class PomodoroService implements OnDestroy {
   constructor(private ngZone: NgZone) {}
 
+
   readonly phase$ = new BehaviorSubject<PomodoroPhase>('idle');
   readonly timeLeft$ = new BehaviorSubject<number>(0);
   readonly totalPhaseTime$ = new BehaviorSubject<number>(0);
@@ -236,6 +237,7 @@ export class PomodoroService implements OnDestroy {
       pomodoroQuestionsAnswered: totalQuestions,
     };
   }
+
 
   // ── Audio ─────────────────────────────────────────────────────────────────
 

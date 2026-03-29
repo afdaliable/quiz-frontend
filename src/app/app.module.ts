@@ -40,6 +40,9 @@ import { SubscriptionComponent } from './subscription/subscription.component';
 import { OnboardingComponent } from './onboarding/onboarding.component';
 import { PomodoroWidgetComponent } from './pomodoro-widget/pomodoro-widget.component';
 import { PomodoroBreakModalComponent } from './pomodoro-break-modal/pomodoro-break-modal.component';
+import { EmptyStateComponent } from './shared/empty-state/empty-state.component';
+import { ScoreChartComponent } from './score-chart/score-chart.component';
+import { PublicProfileComponent } from './public-profile/public-profile.component';
 
 @NgModule({
   declarations: [
@@ -69,6 +72,8 @@ import { PomodoroBreakModalComponent } from './pomodoro-break-modal/pomodoro-bre
     OnboardingComponent,
     PomodoroWidgetComponent,
     PomodoroBreakModalComponent,
+    ScoreChartComponent,
+    PublicProfileComponent,
   ],
   imports: [
     BrowserModule,
@@ -76,6 +81,7 @@ import { PomodoroBreakModalComponent } from './pomodoro-break-modal/pomodoro-bre
     PremiumPlansComponent,
     LicenseActivationComponent,
     PremiumAccessModalComponent,
+    EmptyStateComponent,
     AppRoutingModule,
     RouterModule.forRoot([]),
     FormsModule,
