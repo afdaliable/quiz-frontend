@@ -43,9 +43,6 @@ export class ResultComponent implements OnInit {
   // Pomodoro stats
   pomodoroRecords: PomodoroPhaseRecord[] = [];
 
-  // Pomodoro stats
-  pomodoroRecords: PomodoroPhaseRecord[] = [];
-
   constructor(
     private router: Router,
     private userService: UserService,
