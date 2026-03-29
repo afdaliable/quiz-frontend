@@ -764,28 +764,31 @@ export class QuestionComponent implements OnInit, OnDestroy {
     );
     this.saveUserAnswers();
 
+    // Collect Pomodoro stats before stopping
+    const pomodoroStats = this.pomodoroService.getCompletionStats();
+    this.pomodoroService.stop();
+
     // Complete session (new feature) - only in exam mode
     if (this.quizMode === 'exam' && this.currentSession) {
       this.quizSessionService.completeQuizSession(this.currentSession.id, {
         answers: this.selectedAnswers,
-        time_remaining: this.remainingTime
+        time_remaining: this.remainingTime,
+        pomodoro_enabled: pomodoroStats.pomodoroEnabled,
+        pomodoro_sessions: pomodoroStats.pomodoroSessions,
+        pomodoro_focus_minutes: pomodoroStats.pomodoroFocusMinutes,
+        pomodoro_questions_answered: pomodoroStats.pomodoroQuestionsAnswered,
       }).subscribe({
         next: (completedSession) => {
           console.log('Quiz session completed:', completedSession);
           localStorage.setItem('completedSessionId', completedSession.id);
-          console.log('Navigating to result page...');
           this.router.navigate(['/result']);
         },
         error: (error) => {
           console.error('Error completing session:', error);
-          // Still navigate to result page even if session completion fails
-          console.log('Navigating to result page...');
           this.router.navigate(['/result']);
         }
       });
     } else {
-      // Original behavior if no session or in study mode
-      console.log('Navigating to result page...');
       this.router.navigate(['/result']);
     }
   }

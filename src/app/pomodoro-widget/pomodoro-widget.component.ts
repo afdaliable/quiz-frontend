@@ -24,12 +24,6 @@ export class PomodoroWidgetComponent implements OnInit, OnDestroy {
   isMinimized = false;
   showStopConfirm = false;
 
-  // Break modal state
-  showBreakModal = false;
-  breakIsLong = false;
-  breakModalCount = 0;
-  breakRunning = false;  // true once user clicked "Mulai Istirahat"
-
   // Setup modal (floating button)
   showSetupModal = false;
   selectedPreset: 'classic' | 'short' | 'long' | 'custom' = 'classic';
@@ -50,17 +44,6 @@ export class PomodoroWidgetComponent implements OnInit, OnDestroy {
       this.pomodoroService.pomodoroCount$.subscribe(c => { this.pomodoroCount = c; }),
       this.pomodoroService.settings$.subscribe(s => { this.settings = s; }),
 
-      this.pomodoroService.focusComplete$.subscribe(({ isLong, count }) => {
-        this.breakIsLong = isLong;
-        this.breakModalCount = count;
-        this.breakRunning = false;
-        this.showBreakModal = true;
-      }),
-
-      this.pomodoroService.breakComplete$.subscribe(() => {
-        this.showBreakModal = false;
-        this.breakRunning = false;
-      }),
     );
   }
 
@@ -142,17 +125,6 @@ export class PomodoroWidgetComponent implements OnInit, OnDestroy {
     this.pomodoroService.start();
   }
 
-  onStartBreak(): void {
-    this.breakRunning = true;
-    this.pomodoroService.startBreak();
-  }
-
-  onSkipBreak(): void {
-    this.showBreakModal = false;
-    this.breakRunning = false;
-    this.pomodoroService.startNextFocus();
-  }
-
   toggleMinimize(): void {
     this.isMinimized = !this.isMinimized;
   }
@@ -168,7 +140,6 @@ export class PomodoroWidgetComponent implements OnInit, OnDestroy {
   confirmStop(): void {
     this.pomodoroService.stop();
     this.showStopConfirm = false;
-    this.showBreakModal = false;
   }
 
   toggleSound(): void {

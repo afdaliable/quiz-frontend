@@ -1,43 +1,25 @@
-import { Injectable, OnDestroy } from '@angular/core';
+import { Injectable, NgZone, OnDestroy } from '@angular/core';
 import { BehaviorSubject, Subject } from 'rxjs';
+import {
+  PomodoroPhase,
+  PomodoroSettings,
+  PomodoroPhaseRecord,
+  PomodoroCompletionStats,
+  DEFAULT_POMODORO_SETTINGS,
+} from '../models/pomodoro.model';
 
-export type PomodoroPhase = 'idle' | 'focus' | 'short-break' | 'long-break';
-
-export interface PomodoroSettings {
-  enabled: boolean;
-  focusDuration: number;        // menit, default 25
-  shortBreakDuration: number;   // menit, default 5
-  longBreakDuration: number;    // menit, default 15
-  longBreakAfter: number;       // default 4
-  soundEnabled: boolean;
-  browserNotificationEnabled: boolean;
-  autoStartBreak: boolean;
-  autoStartNextPomodoro: boolean;
-}
-
-export interface PomodoroPhaseRecord {
-  pomodoroNum: number;   // 1-based
-  questionsAnswered: number;
-  durationSeconds: number;
-}
-
-export const DEFAULT_SETTINGS: PomodoroSettings = {
-  enabled: false,
-  focusDuration: 25,
-  shortBreakDuration: 5,
-  longBreakDuration: 15,
-  longBreakAfter: 4,
-  soundEnabled: true,
-  browserNotificationEnabled: true,
-  autoStartBreak: false,
-  autoStartNextPomodoro: false,
-};
+// Re-export types for backward compatibility with existing consumers
+export type { PomodoroPhase, PomodoroSettings, PomodoroPhaseRecord };
+export const DEFAULT_SETTINGS = DEFAULT_POMODORO_SETTINGS;
 
 const STORAGE_KEY = 'pomodoroSettings';
 const SESSION_STATS_KEY = 'pomodoroSessionStats';
 
 @Injectable({ providedIn: 'root' })
 export class PomodoroService implements OnDestroy {
+  constructor(private ngZone: NgZone) {}
+
+
   readonly phase$ = new BehaviorSubject<PomodoroPhase>('idle');
   readonly timeLeft$ = new BehaviorSubject<number>(0);
   readonly totalPhaseTime$ = new BehaviorSubject<number>(0);
@@ -155,21 +137,28 @@ export class PomodoroService implements OnDestroy {
     this.timeLeft$.next(seconds);
     this.totalPhaseTime$.next(seconds);
 
-    this.timerHandle = setInterval(() => {
-      // Drift-correct using wall clock
-      const elapsed = Math.floor((Date.now() - this.phaseStartTime) / 1000);
-      const remaining = Math.max(0, this.phaseStartSeconds - elapsed);
-      this.timeLeft$.next(remaining);
+    // Run timer outside Angular zone to avoid triggering change detection on every tick
+    this.ngZone.runOutsideAngular(() => {
+      this.timerHandle = setInterval(() => {
+        // Drift-correct using wall clock
+        const elapsed = Math.floor((Date.now() - this.phaseStartTime) / 1000);
+        const remaining = Math.max(0, this.phaseStartSeconds - elapsed);
 
-      // Warn at 5 min left during focus
-      if (this.phase$.value === 'focus' && remaining === 5 * 60) {
-        this.playSound('warning');
-      }
+        // Push back into zone only when state changes
+        this.ngZone.run(() => {
+          this.timeLeft$.next(remaining);
 
-      if (remaining === 0) {
-        this.onPhaseComplete();
-      }
-    }, 500); // poll every 500ms for responsiveness
+          // Warn at 5 min left during focus
+          if (this.phase$.value === 'focus' && remaining === 5 * 60) {
+            this.playSound('warning');
+          }
+
+          if (remaining === 0) {
+            this.onPhaseComplete();
+          }
+        });
+      }, 500); // poll every 500ms for responsiveness
+    });
   }
 
   private stopTimer(): void {
@@ -232,6 +221,23 @@ export class PomodoroService implements OnDestroy {
       return raw ? JSON.parse(raw) : [];
     } catch { return []; }
   }
+
+  /** Get aggregated completion stats to send to backend when finishing a quiz */
+  getCompletionStats(): PomodoroCompletionStats {
+    const records = this.phaseRecords;
+    const wasActive = records.length > 0 || this.pomodoroCount$.value > 0;
+    const totalFocusMinutes = records.reduce(
+      (sum, r) => sum + Math.floor(r.durationSeconds / 60), 0
+    );
+    const totalQuestions = records.reduce((sum, r) => sum + r.questionsAnswered, 0);
+    return {
+      pomodoroEnabled: wasActive,
+      pomodoroSessions: this.pomodoroCount$.value,
+      pomodoroFocusMinutes: totalFocusMinutes,
+      pomodoroQuestionsAnswered: totalQuestions,
+    };
+  }
+
 
   // ── Audio ─────────────────────────────────────────────────────────────────
 
