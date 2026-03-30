@@ -38,6 +38,8 @@ import { QuestionDiscussionComponent } from './question-discussion/question-disc
 import { AboutComponent } from './about/about.component';
 import { SubscriptionComponent } from './subscription/subscription.component';
 import { OnboardingComponent } from './onboarding/onboarding.component';
+import { QuestionRatingComponent } from './question-rating/question-rating.component';
+import { QuestionReportModalComponent } from './question-report-modal/question-report-modal.component';
 import { PomodoroWidgetComponent } from './pomodoro-widget/pomodoro-widget.component';
 import { PomodoroBreakModalComponent } from './pomodoro-break-modal/pomodoro-break-modal.component';
 import { EmptyStateComponent } from './shared/empty-state/empty-state.component';
@@ -70,6 +72,8 @@ import { PublicProfileComponent } from './public-profile/public-profile.componen
     AboutComponent,
     SubscriptionComponent,
     OnboardingComponent,
+    QuestionRatingComponent,
+    QuestionReportModalComponent,
     PomodoroWidgetComponent,
     PomodoroBreakModalComponent,
     ScoreChartComponent,
