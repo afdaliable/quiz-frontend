@@ -1,4 +1,4 @@
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, Input, OnChanges, OnInit, SimpleChanges } from '@angular/core';
 import {
   QuestionFeedbackService,
   RatingKind,
@@ -9,7 +9,7 @@ import {
   selector: 'app-question-rating',
   templateUrl: './question-rating.component.html',
 })
-export class QuestionRatingComponent implements OnInit {
+export class QuestionRatingComponent implements OnInit, OnChanges {
   @Input() questionId!: number;
   @Input() isDarkMode = false;
 
@@ -19,6 +19,17 @@ export class QuestionRatingComponent implements OnInit {
   constructor(private feedbackService: QuestionFeedbackService) {}
 
   ngOnInit(): void {
+    this.loadRating();
+  }
+
+  ngOnChanges(changes: SimpleChanges): void {
+    if (changes['questionId'] && !changes['questionId'].firstChange) {
+      this.summary = { helpful_count: 0, confusing_count: 0, user_rating: null };
+      this.loadRating();
+    }
+  }
+
+  private loadRating(): void {
     this.feedbackService.getRatings(this.questionId).subscribe(s => {
       if (s) this.summary = s;
     });
