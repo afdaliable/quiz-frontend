@@ -1,0 +1,7 @@
+/* Respect reduced-motion preference */
+@media (prefers-reduced-motion: reduce) {
+  :host * {
+    transition-duration: 0ms !important;
+    animation-duration: 0ms !important;
+  }
+}

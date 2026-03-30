@@ -32,6 +32,57 @@
       </div>
     </div>
 
+    <!-- Score Chart -->
+    <div class="rounded-xl p-4 mb-5"
+      [ngClass]="isDarkMode ? 'bg-gray-800' : 'bg-white border border-gray-100 shadow-sm'">
+
+      <!-- Chart header: summary + filter -->
+      <div class="flex flex-wrap items-center justify-between gap-3 mb-3">
+        <div class="flex items-center gap-4 text-sm flex-wrap">
+          <span [ngClass]="isDarkMode ? 'text-gray-300' : 'text-gray-700'" class="font-semibold">Perkembangan Skor</span>
+          <ng-container *ngIf="scoreHistory?.summary">
+            <span [ngClass]="isDarkMode ? 'text-gray-400' : 'text-gray-500'">
+              Avg: <strong [ngClass]="isDarkMode ? 'text-white' : 'text-gray-800'">{{ displayAverage | number:'1.1-1' }}</strong>
+            </span>
+            <span [ngClass]="isDarkMode ? 'text-gray-400' : 'text-gray-500'">
+              Terbaik: <strong [ngClass]="isDarkMode ? 'text-white' : 'text-gray-800'">{{ scoreHistory!.summary.highest }}</strong>
+            </span>
+            <span [ngClass]="trendClass" class="font-semibold text-xs">{{ trendLabel }}</span>
+          </ng-container>
+        </div>
+
+        <!-- Filters -->
+        <div class="flex items-center gap-1.5 flex-wrap">
+          <button *ngFor="let d of [7, 30, 90]"
+            (click)="onScoreFilterChange(d)"
+            class="px-2.5 py-1 rounded-lg text-xs font-semibold transition-colors"
+            [ngClass]="scoreFilter.days === d
+              ? 'bg-indigo-600 text-white'
+              : (isDarkMode ? 'bg-gray-700 text-gray-300 hover:bg-gray-600' : 'bg-gray-100 text-gray-600 hover:bg-gray-200')">
+            {{ d }} hari
+          </button>
+          <label class="flex items-center gap-1 text-xs cursor-pointer select-none ml-1"
+            [ngClass]="isDarkMode ? 'text-gray-400' : 'text-gray-500'">
+            <input type="checkbox" [(ngModel)]="showMovingAverage" (change)="loadScoreHistory()" class="w-3 h-3">
+            Avg 7
+          </label>
+        </div>
+      </div>
+
+      <!-- Loading shimmer -->
+      <div *ngIf="loadingChart" class="h-36 rounded-lg animate-pulse"
+        [ngClass]="isDarkMode ? 'bg-gray-700' : 'bg-gray-100'">
+      </div>
+
+      <!-- Chart -->
+      <div *ngIf="!loadingChart">
+        <app-score-chart
+          [dataPoints]="scoreHistory?.data_points || []"
+          [showMovingAverage]="showMovingAverage">
+        </app-score-chart>
+      </div>
+    </div>
+
     <!-- Search input -->
     <div *ngIf="!isLoading && history.length > 0" class="mb-4">
       <div class="relative">
@@ -61,32 +112,27 @@
       </div>
     </div>
 
-    <!-- Empty state -->
-    <div *ngIf="!isLoading && history.length === 0"
-      class="flex flex-col items-center justify-center py-20 text-center">
-      <div class="text-5xl mb-4">📚</div>
-      <h3 class="text-lg font-semibold mb-2"
-        [ngClass]="isDarkMode ? 'text-gray-200' : 'text-gray-800'">
-        Belum ada riwayat kuis
-      </h3>
-      <p class="text-sm mb-6 max-w-xs"
-        [ngClass]="isDarkMode ? 'text-gray-400' : 'text-gray-500'">
-        Kerjakan kuis pertamamu dan hasilnya akan muncul di sini.
-      </p>
-      <a routerLink="/home"
-        class="px-5 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold transition-colors">
-        Mulai Belajar
-      </a>
-    </div>
+    <!-- Empty state: belum ada riwayat -->
+    <app-empty-state
+      *ngIf="!isLoading && history.length === 0"
+      illustration="history"
+      title="Belum ada riwayat kuis"
+      body="Yuk mulai latihan pertamamu! Pilih paket soal dan lihat perkembanganmu dari sini."
+      ctaLabel="🚀 Mulai Latihan Pertama"
+      [isDarkMode]="isDarkMode"
+      (ctaClick)="goToHome()">
+    </app-empty-state>
 
-    <!-- No search results -->
-    <div *ngIf="!isLoading && history.length > 0 && filteredHistory.length === 0"
-      class="flex flex-col items-center justify-center py-12 text-center">
-      <div class="text-4xl mb-3">🔍</div>
-      <p class="text-sm" [ngClass]="isDarkMode ? 'text-gray-400' : 'text-gray-500'">
-        Tidak ada hasil untuk "<strong>{{ searchTerm }}</strong>"
-      </p>
-    </div>
+    <!-- Empty state: hasil pencarian kosong -->
+    <app-empty-state
+      *ngIf="!isLoading && history.length > 0 && filteredHistory.length === 0"
+      illustration="search"
+      title="Tidak ada hasil ditemukan"
+      [body]="getNoResultBody()"
+      ctaLabel="✕ Hapus Pencarian"
+      [isDarkMode]="isDarkMode"
+      (ctaClick)="clearSearch()">
+    </app-empty-state>
 
     <!-- History list -->
     <div *ngIf="!isLoading && filteredHistory.length > 0" class="space-y-3">

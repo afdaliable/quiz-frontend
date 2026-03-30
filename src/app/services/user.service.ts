@@ -53,13 +53,23 @@ export class UserService {
     localStorage.removeItem('user');
   }
 
-  updatePreferences(prefs: { theme: string }): void {
+  getUserPreferences(): Observable<any> {
     const url = environment.production ?
       `${this.baseApiUrl}/user/preferences` :
       '/api/user/preferences';
 
-    this.http.patch(url, prefs, { withCredentials: true }).pipe(
+    return this.http.get(url).pipe(
       catchError(() => of(null))
-    ).subscribe();
+    );
+  }
+
+  updatePreferences(prefs: any): Observable<any> {
+    const url = environment.production ?
+      `${this.baseApiUrl}/user/preferences` :
+      '/api/user/preferences';
+
+    return this.http.put(url, prefs).pipe(
+      catchError(() => of(null))
+    );
   }
 }

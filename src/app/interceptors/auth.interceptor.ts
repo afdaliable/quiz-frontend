@@ -44,14 +44,19 @@ export class AuthInterceptor implements HttpInterceptor {
       // Skip redirect if we're on the auth callback page (OAuth flow in progress)
       const isOnCallbackPage = typeof window !== 'undefined' &&
         window.location.pathname.includes('/auth/callback');
+      const isPublicEndpoint =
+        request.url.includes('/users/profile/') ||
+        request.url.includes('/users/username/check') ||
+        request.url.includes('/og/user/');
       if (request.url.includes(environment.apiUrl) &&
           !request.url.includes('/public') &&
+          !isPublicEndpoint &&
           !isOnCallbackPage) {
         console.log('No token found, redirecting to login');
         this.router.navigate(['/login']);
         return throwError(() => new Error('No authentication token found'));
       }
-      
+
       // For public endpoints, proceed without token
       return next.handle(request);
     }
