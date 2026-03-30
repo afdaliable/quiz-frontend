@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, HostListener } from '@angular/core';
 import { Router } from '@angular/router';
 import { UserService } from '../services/user.service';
 import { QuestionService } from '../services/question.service';
@@ -44,6 +44,12 @@ export class ReviewComponent implements OnInit, OnDestroy {
   isDarkMode: boolean = false;
   bookmarkedQuestions: Set<string> = new Set();
   bookmarkLoading: boolean = false;
+  isAnimating: boolean = false;
+  questionCardClass: string = '';
+
+  // Report modal state
+  showReportModal = false;
+  reportQuestionId: number | null = null;
 
   // Toast state
   toastMessage: string = '';
@@ -103,23 +109,45 @@ export class ReviewComponent implements OnInit, OnDestroy {
 
   goToQuestion(index: number): void {
     if (index >= 0 && index < this.questionList.length) {
-      this.currentQuestion = index;
-      this.showExplanation = true;
+      this.navigateWithAnimation(index, 'direct');
     }
   }
 
   prevQuestion(): void {
     if (this.currentQuestion > 0) {
-      this.currentQuestion--;
-      this.showExplanation = true;
+      this.navigateWithAnimation(this.currentQuestion - 1, 'backward');
     }
   }
 
   nextQuestion(): void {
     if (this.currentQuestion < this.questionList.length - 1) {
-      this.currentQuestion++;
-      this.showExplanation = true;
+      this.navigateWithAnimation(this.currentQuestion + 1, 'forward');
     }
+  }
+
+  private navigateWithAnimation(targetIndex: number, direction: 'forward' | 'backward' | 'direct'): void {
+    if (this.isAnimating) return;
+    this.isAnimating = true;
+
+    const leaveClass = direction === 'forward' ? 'question-leave-left'
+      : direction === 'backward' ? 'question-leave-right'
+      : 'question-fade-out';
+    const enterClass = direction === 'forward' ? 'question-enter-right'
+      : direction === 'backward' ? 'question-enter-left'
+      : 'question-fade-in';
+
+    this.questionCardClass = leaveClass;
+
+    setTimeout(() => {
+      this.currentQuestion = targetIndex;
+      this.showExplanation = true;
+      this.questionCardClass = enterClass;
+
+      setTimeout(() => {
+        this.questionCardClass = '';
+        this.isAnimating = false;
+      }, 220);
+    }, 200);
   }
 
   toggleExplanation(): void {
@@ -148,6 +176,27 @@ export class ReviewComponent implements OnInit, OnDestroy {
         this.bookmarkedQuestions = new Set(bookmarkIds);
       }
     );
+  }
+
+  @HostListener('document:keydown', ['$event'])
+  handleKeyboardEvent(event: KeyboardEvent): void {
+    const target = event.target as HTMLElement;
+    if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.tagName === 'SELECT') return;
+    if (target.tagName === 'BUTTON' || target.tagName === 'A') return;
+
+    switch (event.key) {
+      case 'n': case 'N':
+      case 'ArrowRight':
+        this.nextQuestion(); break;
+      case 'p': case 'P':
+      case 'ArrowLeft':
+        this.prevQuestion(); break;
+      case 'b': case 'B':
+        this.toggleCurrentBookmark(); break;
+      case 'e': case 'E':
+        event.preventDefault();
+        this.toggleExplanation(); break;
+    }
   }
 
   /** Toggle bookmark untuk soal yang sedang aktif (dipanggil dari navigation panel) */
@@ -186,6 +235,16 @@ export class ReviewComponent implements OnInit, OnDestroy {
   isQuestionBookmarked(index: number): boolean {
     if (!this.questionList[index]) return false;
     return this.bookmarkedQuestions.has(this.questionList[index].id.toString());
+  }
+
+  openReport(questionId: number): void {
+    this.reportQuestionId = questionId;
+    this.showReportModal = true;
+  }
+
+  closeReport(): void {
+    this.showReportModal = false;
+    this.reportQuestionId = null;
   }
 
   private showToast(message: string, success: boolean): void {

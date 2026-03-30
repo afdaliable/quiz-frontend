@@ -71,4 +71,5 @@ export class UserService {
     this.currentUser.next(null);
     localStorage.removeItem('user');
   }
+
 }

@@ -8,6 +8,7 @@ import { UserService } from '../services/user.service';
 import { ThemeService } from '../services/theme.service';
 import { PaketSoal } from '../models/paket-soal.model';
 import { QuizSessionService, QuizSession } from '../services/quiz-session.service';
+import { PomodoroService } from '../services/pomodoro.service';
 
 @Component({
   selector: 'app-question',
@@ -67,13 +68,19 @@ export class QuestionComponent implements OnInit, OnDestroy {
   showKeyboardHint: boolean = false;
   private keyboardHintTimer: any;
 
+  // Question slide animation
+  isAnimating: boolean = false;
+  questionCardClass: string = '';
+  private slideDirection: 'forward' | 'backward' | 'direct' = 'forward';
+
   constructor(
     private questionService: QuestionService,
     private route: ActivatedRoute,
     private router: Router,
     private userService: UserService,
     private themeService: ThemeService,
-    private quizSessionService: QuizSessionService
+    private quizSessionService: QuizSessionService,
+    public pomodoroService: PomodoroService
   ) {}
 
   ngOnInit(): void {
@@ -230,26 +237,57 @@ export class QuestionComponent implements OnInit, OnDestroy {
 
   @HostListener('document:keydown', ['$event'])
   handleKeyboardEvent(event: KeyboardEvent): void {
-    // Disable shortcuts when user is typing in an input
+    // Disable shortcuts when user is typing in an input/textarea/select
     const target = event.target as HTMLElement;
-    if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA') return;
+    if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.tagName === 'SELECT') return;
     // Disable if modal is open
     if (this.showEndModal) return;
 
     switch (event.key) {
+      // Answer selection (existing)
       case '1': case 'a': case 'A': this.answerByKey(0); break;
       case '2': case 'b': case 'B': this.answerByKey(1); break;
       case '3': case 'c': case 'C': this.answerByKey(2); break;
       case '4': case 'd': case 'D': this.answerByKey(3); break;
       case '5': case 'e': case 'E': this.answerByKey(4); break;
+
+      // Navigation (existing ArrowRight/Left + new N/P)
+      case 'n': case 'N':
       case 'ArrowRight':
         if (this.currentQuestion < this.questionList.length - 1) this.nextQuestion();
         break;
+      case 'p': case 'P':
       case 'ArrowLeft':
         if (this.currentQuestion > 0) this.prevQuestion();
         break;
+
+      // Mark question (existing T)
       case 't': case 'T': this.toggleMarkQuestion(); break;
+
+      // Confirm & advance — only if answer already selected and not focused on a button/link
+      case 'Enter':
+      case ' ':
+        if (target.tagName === 'BUTTON' || target.tagName === 'A') break;
+        if (this.selectedAnswers[this.currentQuestion] !== null &&
+            this.selectedAnswers[this.currentQuestion] !== undefined &&
+            this.currentQuestion < this.questionList.length - 1) {
+          event.preventDefault();
+          this.nextQuestion();
+        }
+        break;
+
+      // Clear current answer (exam mode only)
+      case 'Escape':
+        this.clearCurrentAnswer();
+        break;
     }
+  }
+
+  clearCurrentAnswer(): void {
+    if (this.quizMode !== 'exam') return;
+    this.selectedAnswers[this.currentQuestion] = null;
+    this.answeredQuestions[this.currentQuestion] = false;
+    this.saveUserAnswers();
   }
 
   ngOnDestroy(): void {
@@ -451,10 +489,9 @@ export class QuestionComponent implements OnInit, OnDestroy {
   }
 
   nextQuestion() {
+    if (this.isAnimating) return;
     if (this.currentQuestion < this.questionList.length - 1) {
-      this.currentQuestion++;
-      this.getProgressPercent();
-      this.resetAnswerCheck();
+      this.navigateWithAnimation(this.currentQuestion + 1, 'forward');
     } else if (this.quizMode === 'exam') {
       this.isQuizCompleted = true;
       this.stopTimer();
@@ -463,8 +500,44 @@ export class QuestionComponent implements OnInit, OnDestroy {
   }
 
   prevQuestion() {
-    this.currentQuestion--;
-    this.resetAnswerCheck();
+    if (this.isAnimating) return;
+    if (this.currentQuestion > 0) {
+      this.navigateWithAnimation(this.currentQuestion - 1, 'backward');
+    }
+  }
+
+  private navigateWithAnimation(targetIndex: number, direction: 'forward' | 'backward' | 'direct'): void {
+    if (this.isAnimating || targetIndex === this.currentQuestion) return;
+
+    this.isAnimating = true;
+    this.slideDirection = direction;
+
+    // Apply leave animation
+    this.questionCardClass = direction === 'forward'
+      ? 'question-leave-left'
+      : direction === 'backward'
+      ? 'question-leave-right'
+      : 'question-fade-out';
+
+    // After leave animation, switch content and enter
+    setTimeout(() => {
+      this.currentQuestion = targetIndex;
+      this.getProgressPercent();
+      this.resetAnswerCheck();
+
+      // Apply enter animation
+      this.questionCardClass = direction === 'forward'
+        ? 'question-enter-right'
+        : direction === 'backward'
+        ? 'question-enter-left'
+        : 'question-fade-in';
+
+      // Clear animation class after enter completes
+      setTimeout(() => {
+        this.questionCardClass = '';
+        this.isAnimating = false;
+      }, 220);
+    }, 200);
   }
 
   answerByKey(optionIndex: number): void {
@@ -475,6 +548,10 @@ export class QuestionComponent implements OnInit, OnDestroy {
   }
 
   answer(currentQno: number, option: number) {
+    // Only record first-time answers for Pomodoro
+    if (!this.answeredQuestions[currentQno]) {
+      this.pomodoroService.recordAnswer();
+    }
     this.selectedAnswers[currentQno] = option;
     this.answeredQuestions[currentQno] = true;
 
@@ -593,9 +670,8 @@ export class QuestionComponent implements OnInit, OnDestroy {
   }
 
   goToQuestion(index: number) {
-    this.currentQuestion = index;
-    this.getProgressPercent();
-    this.resetAnswerCheck();
+    if (index === this.currentQuestion) return;
+    this.navigateWithAnimation(index, 'direct');
   }
 
   startTimer() {
@@ -688,28 +764,31 @@ export class QuestionComponent implements OnInit, OnDestroy {
     );
     this.saveUserAnswers();
 
+    // Collect Pomodoro stats before stopping
+    const pomodoroStats = this.pomodoroService.getCompletionStats();
+    this.pomodoroService.stop();
+
     // Complete session (new feature) - only in exam mode
     if (this.quizMode === 'exam' && this.currentSession) {
       this.quizSessionService.completeQuizSession(this.currentSession.id, {
         answers: this.selectedAnswers,
-        time_remaining: this.remainingTime
+        time_remaining: this.remainingTime,
+        pomodoro_enabled: pomodoroStats.pomodoroEnabled,
+        pomodoro_sessions: pomodoroStats.pomodoroSessions,
+        pomodoro_focus_minutes: pomodoroStats.pomodoroFocusMinutes,
+        pomodoro_questions_answered: pomodoroStats.pomodoroQuestionsAnswered,
       }).subscribe({
         next: (completedSession) => {
           console.log('Quiz session completed:', completedSession);
           localStorage.setItem('completedSessionId', completedSession.id);
-          console.log('Navigating to result page...');
           this.router.navigate(['/result']);
         },
         error: (error) => {
           console.error('Error completing session:', error);
-          // Still navigate to result page even if session completion fails
-          console.log('Navigating to result page...');
           this.router.navigate(['/result']);
         }
       });
     } else {
-      // Original behavior if no session or in study mode
-      console.log('Navigating to result page...');
       this.router.navigate(['/result']);
     }
   }
