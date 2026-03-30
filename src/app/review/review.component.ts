@@ -45,6 +45,10 @@ export class ReviewComponent implements OnInit, OnDestroy {
   bookmarkedQuestions: Set<string> = new Set();
   bookmarkLoading: boolean = false;
 
+  // Report modal state
+  showReportModal = false;
+  reportQuestionId: number | null = null;
+
   // Toast state
   toastMessage: string = '';
   toastVisible: boolean = false;
@@ -186,6 +190,16 @@ export class ReviewComponent implements OnInit, OnDestroy {
   isQuestionBookmarked(index: number): boolean {
     if (!this.questionList[index]) return false;
     return this.bookmarkedQuestions.has(this.questionList[index].id.toString());
+  }
+
+  openReport(questionId: number): void {
+    this.reportQuestionId = questionId;
+    this.showReportModal = true;
+  }
+
+  closeReport(): void {
+    this.showReportModal = false;
+    this.reportQuestionId = null;
   }
 
   private showToast(message: string, success: boolean): void {

@@ -134,6 +134,22 @@
               </div>
             </div>
 
+            <!-- Rating & Laporan -->
+            <div class="flex items-center justify-between mt-4 pt-3 border-t"
+              [ngClass]="isDarkMode ? 'border-gray-700' : 'border-gray-100'">
+              <app-question-rating
+                [questionId]="questionList[currentQuestion].id"
+                [isDarkMode]="isDarkMode">
+              </app-question-rating>
+              <button (click)="openReport(questionList[currentQuestion].id)"
+                class="flex items-center gap-1.5 text-xs px-2.5 py-1.5 rounded-lg border transition-colors"
+                [ngClass]="isDarkMode
+                  ? 'border-gray-600 text-gray-400 hover:border-red-500 hover:text-red-400'
+                  : 'border-gray-200 text-gray-400 hover:border-red-400 hover:text-red-500'">
+                🚩 Laporkan
+              </button>
+            </div>
+
             <!-- Discussion section -->
             <app-question-discussion
               [questionId]="questionList[currentQuestion].id">
@@ -270,6 +286,14 @@
       </div>
     </div>
   </div>
+
+  <!-- Report Modal -->
+  <app-question-report-modal
+    *ngIf="showReportModal && reportQuestionId !== null"
+    [questionId]="reportQuestionId"
+    [isDarkMode]="isDarkMode"
+    (closed)="closeReport()">
+  </app-question-report-modal>
 
   <!-- Toast notification -->
   <div
