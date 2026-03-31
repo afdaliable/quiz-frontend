@@ -8,6 +8,7 @@ const app = express();
 app.use('/api', createProxyMiddleware({
   target: 'https://quiz-backend.afdaliable.dev',
   changeOrigin: true,
+  secure: false,
   pathRewrite: {
     '^/api': ''
   },
