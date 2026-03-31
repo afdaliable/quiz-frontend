@@ -42,8 +42,10 @@ export class AccountComponent implements OnInit, OnDestroy {
   stats: UserStats | null = null;
   errorMessage = '';
   isDarkMode = false;
+  isEasyReading = false;
   recentScores: ScoreDataPoint[] = [];
   private themeSubscription: Subscription | null = null;
+  private easyReadingSubscription: Subscription | null = null;
 
   xpSummary: XpSummary | null = null;
   xpLoading = true;
@@ -74,7 +76,7 @@ export class AccountComponent implements OnInit, OnDestroy {
     private authService: AuthService,
     private userService: UserService,
     private router: Router,
-    private themeService: ThemeService,
+    readonly themeService: ThemeService,
     private analyticsService: AnalyticsService,
     private publicProfileService: PublicProfileService,
   ) {}
@@ -82,6 +84,9 @@ export class AccountComponent implements OnInit, OnDestroy {
   ngOnInit() {
     this.themeSubscription = this.themeService.darkMode$.subscribe(
       isDark => this.isDarkMode = isDark
+    );
+    this.easyReadingSubscription = this.themeService.easyReading$.subscribe(
+      val => this.isEasyReading = val
     );
 
     const token = this.authService.getToken();
@@ -142,12 +147,15 @@ export class AccountComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy() {
-    if (this.themeSubscription) {
-      this.themeSubscription.unsubscribe();
-    }
+    this.themeSubscription?.unsubscribe();
+    this.easyReadingSubscription?.unsubscribe();
     if (this.usernameCheckSub) {
       this.usernameCheckSub.unsubscribe();
     }
+  }
+
+  toggleEasyReading(): void {
+    this.themeService.toggleEasyReading();
   }
 
   get accuracyPercent(): number {
