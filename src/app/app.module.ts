@@ -38,6 +38,14 @@ import { QuestionDiscussionComponent } from './question-discussion/question-disc
 import { AboutComponent } from './about/about.component';
 import { SubscriptionComponent } from './subscription/subscription.component';
 import { OnboardingComponent } from './onboarding/onboarding.component';
+import { QuestionRatingComponent } from './question-rating/question-rating.component';
+import { QuestionReportModalComponent } from './question-report-modal/question-report-modal.component';
+import { PomodoroWidgetComponent } from './pomodoro-widget/pomodoro-widget.component';
+import { PomodoroBreakModalComponent } from './pomodoro-break-modal/pomodoro-break-modal.component';
+import { EmptyStateComponent } from './shared/empty-state/empty-state.component';
+import { ScoreChartComponent } from './score-chart/score-chart.component';
+import { PublicProfileComponent } from './public-profile/public-profile.component';
+import { LevelUpModalComponent } from './level-up-modal/level-up-modal.component';
 
 @NgModule({
   declarations: [
@@ -65,6 +73,13 @@ import { OnboardingComponent } from './onboarding/onboarding.component';
     AboutComponent,
     SubscriptionComponent,
     OnboardingComponent,
+    QuestionRatingComponent,
+    QuestionReportModalComponent,
+    PomodoroWidgetComponent,
+    PomodoroBreakModalComponent,
+    ScoreChartComponent,
+    PublicProfileComponent,
+    LevelUpModalComponent,
   ],
   imports: [
     BrowserModule,
@@ -72,6 +87,7 @@ import { OnboardingComponent } from './onboarding/onboarding.component';
     PremiumPlansComponent,
     LicenseActivationComponent,
     PremiumAccessModalComponent,
+    EmptyStateComponent,
     AppRoutingModule,
     RouterModule.forRoot([]),
     FormsModule,

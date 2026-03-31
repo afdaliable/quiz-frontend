@@ -80,6 +80,23 @@
               Akun Saya
             </a>
 
+            <!-- Level badge -->
+            <div *ngIf="userLevelNum > 0"
+              class="flex items-center gap-2.5 px-4 py-2.5"
+              [ngClass]="isDarkMode ? 'text-gray-300' : 'text-gray-700'">
+              <span class="text-base leading-none">{{ userLevelIcon }}</span>
+              <div class="flex flex-col">
+                <span class="text-xs font-semibold"
+                  [ngClass]="isDarkMode ? 'text-indigo-400' : 'text-indigo-600'">
+                  Level {{ userLevelNum }} — {{ userLevelName }}
+                </span>
+                <span class="text-xs"
+                  [ngClass]="isDarkMode ? 'text-gray-500' : 'text-gray-400'">
+                  Tingkat XP Anda
+                </span>
+              </div>
+            </div>
+
             <a routerLink="/subscription" (click)="showUserMenu = false"
               class="flex items-center gap-2.5 px-4 py-2.5 text-sm transition-colors duration-150"
               [ngClass]="isDarkMode ? 'text-gray-300 hover:bg-gray-700' : 'text-gray-700 hover:bg-gray-50'">

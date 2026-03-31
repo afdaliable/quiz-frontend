@@ -2,6 +2,10 @@ import { Component, OnInit, ElementRef, ViewChild } from '@angular/core';
 import { Router } from '@angular/router';
 import { UserService } from '../services/user.service';
 import { ThemeService } from '../services/theme.service';
+import { XpBreakdown, XpAwardResult, LEVEL_CONFIGS, LevelInfo } from '../models/xp-system.model';
+import { PomodoroService, PomodoroPhaseRecord } from '../services/pomodoro.service';
+import { AnalyticsService } from '../services/analytics.service';
+import { ScoreDataPoint } from '../models/score-history.model';
 import html2canvas from 'html2canvas';
 
 interface PaketSoal {
@@ -35,11 +39,23 @@ export class ResultComponent implements OnInit {
   motivationMessage: string = '';
   wrongQuestions: number[] = [];
   celebrationActive: boolean = false;
+  paketScoreHistory: ScoreDataPoint[] = [];
+
+  // Pomodoro stats
+  pomodoroRecords: PomodoroPhaseRecord[] = [];
+
+  xpBreakdown: XpBreakdown | null = null;
+  xpResult: XpAwardResult | null = null;
+  showLevelUpModal: boolean = false;
+  levelUpOldLevel: LevelInfo | null = null;
+  levelUpNewLevel: LevelInfo | null = null;
+  animatedXpTotal: number = 0;
 
   constructor(
     private router: Router,
     private userService: UserService,
-    private themeService: ThemeService
+    private themeService: ThemeService,
+    private analyticsService: AnalyticsService
   ) {}
 
   ngOnInit(): void {
@@ -80,6 +96,81 @@ export class ResultComponent implements OnInit {
       this.celebrationActive = true;
       setTimeout(() => (this.celebrationActive = false), 5000);
     }
+
+    const xpBreakdownData = localStorage.getItem('xpBreakdown');
+    if (xpBreakdownData) {
+      this.xpBreakdown = JSON.parse(xpBreakdownData);
+    }
+
+    const xpResultData = localStorage.getItem('xpResult');
+    if (xpResultData) {
+      this.xpResult = JSON.parse(xpResultData);
+      this.animatedXpTotal = (this.xpResult?.total_xp ?? 0) - (this.xpResult?.xp_awarded ?? 0);
+
+      if (this.xpResult!.leveled_up) {
+        const oldLevelNum = this.xpResult!.new_level - 1;
+        this.levelUpOldLevel = LEVEL_CONFIGS.find(l => l.level === oldLevelNum) || null;
+        this.levelUpNewLevel = LEVEL_CONFIGS.find(l => l.level === this.xpResult!.new_level) || null;
+        setTimeout(() => { this.showLevelUpModal = true; }, 800);
+      }
+
+      this.startXpAnimation();
+    }
+
+    // Load Pomodoro session stats
+    this.pomodoroRecords = PomodoroService.loadSessionStats();
+
+    // Load mini chart per paket
+    const paketSoalId: number | null = this.selectedPaket?.id_nama_paket_soal ?? null;
+    if (paketSoalId) {
+      this.analyticsService.getScoreHistory({ package_id: paketSoalId }).subscribe({
+        next: (res) => this.paketScoreHistory = res.data_points,
+        error: () => {}
+      });
+    }
+  }
+
+  startXpAnimation(): void {
+    if (!this.xpResult) return;
+    const target = this.xpResult.total_xp;
+    const start = target - this.xpResult.xp_awarded;
+    const duration = 1500;
+    const startTime = performance.now();
+
+    const tick = (now: number) => {
+      const elapsed = now - startTime;
+      const progress = Math.min(elapsed / duration, 1);
+      const eased = 1 - Math.pow(1 - progress, 3);
+      this.animatedXpTotal = Math.round(start + (target - start) * eased);
+      if (progress < 1) requestAnimationFrame(tick);
+    };
+    requestAnimationFrame(tick);
+  }
+
+  onLevelUpModalClosed(): void {
+    this.showLevelUpModal = false;
+  }
+
+  get pomodoroBestRecord(): PomodoroPhaseRecord | null {
+    if (!this.pomodoroRecords.length) return null;
+    return this.pomodoroRecords.reduce((best, r) =>
+      r.questionsAnswered > best.questionsAnswered ? r : best
+    );
+  }
+
+  get pomodoroTotalFocusMinutes(): number {
+    return this.pomodoroRecords.reduce((sum, r) => sum + Math.floor(r.durationSeconds / 60), 0);
+  }
+
+  get pomodoroQuestionsPerMinute(): number {
+    if (!this.pomodoroTotalFocusMinutes) return 0;
+    const total = this.pomodoroRecords.reduce((sum, r) => sum + r.questionsAnswered, 0);
+    return Math.round((total / this.pomodoroTotalFocusMinutes) * 10) / 10;
+  }
+
+  pomodoroBarWidth(record: PomodoroPhaseRecord): number {
+    const max = this.pomodoroBestRecord?.questionsAnswered || 1;
+    return Math.round((record.questionsAnswered / max) * 100);
   }
 
   getMotivationMessage(): string {

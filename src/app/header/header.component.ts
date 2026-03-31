@@ -18,6 +18,9 @@ export class HeaderComponent implements OnInit, OnDestroy {
   showUserMenu: boolean = false;
   isPremium: boolean = false;
   bookmarkCount: number = 0;
+  userLevelIcon: string = '';
+  userLevelNum: number = 0;
+  userLevelName: string = '';
   private userSubscription: Subscription | null = null;
   private bookmarkSubscription: Subscription | null = null;
 
@@ -56,6 +59,17 @@ export class HeaderComponent implements OnInit, OnDestroy {
     this.bookmarkSubscription = this.bookMarkService.getBookmarkCount().subscribe(
       count => this.bookmarkCount = count
     );
+
+    if (this.isAuthenticated) {
+      this.userService.getUserXpSummary().subscribe({
+        next: (xp) => {
+          this.userLevelIcon = xp.level_icon;
+          this.userLevelNum = xp.current_level;
+          this.userLevelName = xp.level_name;
+        },
+        error: () => {}
+      });
+    }
   }
 
   ngOnDestroy(): void {
