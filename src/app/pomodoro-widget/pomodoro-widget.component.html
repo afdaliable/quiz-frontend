@@ -1,0 +1,183 @@
+<!-- ═══════════════════════════════════════════════════════════
+     FLOATING BUTTON — shown when Pomodoro is idle
+     ═══════════════════════════════════════════════════════════ -->
+<button *ngIf="!isActive"
+  (click)="openSetup()"
+  title="Aktifkan Mode Pomodoro"
+  class="fixed bottom-24 right-4 z-40 w-12 h-12 rounded-full shadow-lg flex items-center justify-center text-xl transition-all duration-200 hover:scale-110 active:scale-95"
+  [ngClass]="isDarkMode ? 'bg-gray-800 hover:bg-gray-700' : 'bg-white hover:bg-gray-50'">
+  🍅
+</button>
+
+<!-- ═══════════════════════════════════════════════════════════
+     SETUP MODAL — choose preset, confirm start
+     ═══════════════════════════════════════════════════════════ -->
+<div *ngIf="showSetupModal"
+  class="fixed inset-0 z-50 flex items-center justify-center px-4"
+  (click)="closeSetup()">
+  <div class="absolute inset-0 bg-black/50"></div>
+  <div class="relative w-full max-w-sm rounded-2xl shadow-2xl p-6 z-10"
+    [ngClass]="isDarkMode ? 'bg-gray-800' : 'bg-white'"
+    (click)="$event.stopPropagation()">
+
+    <div class="text-center mb-5">
+      <div class="text-4xl mb-2">🍅</div>
+      <h2 class="text-lg font-bold" [ngClass]="isDarkMode ? 'text-white' : 'text-gray-900'">
+        Mode Pomodoro
+      </h2>
+      <p class="text-sm mt-1" [ngClass]="isDarkMode ? 'text-gray-400' : 'text-gray-500'">
+        Belajar fokus, istirahat teratur
+      </p>
+    </div>
+
+    <!-- Exam mode warning -->
+    <div *ngIf="quizMode === 'exam'"
+      class="mb-4 p-3 rounded-xl text-xs border"
+      [ngClass]="isDarkMode ? 'bg-amber-900/20 border-amber-700/40 text-amber-300' : 'bg-amber-50 border-amber-200 text-amber-700'">
+      ⚠️ Mode Ujian aktif. Dua timer akan berjalan secara bersamaan — timer kuis tidak berhenti saat istirahat Pomodoro.
+    </div>
+
+    <!-- Preset buttons -->
+    <div class="grid grid-cols-2 gap-2 mb-4">
+      <button *ngFor="let p of presets"
+        (click)="applyPreset(p.k)"
+        class="p-2.5 rounded-xl border-2 text-left transition-all duration-150 cursor-pointer"
+        [ngClass]="selectedPreset === p.k
+          ? (isDarkMode ? 'border-red-500 bg-red-900/20' : 'border-red-500 bg-red-50')
+          : (isDarkMode ? 'border-gray-600 bg-gray-700/50 hover:border-gray-500' : 'border-gray-200 bg-gray-50 hover:border-gray-300')">
+        <p class="text-xs font-semibold" [ngClass]="isDarkMode ? 'text-white' : 'text-gray-800'">{{ p.l }}</p>
+        <p class="text-xs" [ngClass]="isDarkMode ? 'text-gray-400' : 'text-gray-500'">{{ p.desc }}</p>
+      </button>
+    </div>
+
+    <!-- Custom inputs -->
+    <div *ngIf="selectedPreset === 'custom'" class="flex gap-3 mb-4">
+      <div class="flex-1">
+        <label class="text-xs font-medium block mb-1" [ngClass]="isDarkMode ? 'text-gray-400' : 'text-gray-600'">
+          Fokus (menit)
+        </label>
+        <input type="number" [(ngModel)]="customFocus" min="1" max="120"
+          class="w-full rounded-lg px-3 py-2 text-sm border focus:outline-none focus:ring-2 focus:ring-red-400"
+          [ngClass]="isDarkMode ? 'bg-gray-700 border-gray-600 text-white' : 'bg-gray-50 border-gray-300 text-gray-900'">
+      </div>
+      <div class="flex-1">
+        <label class="text-xs font-medium block mb-1" [ngClass]="isDarkMode ? 'text-gray-400' : 'text-gray-600'">
+          Istirahat (menit)
+        </label>
+        <input type="number" [(ngModel)]="customBreak" min="1" max="60"
+          class="w-full rounded-lg px-3 py-2 text-sm border focus:outline-none focus:ring-2 focus:ring-red-400"
+          [ngClass]="isDarkMode ? 'bg-gray-700 border-gray-600 text-white' : 'bg-gray-50 border-gray-300 text-gray-900'">
+      </div>
+    </div>
+
+    <div class="flex gap-3">
+      <button (click)="closeSetup()"
+        class="flex-1 py-2.5 rounded-xl text-sm font-semibold transition-colors"
+        [ngClass]="isDarkMode ? 'bg-gray-700 text-gray-300 hover:bg-gray-600' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'">
+        Batal
+      </button>
+      <button (click)="confirmStartPomodoro()"
+        class="flex-1 py-2.5 rounded-xl text-sm font-bold text-white bg-red-500 hover:bg-red-600 transition-colors">
+        Mulai 🍅
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════
+     ACTIVE PANEL — fixed top-right, minimize support
+     ═══════════════════════════════════════════════════════════ -->
+<div *ngIf="isActive"
+  class="fixed top-[72px] right-4 z-30">
+
+  <!-- Minimized bar -->
+  <div *ngIf="isMinimized"
+    (click)="toggleMinimize()"
+    class="flex items-center gap-2 px-3 py-2 rounded-xl shadow-lg cursor-pointer text-sm font-semibold transition-all duration-200"
+    [ngClass]="isDarkMode ? 'bg-gray-800 text-white hover:bg-gray-700' : 'bg-white text-gray-800 hover:bg-gray-50'">
+    <span>{{ phaseIcon }}</span>
+    <span *ngIf="phase !== 'idle'">#{{ currentPomodoroNum }} · {{ formatTime(timeLeft) }}</span>
+    <span *ngIf="phase === 'idle'" class="text-gray-400">—</span>
+  </div>
+
+  <!-- Expanded panel -->
+  <div *ngIf="!isMinimized"
+    class="w-56 rounded-2xl shadow-2xl border overflow-hidden"
+    [ngClass]="isDarkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'">
+
+    <!-- Header row -->
+    <div class="flex items-center justify-between px-3 py-2 border-b"
+      [ngClass]="isDarkMode ? 'border-gray-700' : 'border-gray-100'">
+      <span class="text-xs font-bold"
+        [ngClass]="phase === 'focus'
+          ? 'text-red-500'
+          : (isDarkMode ? 'text-teal-400' : 'text-teal-600')">
+        {{ phaseIcon }} Pomodoro #{{ currentPomodoroNum }}
+      </span>
+      <div class="flex items-center gap-1">
+        <button (click)="toggleSound()" class="text-xs p-1 rounded opacity-60 hover:opacity-100"
+          [ngClass]="isDarkMode ? 'text-gray-300' : 'text-gray-500'"
+          [title]="settings.soundEnabled ? 'Matikan suara' : 'Hidupkan suara'">
+          {{ settings.soundEnabled ? '🔔' : '🔕' }}
+        </button>
+        <button (click)="toggleMinimize()" class="text-xs px-1.5 py-1 rounded opacity-60 hover:opacity-100"
+          [ngClass]="isDarkMode ? 'text-gray-300 hover:bg-gray-700' : 'text-gray-500 hover:bg-gray-100'"
+          title="Minimize">
+          _
+        </button>
+        <button (click)="requestStop()" class="text-xs px-1.5 py-1 rounded opacity-60 hover:opacity-100"
+          [ngClass]="isDarkMode ? 'text-gray-300 hover:bg-gray-700' : 'text-gray-500 hover:bg-gray-100'"
+          title="Hentikan Pomodoro">
+          ×
+        </button>
+      </div>
+    </div>
+
+    <!-- Timer display -->
+    <div class="px-3 py-3">
+      <div class="text-3xl font-mono font-bold text-center mb-2"
+        [ngClass]="phase === 'focus'
+          ? (timeLeft <= 60 ? 'text-red-500' : timeLeft <= 5*60 ? 'text-orange-500' : (isDarkMode ? 'text-white' : 'text-gray-900'))
+          : (isDarkMode ? 'text-teal-400' : 'text-teal-600')">
+        {{ formatTime(timeLeft) }}
+      </div>
+
+      <!-- Progress bar -->
+      <div class="h-1.5 rounded-full overflow-hidden mb-2"
+        [ngClass]="isDarkMode ? 'bg-gray-700' : 'bg-gray-100'">
+        <div class="h-full rounded-full transition-all duration-500 ease-linear"
+          [style.width.%]="progressPercent"
+          [ngClass]="phase === 'focus'
+            ? (timeLeft <= 5*60 ? 'bg-red-500' : 'bg-orange-400')
+            : 'bg-teal-500'">
+        </div>
+      </div>
+
+      <p class="text-xs text-center" [ngClass]="isDarkMode ? 'text-gray-400' : 'text-gray-500'">
+        {{ phaseLabel }}
+      </p>
+    </div>
+
+    <!-- Stop confirm inline -->
+    <div *ngIf="showStopConfirm"
+      class="px-3 pb-3 border-t"
+      [ngClass]="isDarkMode ? 'border-gray-700' : 'border-gray-100'">
+      <p class="text-xs text-center my-2" [ngClass]="isDarkMode ? 'text-gray-300' : 'text-gray-600'">
+        Hentikan Pomodoro?
+      </p>
+      <div class="flex gap-2">
+        <button (click)="cancelStop()"
+          class="flex-1 py-1.5 text-xs rounded-lg font-medium"
+          [ngClass]="isDarkMode ? 'bg-gray-700 text-gray-300' : 'bg-gray-100 text-gray-600'">
+          Tidak
+        </button>
+        <button (click)="confirmStop()"
+          class="flex-1 py-1.5 text-xs rounded-lg font-medium bg-red-500 text-white hover:bg-red-600">
+          Hentikan
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Break modal extracted to <app-pomodoro-break-modal> in question.component.html -->

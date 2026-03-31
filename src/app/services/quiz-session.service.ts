@@ -76,6 +76,11 @@ export interface UpdateQuizSessionRequest {
 export interface CompleteQuizSessionRequest {
   answers: (number | null)[];
   time_remaining: number;
+  // Pomodoro stats (optional)
+  pomodoro_enabled?: boolean;
+  pomodoro_sessions?: number;
+  pomodoro_focus_minutes?: number;
+  pomodoro_questions_answered?: number;
 }
 
 export interface CheckExistingSessionResponse {
