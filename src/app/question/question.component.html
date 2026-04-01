@@ -140,6 +140,8 @@
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" />
             </svg>
             <span class="hidden sm:inline">{{ markedQuestions[currentQuestion] ? '⭐ Ditandai' : 'Tandai' }}</span>
+            <kbd class="hidden md:inline font-mono text-[10px] px-1 py-0.5 rounded border opacity-60"
+              [ngClass]="markedQuestions[currentQuestion] ? 'border-white/30 bg-white/10' : (isDarkMode ? 'border-gray-600 bg-gray-700' : 'border-gray-300 bg-gray-100')">T</kbd>
           </button>
 
           <button (click)="confirmEndQuiz()"
@@ -332,6 +334,8 @@
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
               </svg>
               Sebelumnya
+              <kbd class="hidden md:inline font-mono text-[10px] px-1 py-0.5 rounded border opacity-60"
+                [ngClass]="isDarkMode ? 'border-gray-500 bg-gray-600' : 'border-gray-300 bg-gray-50'">P</kbd>
             </button>
 
             <button (click)="nextQuestion()" [disabled]="currentQuestion === questionList.length - 1"
@@ -340,6 +344,7 @@
               [ngClass]="currentQuestion === questionList.length - 1
                 ? 'opacity-30 cursor-not-allowed pointer-events-none ' + (isDarkMode ? 'bg-gray-700 text-gray-500' : 'bg-gray-200 text-gray-400')
                 : 'bg-indigo-600 text-white hover:bg-indigo-700'">
+              <kbd class="hidden md:inline font-mono text-[10px] px-1 py-0.5 rounded border opacity-60 border-indigo-400 bg-indigo-500">N</kbd>
               {{ quizMode === 'exam' ? 'Selanjutnya' : 'Soal Berikutnya' }}
               <svg class="w-4 h-4" aria-hidden="true" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />

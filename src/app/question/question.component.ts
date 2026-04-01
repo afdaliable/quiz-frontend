@@ -230,26 +230,57 @@ export class QuestionComponent implements OnInit, OnDestroy {
 
   @HostListener('document:keydown', ['$event'])
   handleKeyboardEvent(event: KeyboardEvent): void {
-    // Disable shortcuts when user is typing in an input
+    // Disable shortcuts when user is typing in an input/textarea/select
     const target = event.target as HTMLElement;
-    if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA') return;
+    if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.tagName === 'SELECT') return;
     // Disable if modal is open
     if (this.showEndModal) return;
 
     switch (event.key) {
+      // Answer selection (existing)
       case '1': case 'a': case 'A': this.answerByKey(0); break;
       case '2': case 'b': case 'B': this.answerByKey(1); break;
       case '3': case 'c': case 'C': this.answerByKey(2); break;
       case '4': case 'd': case 'D': this.answerByKey(3); break;
       case '5': case 'e': case 'E': this.answerByKey(4); break;
+
+      // Navigation (existing ArrowRight/Left + new N/P)
+      case 'n': case 'N':
       case 'ArrowRight':
         if (this.currentQuestion < this.questionList.length - 1) this.nextQuestion();
         break;
+      case 'p': case 'P':
       case 'ArrowLeft':
         if (this.currentQuestion > 0) this.prevQuestion();
         break;
+
+      // Mark question (existing T)
       case 't': case 'T': this.toggleMarkQuestion(); break;
+
+      // Confirm & advance — only if answer already selected and not focused on a button/link
+      case 'Enter':
+      case ' ':
+        if (target.tagName === 'BUTTON' || target.tagName === 'A') break;
+        if (this.selectedAnswers[this.currentQuestion] !== null &&
+            this.selectedAnswers[this.currentQuestion] !== undefined &&
+            this.currentQuestion < this.questionList.length - 1) {
+          event.preventDefault();
+          this.nextQuestion();
+        }
+        break;
+
+      // Clear current answer (exam mode only)
+      case 'Escape':
+        this.clearCurrentAnswer();
+        break;
     }
+  }
+
+  clearCurrentAnswer(): void {
+    if (this.quizMode !== 'exam') return;
+    this.selectedAnswers[this.currentQuestion] = null;
+    this.answeredQuestions[this.currentQuestion] = false;
+    this.saveUserAnswers();
   }
 
   ngOnDestroy(): void {
