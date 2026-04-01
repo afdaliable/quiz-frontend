@@ -12,7 +12,55 @@ const backendAgent = new https.Agent({
   keepAlive: false,
 });
 
-// Proxy middleware configuration
+// Dedicated handler for OAuth callback — fully buffers the response so
+// the JWT body (slow, large) isn't lost to streaming race conditions.
+app.post('/api/auth/google/callback', (req, res) => {
+  const chunks = [];
+  req.on('data', chunk => chunks.push(chunk));
+  req.on('end', () => {
+    const requestBody = Buffer.concat(chunks);
+
+    const forwardHeaders = {
+      'content-type': 'application/json',
+      'accept': 'application/json',
+      'content-length': requestBody.length,
+    };
+    if (req.headers['authorization']) {
+      forwardHeaders['authorization'] = req.headers['authorization'];
+    }
+
+    const backendReq = https.request({
+      hostname: 'quiz-backend.afdaliable.dev',
+      path: '/auth/google/callback',
+      method: 'POST',
+      headers: forwardHeaders,
+      rejectUnauthorized: false,
+    }, (backendRes) => {
+      const responseChunks = [];
+      backendRes.on('data', chunk => responseChunks.push(chunk));
+      backendRes.on('end', () => {
+        const body = Buffer.concat(responseChunks).toString('utf8');
+        console.log('[OAuth] status:', backendRes.statusCode, 'body length:', body.length);
+        res.status(backendRes.statusCode)
+           .set('Content-Type', 'application/json')
+           .set('Access-Control-Allow-Origin', '*')
+           .send(body);
+      });
+    });
+
+    backendReq.on('error', (err) => {
+      console.error('[OAuth error]', err.message);
+      if (!res.headersSent) {
+        res.status(502).json({ error: 'Backend unreachable', detail: err.message });
+      }
+    });
+
+    backendReq.write(requestBody);
+    backendReq.end();
+  });
+});
+
+// General proxy middleware configuration
 app.use('/api', createProxyMiddleware({
   target: 'https://quiz-backend.afdaliable.dev',
   changeOrigin: true,
