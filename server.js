@@ -1,26 +1,34 @@
 const express = require('express');
 const path = require('path');
+const https = require('https');
 const { createProxyMiddleware } = require('http-proxy-middleware');
 
 const app = express();
+
+// Dedicated HTTPS agent — keepAlive: false prevents ECONNRESET when
+// the backend closes an idle connection before the body is fully sent.
+const backendAgent = new https.Agent({
+  rejectUnauthorized: false,
+  keepAlive: false,
+});
 
 // Proxy middleware configuration
 app.use('/api', createProxyMiddleware({
   target: 'https://quiz-backend.afdaliable.dev',
   changeOrigin: true,
   secure: false,
+  agent: backendAgent,
   pathRewrite: {
     '^/api': ''
   },
   onProxyRes: function (proxyRes, req, res) {
     proxyRes.headers['Access-Control-Allow-Origin'] = '*';
-    if (req.url.includes('/auth/google/callback')) {
-      console.log('[OAuth] backend status:', proxyRes.statusCode, req.method, req.url);
-    }
   },
   onError: function (err, req, res) {
     console.error('[Proxy error]', req.method, req.url, err.message);
-    res.status(500).json({ error: 'Proxy error', detail: err.message });
+    if (!res.headersSent) {
+      res.status(502).json({ error: 'Backend unreachable', detail: err.message });
+    }
   }
 }));
 
