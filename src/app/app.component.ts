@@ -116,8 +116,10 @@ export class AppComponent implements OnInit, OnDestroy {
 
     // Listen for session invalidation events
     const sessionInvalidSub = this.authService.sessionInvalid$.subscribe(isInvalid => {
-      if (isInvalid) {
+      if (isInvalid && this.currentUrl !== '/login') {
         this.showSessionInvalidModal = true;
+      } else if (!isInvalid) {
+        this.showSessionInvalidModal = false;
       }
     });
     this.subscriptions.push(sessionInvalidSub);
@@ -135,6 +137,7 @@ export class AppComponent implements OnInit, OnDestroy {
   }
 
   closeSessionInvalidModal(): void {
+    this.authService.resetSessionInvalid();
     this.showSessionInvalidModal = false;
     this.router.navigate(['/login']);
   }
