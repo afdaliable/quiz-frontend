@@ -14,6 +14,13 @@ app.use('/api', createProxyMiddleware({
   },
   onProxyRes: function (proxyRes, req, res) {
     proxyRes.headers['Access-Control-Allow-Origin'] = '*';
+    if (req.url.includes('/auth/google/callback')) {
+      console.log('[OAuth] backend status:', proxyRes.statusCode, req.method, req.url);
+    }
+  },
+  onError: function (err, req, res) {
+    console.error('[Proxy error]', req.method, req.url, err.message);
+    res.status(500).json({ error: 'Proxy error', detail: err.message });
   }
 }));
 
