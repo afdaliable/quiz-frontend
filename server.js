@@ -1,14 +1,12 @@
 const express = require('express');
 const path = require('path');
-const https = require('https');
+const http = require('http');
 const { createProxyMiddleware } = require('http-proxy-middleware');
 
 const app = express();
 
-// Dedicated HTTPS agent — keepAlive: false prevents ECONNRESET when
-// the backend closes an idle connection before the body is fully sent.
-const backendAgent = new https.Agent({
-  rejectUnauthorized: false,
+// HTTP agent for local backend connection (no TLS needed for localhost)
+const backendAgent = new http.Agent({
   keepAlive: false,
 });
 
@@ -25,12 +23,12 @@ function callOAuthBackend(requestBody, attempt, req, res) {
     forwardHeaders['authorization'] = req.headers['authorization'];
   }
 
-  const backendReq = https.request({
-    hostname: 'quiz-backend.afdaliable.dev',
+  const backendReq = http.request({
+    hostname: 'localhost',
+    port: 8787,
     path: '/auth/google/callback',
     method: 'POST',
     headers: forwardHeaders,
-    rejectUnauthorized: false,
     timeout: 30000,
   }, (backendRes) => {
     const responseChunks = [];
@@ -78,7 +76,7 @@ app.post('/api/auth/google/callback', (req, res) => {
 
 // General proxy middleware configuration
 app.use('/api', createProxyMiddleware({
-  target: 'https://quiz-backend.afdaliable.dev',
+  target: 'http://localhost:8787',
   changeOrigin: true,
   secure: false,
   agent: backendAgent,
