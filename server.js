@@ -24,7 +24,7 @@ function callOAuthBackend(requestBody, attempt, req, res) {
   }
 
   const backendReq = http.request({
-    hostname: 'localhost',
+    hostname: '192.168.1.28',
     port: 8787,
     path: '/auth/google/callback',
     method: 'POST',
@@ -76,7 +76,7 @@ app.post('/api/auth/google/callback', (req, res) => {
 
 // General proxy middleware configuration
 app.use('/api', createProxyMiddleware({
-  target: 'http://localhost:8787',
+  target: 'http://192.168.1.28:8787',
   changeOrigin: true,
   secure: false,
   agent: backendAgent,
