@@ -87,7 +87,7 @@ export class PublicProfileComponent implements OnInit {
   }
 
   getProfileUrl(): string {
-    return `https://kuis.canducation.com/u/${this.username}`;
+    return `https://app.nagih.id/u/${this.username}`;
   }
 
   getWhatsAppUrl(): string {

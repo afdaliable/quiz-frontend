@@ -4,7 +4,7 @@ export const environment = {
   apiUrl: '/api',
   withCredentials: true,
   corsConfig: {
-    allowedOrigins: ['https://kuis.canducation.com'],
+    allowedOrigins: ['https://app.nagih.id'],
     allowedMethods: ['GET', 'POST', 'OPTIONS'],
     allowedHeaders: ['*'],
     exposedHeaders: ['Authorization'],
