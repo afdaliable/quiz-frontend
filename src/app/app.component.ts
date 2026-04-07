@@ -102,6 +102,7 @@ export class AppComponent implements OnInit, OnDestroy {
           currentPath.includes('/auth/callback') ||
           currentPath.startsWith('/u/') ||
           currentPath === '/about' ||
+          currentPath === '/about/' ||
           currentPath === '/invalid-session' ||
           currentPath.startsWith('/aktivasi-berlangganan');
         

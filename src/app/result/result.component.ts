@@ -218,7 +218,7 @@ export class ResultComponent implements OnInit {
         try {
           await navigator.share({
             files: [new File([blob], 'hasil-kuis.png', { type: 'image/png' })],
-            title: 'Hasil Kuis Canducation'
+            title: 'Hasil Kuis Nagih'
           });
         } catch (shareError) {
           // Fallback to download if share is not supported or cancelled
