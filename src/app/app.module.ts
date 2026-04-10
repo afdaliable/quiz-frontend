@@ -38,6 +38,7 @@ import { QuestionDiscussionComponent } from './question-discussion/question-disc
 import { AboutComponent } from './about/about.component';
 import { SubscriptionComponent } from './subscription/subscription.component';
 import { OnboardingComponent } from './onboarding/onboarding.component';
+import { SearchComponent } from './search/search.component';
 import { QuestionRatingComponent } from './question-rating/question-rating.component';
 import { QuestionReportModalComponent } from './question-report-modal/question-report-modal.component';
 import { PomodoroWidgetComponent } from './pomodoro-widget/pomodoro-widget.component';
@@ -73,6 +74,7 @@ import { LevelUpModalComponent } from './level-up-modal/level-up-modal.component
     AboutComponent,
     SubscriptionComponent,
     OnboardingComponent,
+    SearchComponent,
     QuestionRatingComponent,
     QuestionReportModalComponent,
     PomodoroWidgetComponent,

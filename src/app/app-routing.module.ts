@@ -22,6 +22,7 @@ import { AboutComponent } from './about/about.component';
 import { SubscriptionComponent } from './subscription/subscription.component';
 import { OnboardingComponent } from './onboarding/onboarding.component';
 import { OnboardingGuard } from './auth/onboarding.guard';
+import { SearchComponent } from './search/search.component';
 import { PublicProfileComponent } from './public-profile/public-profile.component';
 
 const routes: Routes = [
@@ -112,6 +113,10 @@ const routes: Routes = [
   {
     path: 'aktivasi-berlangganan',
     component: LicenseActivationComponent
+  },
+  {
+    path: 'search',
+    component: SearchComponent,
   },
   {
     path: 'about',
