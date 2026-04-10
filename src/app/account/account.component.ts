@@ -3,12 +3,18 @@ import { Router } from '@angular/router';
 import { AuthService } from '../services/auth.service';
 import { UserService } from '../services/user.service';
 import { ThemeService } from '../services/theme.service';
-import { forkJoin, Subscription } from 'rxjs';
+import { XpSummary } from '../models/xp-system.model';
+import { AnalyticsService } from '../services/analytics.service';
+import { ScoreDataPoint } from '../models/score-history.model';
+import { PublicProfileService, UsernameCheckResponse } from '../services/public-profile.service';
+import { forkJoin, Subject, Subscription } from 'rxjs';
+import { debounceTime, distinctUntilChanged, switchMap } from 'rxjs/operators';
 
 interface UserProfile {
   id: string;
   email: string;
   display_name: string;
+  username?: string;
   picture_url: string | null;
   joined_at: string;
   account_status: 'Free' | 'Premium';
@@ -22,6 +28,8 @@ interface UserStats {
   learning_streak_days: number;
   total_correct: number;
   total_questions: number;
+  total_pomodoro_sessions: number;
+  total_pomodoro_minutes: number;
 }
 
 @Component({
@@ -34,18 +42,51 @@ export class AccountComponent implements OnInit, OnDestroy {
   stats: UserStats | null = null;
   errorMessage = '';
   isDarkMode = false;
+  isEasyReading = false;
+  recentScores: ScoreDataPoint[] = [];
   private themeSubscription: Subscription | null = null;
+  private easyReadingSubscription: Subscription | null = null;
+
+  xpSummary: XpSummary | null = null;
+  xpLoading = true;
+
+  // Username editor
+  editingUsername = false;
+  newUsername = '';
+  usernameStatus: 'idle' | 'checking' | 'available' | 'taken' | 'invalid' = 'idle';
+  usernameError = '';
+  savingUsername = false;
+  private usernameInput$ = new Subject<string>();
+  private usernameCheckSub: Subscription | null = null;
+
+  // Privacy settings
+  profilePublic = true;
+  privacy: Record<string, boolean> = {
+    show_stats: true,
+    show_badges: true,
+    show_best_scores: true,
+  };
+  privacyOptions = [
+    { key: 'show_stats',       label: 'Tampilkan statistik belajar' },
+    { key: 'show_badges',      label: 'Tampilkan badge & pencapaian' },
+    { key: 'show_best_scores', label: 'Tampilkan skor terbaik per kategori' },
+  ];
 
   constructor(
     private authService: AuthService,
     private userService: UserService,
     private router: Router,
-    private themeService: ThemeService
+    readonly themeService: ThemeService,
+    private analyticsService: AnalyticsService,
+    private publicProfileService: PublicProfileService,
   ) {}
 
   ngOnInit() {
     this.themeSubscription = this.themeService.darkMode$.subscribe(
       isDark => this.isDarkMode = isDark
+    );
+    this.easyReadingSubscription = this.themeService.easyReading$.subscribe(
+      val => this.isEasyReading = val
     );
 
     const token = this.authService.getToken();
@@ -53,6 +94,12 @@ export class AccountComponent implements OnInit, OnDestroy {
       this.router.navigate(['/login']);
       return;
     }
+
+    // Load sparkline — silent fail if no data yet
+    this.analyticsService.getScoreHistory({ days: 7 }).subscribe({
+      next: (res) => this.recentScores = res.data_points,
+      error: () => {}
+    });
 
     this.loading = true;
     forkJoin({
@@ -77,12 +124,38 @@ export class AccountComponent implements OnInit, OnDestroy {
         this.loading = false;
       }
     });
+
+    this.userService.getUserXpSummary().subscribe({
+      next: (xp) => {
+        this.xpSummary = xp;
+        this.xpLoading = false;
+      },
+      error: () => {
+        this.xpLoading = false;
+      }
+    });
+
+    // Username availability check with debounce
+    this.usernameCheckSub = this.usernameInput$.pipe(
+      debounceTime(400),
+      distinctUntilChanged(),
+      switchMap(val => this.publicProfileService.checkUsername(val))
+    ).subscribe((res: UsernameCheckResponse) => {
+      this.usernameStatus = res.available ? 'available' : 'taken';
+      this.usernameError = res.available ? '' : res.message;
+    });
   }
 
   ngOnDestroy() {
-    if (this.themeSubscription) {
-      this.themeSubscription.unsubscribe();
+    this.themeSubscription?.unsubscribe();
+    this.easyReadingSubscription?.unsubscribe();
+    if (this.usernameCheckSub) {
+      this.usernameCheckSub.unsubscribe();
     }
+  }
+
+  toggleEasyReading(): void {
+    this.themeService.toggleEasyReading();
   }
 
   get accuracyPercent(): number {
@@ -99,8 +172,39 @@ export class AccountComponent implements OnInit, OnDestroy {
     }).format(d);
   }
 
+  onUsernameInput(val: string): void {
+    this.newUsername = val;
+    if (val.length < 3) { this.usernameStatus = 'idle'; this.usernameError = ''; return; }
+    this.usernameStatus = 'checking';
+    this.usernameInput$.next(val);
+  }
+
+  saveUsername(): void {
+    if (this.usernameStatus !== 'available' || this.savingUsername) return;
+    this.savingUsername = true;
+    this.publicProfileService.setUsername(this.newUsername).subscribe({
+      next: (res) => {
+        if (this.profile) this.profile.username = res.username;
+        this.editingUsername = false;
+        this.savingUsername = false;
+        this.newUsername = '';
+        this.usernameStatus = 'idle';
+      },
+      error: () => { this.savingUsername = false; }
+    });
+  }
+
+  savePrivacy(key: string, value: boolean): void {
+    const patch: Record<string, boolean> = { [key]: value };
+    this.publicProfileService.updatePrivacy(patch).subscribe();
+  }
+
+  saveProfileVisibility(isPublic: boolean): void {
+    this.publicProfileService.updatePrivacy({ profile_public: isPublic }).subscribe();
+  }
+
   signOut() {
     this.authService.logout();
     this.router.navigate(['/login']);
   }
-} 
+}

@@ -15,3 +15,62 @@
 .toast-enter {
   animation: toastSlideIn 0.3s ease-out forwards;
 }
+
+/* ─── Question slide/fade animations ─────────────────────── */
+
+@keyframes slideInFromRight {
+  from { transform: translateX(40px); opacity: 0; }
+  to   { transform: translateX(0);    opacity: 1; }
+}
+@keyframes slideOutToLeft {
+  from { transform: translateX(0);     opacity: 1; }
+  to   { transform: translateX(-40px); opacity: 0; }
+}
+@keyframes slideInFromLeft {
+  from { transform: translateX(-40px); opacity: 0; }
+  to   { transform: translateX(0);     opacity: 1; }
+}
+@keyframes slideOutToRight {
+  from { transform: translateX(0);    opacity: 1; }
+  to   { transform: translateX(40px); opacity: 0; }
+}
+@keyframes fadeIn  { from { opacity: 0; } to { opacity: 1; } }
+@keyframes fadeOut { from { opacity: 1; } to { opacity: 0; } }
+
+.question-enter-right {
+  animation: slideInFromRight 220ms cubic-bezier(0.25, 0.46, 0.45, 0.94) both;
+  will-change: transform, opacity;
+}
+.question-leave-left {
+  animation: slideOutToLeft 200ms cubic-bezier(0.55, 0, 1, 0.45) both;
+  will-change: transform, opacity;
+}
+.question-enter-left {
+  animation: slideInFromLeft 220ms cubic-bezier(0.25, 0.46, 0.45, 0.94) both;
+  will-change: transform, opacity;
+}
+.question-leave-right {
+  animation: slideOutToRight 200ms cubic-bezier(0.55, 0, 1, 0.45) both;
+  will-change: transform, opacity;
+}
+.question-fade-in  {
+  animation: fadeIn  180ms ease both;
+  will-change: opacity;
+}
+.question-fade-out {
+  animation: fadeOut 120ms ease both;
+  will-change: opacity;
+}
+
+/* Respect prefers-reduced-motion */
+@media (prefers-reduced-motion: reduce) {
+  .question-enter-right,
+  .question-leave-left,
+  .question-enter-left,
+  .question-leave-right,
+  .question-fade-in,
+  .question-fade-out {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}

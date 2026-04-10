@@ -288,9 +288,12 @@ export class AuthService {
     this.userSubject.next(null);
   }
 
-  // Add this method to allow other components to invalidate the session
   invalidateSession(): void {
     this.sessionInvalidSubject.next(true);
+  }
+
+  resetSessionInvalid(): void {
+    this.sessionInvalidSubject.next(false);
   }
 
   /**
@@ -310,7 +313,6 @@ export class AuthService {
     const accessToken = localStorage.getItem('token');
     
     if (!refreshToken || !accessToken) {
-      this.invalidateSession();
       return of({ valid: false, message: 'No session token found' });
     }
     
@@ -398,8 +400,11 @@ export class AuthService {
   }
 
   initializeUserState(): void {
-    // Skip validation if we're on the auth callback page — avoid race with exchangeCodeForToken
-    if (typeof window !== 'undefined' && window.location.pathname.includes('/auth/callback')) {
+    // Skip validation if we're on login or auth callback page
+    if (typeof window !== 'undefined' && (
+      window.location.pathname.includes('/auth/callback') ||
+      window.location.pathname === '/login'
+    )) {
       return;
     }
 

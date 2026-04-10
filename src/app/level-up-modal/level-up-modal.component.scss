@@ -1,0 +1,18 @@
+.confetti-piece {
+  position: fixed;
+  width: 8px;
+  height: 8px;
+  border-radius: 2px;
+  top: -10px;
+  animation: confettiFall 3s linear forwards, confettiSway 1s ease-in-out infinite alternate;
+  z-index: 60;
+}
+
+@keyframes confettiFall {
+  to { top: 110vh; }
+}
+
+@keyframes confettiSway {
+  from { transform: translateX(-20px) rotate(0deg); }
+  to   { transform: translateX(20px)  rotate(360deg); }
+}

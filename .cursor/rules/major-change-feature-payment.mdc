@@ -17,7 +17,7 @@ so the backend will mapping at database belongs to id premium plan that generate
 {premium_plans.mayar_link_payment}?email={users.email}&product={premium_plans.mayar_product_id}&name={user.name("parsing to url because space")}&
 after success payment the url will go to thankyou page at mayar, and will click button back to apps
 the url will be 
-https://kuis.canducation.com/aktivasi-berlangganan/?licenseCode=0C6A09CFA61BBB98&email=afdalsitp@gmail.com&productId=aedda011-50a6-4839-9109-3e413ad5b887&name=Afdhal%20Kurniawan&phone=08312323823
+https://app.nagih.id/aktivasi-berlangganan/?licenseCode=0C6A09CFA61BBB98&email=afdalsitp@gmail.com&productId=aedda011-50a6-4839-9109-3e413ad5b887&name=Afdhal%20Kurniawan&phone=08312323823
 dari url redirect diatas saya minta frontend menyediakan halaman aktivasi berlangganan yang berisi form", sesuai query parameter, dan form sudah terisi dengan data dari redirect tersebut (jika bisa menggantikan productId dengan nama premium_plans ke backend, atau jika tidak bisa cukup hide saja form product id, tapi nanti tetap digunakan saat request ke backend) dan sediakan tombol aktivasi
 saat diklik tombol aktivasi akan request ke backend (backend sediakan endpoint)
 yang pertama backend memverifikasi licenseCode dengan endpoint dari mayar yaitu

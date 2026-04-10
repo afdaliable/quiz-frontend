@@ -1,7 +1,8 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject, Observable, catchError, throwError, of } from 'rxjs';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { environment } from '../../environments/environment';
+import { XpSummary } from '../models/xp-system.model';
 
 @Injectable({
   providedIn: 'root'
@@ -13,12 +14,23 @@ export class UserService {
 
   constructor(private http: HttpClient) {}
 
-  getUserProfile(): Observable<any> {
-    const url = environment.production ?
-      `${this.baseApiUrl}/user/profile` :
-      '/api/user/profile';
+  private getApiUrl(path: string): string {
+    return environment.production ? `${this.baseApiUrl}/${path}` : `/api/${path}`;
+  }
 
-    return this.http.get(url).pipe(
+  private getHttpOptions() {
+    const token = localStorage.getItem('token');
+    return {
+      headers: new HttpHeaders({
+        'Content-Type': 'application/json',
+        'Authorization': token ? `Bearer ${token}` : ''
+      }),
+      withCredentials: true
+    };
+  }
+
+  getUserProfile(): Observable<any> {
+    return this.http.get(this.getApiUrl('user/profile')).pipe(
       catchError(error => {
         console.error('Error fetching user profile:', error);
         return throwError(() => error);
@@ -27,15 +39,23 @@ export class UserService {
   }
 
   getUserStats(): Observable<any> {
-    const url = environment.production ?
-      `${this.baseApiUrl}/user/stats` :
-      '/api/user/stats';
-
-    return this.http.get(url).pipe(
+    return this.http.get(this.getApiUrl('user/stats')).pipe(
       catchError(error => {
         console.error('Error fetching user stats:', error);
         return throwError(() => error);
       })
+    );
+  }
+
+  getUserPreferences(): Observable<any> {
+    return this.http.get(this.getApiUrl('user/preferences'), this.getHttpOptions()).pipe(
+      catchError(() => of(null))
+    );
+  }
+
+  updatePreferences(body: { pomodoro?: any; theme?: { dark_mode?: boolean; easy_reading?: boolean } }): Observable<any> {
+    return this.http.put(this.getApiUrl('user/preferences'), body, this.getHttpOptions()).pipe(
+      catchError(() => of(null))
     );
   }
 
@@ -53,13 +73,13 @@ export class UserService {
     localStorage.removeItem('user');
   }
 
-  updatePreferences(prefs: { theme: string }): void {
-    const url = environment.production ?
-      `${this.baseApiUrl}/user/preferences` :
-      '/api/user/preferences';
-
-    this.http.patch(url, prefs, { withCredentials: true }).pipe(
-      catchError(() => of(null))
-    ).subscribe();
+  getUserXpSummary(): Observable<XpSummary> {
+    const url = environment.production
+      ? `${this.baseApiUrl}/user/me/xp`
+      : '/api/user/me/xp';
+    return this.http.get<XpSummary>(url).pipe(
+      catchError(error => throwError(() => error))
+    );
   }
+
 }
