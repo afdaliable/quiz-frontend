@@ -25,6 +25,7 @@ import { OnboardingGuard } from './auth/onboarding.guard';
 import { SearchComponent } from './search/search.component';
 import { PublicProfileComponent } from './public-profile/public-profile.component';
 import { JalurUjianComponent } from './jalur-ujian/jalur-ujian.component';
+import { BrowseSoalComponent } from './browse-soal/browse-soal.component';
 
 const routes: Routes = [
   {
@@ -94,6 +95,11 @@ const routes: Routes = [
   {
     path: 'categories',
     component: CategoryComponent,
+    canActivate: [AuthGuard]
+  },
+  {
+    path: 'browse-soal',
+    component: BrowseSoalComponent,
     canActivate: [AuthGuard]
   },
   {

@@ -1,0 +1,353 @@
+<div
+  class="min-h-screen pb-24 transition-colors duration-200"
+  [ngClass]="isDarkMode ? 'bg-gray-950 text-gray-100' : 'bg-gray-50 text-gray-900'"
+>
+
+  <!-- ── Header ──────────────────────────────────────────────────────────── -->
+  <div
+    class="sticky top-0 z-10 border-b px-4 py-3 transition-colors duration-200"
+    [ngClass]="isDarkMode ? 'bg-gray-900 border-gray-800' : 'bg-white border-gray-200'"
+  >
+    <div class="max-w-5xl mx-auto flex items-center justify-between gap-3">
+      <div>
+        <h1 class="text-lg font-bold leading-tight">Browse Soal</h1>
+        <p class="text-xs mt-0.5" [ngClass]="isDarkMode ? 'text-gray-400' : 'text-gray-500'">
+          <span *ngIf="!isLoading">{{ totalItems | number }} soal ditemukan</span>
+          <span *ngIf="isLoading">Memuat...</span>
+        </p>
+      </div>
+      <!-- Mobile filter toggle -->
+      <button
+        type="button"
+        (click)="isFilterOpen = !isFilterOpen"
+        class="lg:hidden flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium border transition-colors"
+        [ngClass]="isDarkMode
+          ? 'bg-gray-800 border-gray-700 text-gray-200'
+          : 'bg-white border-gray-300 text-gray-700'"
+      >
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor" class="w-4 h-4">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 6h9.75M10.5 6a1.5 1.5 0 1 1-3 0m3 0a1.5 1.5 0 1 0-3 0M3.75 6H7.5m3 12h9.75m-9.75 0a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m-3.75 0H7.5m9-6h3.75m-3.75 0a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m-9.75 0h9.75"/>
+        </svg>
+        Filter
+        <span
+          *ngIf="hasActiveFilter"
+          class="w-2 h-2 rounded-full bg-indigo-500"
+        ></span>
+      </button>
+    </div>
+  </div>
+
+  <div class="max-w-5xl mx-auto px-4 py-4 lg:flex lg:gap-6">
+
+    <!-- ── Filter Sidebar ────────────────────────────────────────────────── -->
+    <aside
+      class="lg:w-64 lg:flex-shrink-0 lg:block"
+      [class.hidden]="!isFilterOpen"
+    >
+      <div
+        class="rounded-xl border p-4 space-y-5 mb-4 lg:mb-0 lg:sticky lg:top-20"
+        [ngClass]="isDarkMode ? 'bg-gray-900 border-gray-800' : 'bg-white border-gray-200'"
+      >
+        <div class="flex items-center justify-between">
+          <h2 class="font-semibold text-sm">Filter</h2>
+          <button
+            *ngIf="hasActiveFilter"
+            type="button"
+            (click)="clearAllFilters()"
+            class="text-xs text-red-500 hover:text-red-600"
+          >Hapus Semua</button>
+        </div>
+
+        <!-- Track -->
+        <div>
+          <label class="block text-xs font-medium mb-1.5" [ngClass]="isDarkMode ? 'text-gray-400' : 'text-gray-500'">Jalur Ujian</label>
+          <select
+            [value]="filter.track_slug || ''"
+            (change)="onTrackChange($any($event.target).value)"
+            class="w-full text-sm rounded-lg border px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            [ngClass]="isDarkMode ? 'bg-gray-800 border-gray-700 text-white' : 'bg-white border-gray-300 text-gray-900'"
+          >
+            <option value="">Semua Jalur</option>
+            <option *ngFor="let t of tree?.tracks" [value]="t.slug" [disabled]="t.status !== 'live'">
+              {{ t.icon }} {{ t.name }}{{ t.status !== 'live' ? ' (Coming Soon)' : '' }}
+            </option>
+          </select>
+        </div>
+
+        <!-- Category -->
+        <div>
+          <label class="block text-xs font-medium mb-1.5" [ngClass]="isDarkMode ? 'text-gray-400' : 'text-gray-500'">Kategori</label>
+          <select
+            [value]="filter.category_slug || ''"
+            (change)="onCategoryChange($any($event.target).value)"
+            [disabled]="!filter.track_slug"
+            class="w-full text-sm rounded-lg border px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 disabled:opacity-40"
+            [ngClass]="isDarkMode ? 'bg-gray-800 border-gray-700 text-white' : 'bg-white border-gray-300 text-gray-900'"
+          >
+            <option value="">Semua Kategori</option>
+            <option *ngFor="let c of availableCategories" [value]="c.slug">{{ c.name }}</option>
+          </select>
+        </div>
+
+        <!-- Subcategory -->
+        <div>
+          <label class="block text-xs font-medium mb-1.5" [ngClass]="isDarkMode ? 'text-gray-400' : 'text-gray-500'">Subkategori</label>
+          <select
+            [value]="filter.subcategory_slug || ''"
+            (change)="onSubcategoryChange($any($event.target).value)"
+            [disabled]="!filter.category_slug"
+            class="w-full text-sm rounded-lg border px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 disabled:opacity-40"
+            [ngClass]="isDarkMode ? 'bg-gray-800 border-gray-700 text-white' : 'bg-white border-gray-300 text-gray-900'"
+          >
+            <option value="">Semua Subkategori</option>
+            <option *ngFor="let s of availableSubcategories" [value]="s.slug">{{ s.name }}</option>
+          </select>
+        </div>
+
+        <!-- Topic -->
+        <div>
+          <label class="block text-xs font-medium mb-1.5" [ngClass]="isDarkMode ? 'text-gray-400' : 'text-gray-500'">Topik</label>
+          <select
+            [value]="filter.topic_slug || ''"
+            (change)="onTopicChange($any($event.target).value)"
+            [disabled]="!filter.subcategory_slug"
+            class="w-full text-sm rounded-lg border px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 disabled:opacity-40"
+            [ngClass]="isDarkMode ? 'bg-gray-800 border-gray-700 text-white' : 'bg-white border-gray-300 text-gray-900'"
+          >
+            <option value="">Semua Topik</option>
+            <option *ngFor="let t of availableTopics" [value]="t.slug">{{ t.name }}</option>
+          </select>
+        </div>
+
+        <!-- Difficulty -->
+        <div>
+          <label class="block text-xs font-medium mb-1.5" [ngClass]="isDarkMode ? 'text-gray-400' : 'text-gray-500'">Tingkat Kesulitan</label>
+          <div class="flex gap-2">
+            <button
+              *ngFor="let d of difficulties"
+              type="button"
+              (click)="toggleDifficulty(d)"
+              class="flex-1 py-1.5 rounded-lg text-xs font-medium border transition-colors"
+              [ngClass]="filter.difficulty_est === d
+                ? getDifficultyActiveClass(d)
+                : (isDarkMode ? 'bg-gray-800 border-gray-700 text-gray-300' : 'bg-gray-100 border-gray-200 text-gray-600')"
+            >
+              {{ getDifficultyLabel(d) }}
+            </button>
+          </div>
+        </div>
+
+        <!-- Format -->
+        <div>
+          <label class="block text-xs font-medium mb-1.5" [ngClass]="isDarkMode ? 'text-gray-400' : 'text-gray-500'">Format Soal</label>
+          <div class="flex flex-wrap gap-2">
+            <button
+              *ngFor="let f of formats"
+              type="button"
+              (click)="onFormatChange(f)"
+              class="px-3 py-1 rounded-full text-xs font-medium border transition-colors"
+              [ngClass]="filter.format === f
+                ? 'bg-indigo-600 text-white border-indigo-600'
+                : (isDarkMode ? 'bg-gray-800 border-gray-700 text-gray-300' : 'bg-gray-100 border-gray-200 text-gray-600')"
+            >
+              {{ getFormatLabel(f) }}
+            </button>
+          </div>
+        </div>
+
+        <!-- Tag Autocomplete -->
+        <div>
+          <label class="block text-xs font-medium mb-1.5" [ngClass]="isDarkMode ? 'text-gray-400' : 'text-gray-500'">Tag</label>
+          <div class="relative">
+            <input
+              type="text"
+              [(ngModel)]="tagInput"
+              (input)="tagSearch$.next(tagInput)"
+              placeholder="Cari tag..."
+              class="w-full text-sm rounded-lg border px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              [ngClass]="isDarkMode ? 'bg-gray-800 border-gray-700 text-white placeholder-gray-500' : 'bg-white border-gray-300 text-gray-900'"
+            />
+            <!-- Suggestions dropdown -->
+            <ul
+              *ngIf="tagSuggestions.length > 0"
+              class="absolute z-20 left-0 right-0 mt-1 rounded-lg border shadow-lg overflow-hidden"
+              [ngClass]="isDarkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'"
+            >
+              <li
+                *ngFor="let tag of tagSuggestions"
+                (click)="addTag(tag)"
+                class="px-3 py-2 text-sm cursor-pointer"
+                [ngClass]="isDarkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-50'"
+              >{{ tag }}</li>
+            </ul>
+          </div>
+          <!-- Selected tags -->
+          <div class="flex flex-wrap gap-1.5 mt-2" *ngIf="filter.tags?.length">
+            <span
+              *ngFor="let tag of filter.tags"
+              class="flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-indigo-100 text-indigo-700"
+            >
+              {{ tag }}
+              <button type="button" (click)="removeTag(tag)" class="hover:text-indigo-900 leading-none">×</button>
+            </span>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- ── Main Content ───────────────────────────────────────────────────── -->
+    <div class="flex-1 min-w-0">
+
+      <!-- Active filter pills -->
+      <div *ngIf="hasActiveFilter" class="flex flex-wrap gap-2 mb-4">
+        <span
+          *ngIf="filter.track_slug"
+          class="flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium border"
+          [ngClass]="isDarkMode ? 'bg-gray-800 border-gray-700 text-gray-200' : 'bg-white border-gray-200 text-gray-700'"
+        >
+          {{ getTrackName(filter.track_slug) }}
+          <button type="button" (click)="clearFilter('track_slug')" class="text-gray-400 hover:text-red-500 leading-none">×</button>
+        </span>
+        <span
+          *ngIf="filter.category_slug"
+          class="flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium border"
+          [ngClass]="isDarkMode ? 'bg-gray-800 border-gray-700 text-gray-200' : 'bg-white border-gray-200 text-gray-700'"
+        >
+          {{ getCategoryName(filter.category_slug) }}
+          <button type="button" (click)="clearFilter('category_slug')" class="text-gray-400 hover:text-red-500 leading-none">×</button>
+        </span>
+        <span
+          *ngIf="filter.subcategory_slug"
+          class="flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium border"
+          [ngClass]="isDarkMode ? 'bg-gray-800 border-gray-700 text-gray-200' : 'bg-white border-gray-200 text-gray-700'"
+        >
+          {{ getSubcategoryName(filter.subcategory_slug) }}
+          <button type="button" (click)="clearFilter('subcategory_slug')" class="text-gray-400 hover:text-red-500 leading-none">×</button>
+        </span>
+        <span
+          *ngIf="filter.topic_slug"
+          class="flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium border"
+          [ngClass]="isDarkMode ? 'bg-gray-800 border-gray-700 text-gray-200' : 'bg-white border-gray-200 text-gray-700'"
+        >
+          {{ getTopicName(filter.topic_slug) }}
+          <button type="button" (click)="clearFilter('topic_slug')" class="text-gray-400 hover:text-red-500 leading-none">×</button>
+        </span>
+        <span
+          *ngIf="filter.difficulty_est"
+          class="flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium"
+          [ngClass]="getDifficultyActiveClass(filter.difficulty_est)"
+        >
+          {{ getDifficultyLabel(filter.difficulty_est) }}
+          <button type="button" (click)="clearFilter('difficulty_est')" class="opacity-60 hover:opacity-100 leading-none">×</button>
+        </span>
+        <span
+          *ngIf="filter.format"
+          class="flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-indigo-100 text-indigo-700"
+        >
+          {{ getFormatLabel(filter.format) }}
+          <button type="button" (click)="clearFilter('format')" class="opacity-60 hover:opacity-100 leading-none">×</button>
+        </span>
+      </div>
+
+      <!-- Loading -->
+      <div *ngIf="isLoading" class="space-y-3">
+        <div
+          *ngFor="let _ of [1,2,3,4,5]"
+          class="rounded-xl h-24 animate-pulse"
+          [ngClass]="isDarkMode ? 'bg-gray-800' : 'bg-gray-200'"
+        ></div>
+      </div>
+
+      <!-- Empty state -->
+      <div
+        *ngIf="!isLoading && soalList.length === 0"
+        class="text-center py-16"
+      >
+        <div class="text-4xl mb-3">🔍</div>
+        <p class="font-semibold">Tidak ada soal ditemukan</p>
+        <p class="text-sm mt-1" [ngClass]="isDarkMode ? 'text-gray-400' : 'text-gray-500'">
+          Coba ubah filter atau hapus beberapa kriteria
+        </p>
+        <button
+          *ngIf="hasActiveFilter"
+          type="button"
+          (click)="clearAllFilters()"
+          class="mt-4 px-4 py-2 rounded-lg bg-indigo-600 text-white text-sm font-medium hover:bg-indigo-700 transition-colors"
+        >Hapus Semua Filter</button>
+      </div>
+
+      <!-- Soal list -->
+      <div *ngIf="!isLoading && soalList.length > 0" class="space-y-3">
+        <div
+          *ngFor="let soal of soalList"
+          class="rounded-xl border p-4 transition-all hover:shadow-md"
+          [ngClass]="isDarkMode ? 'bg-gray-900 border-gray-800' : 'bg-white border-gray-200'"
+        >
+          <!-- Taxonomy breadcrumb -->
+          <div class="flex flex-wrap items-center gap-1 text-xs mb-2" [ngClass]="isDarkMode ? 'text-gray-500' : 'text-gray-400'">
+            <span *ngIf="soal.track_id">{{ getTrackName(soal.track_id) }}</span>
+            <span *ngIf="soal.category_id"> › {{ getCategoryName(soal.category_id) }}</span>
+            <span *ngIf="soal.subcategory_id"> › {{ getSubcategoryName(soal.subcategory_id) }}</span>
+          </div>
+
+          <!-- Question text -->
+          <p class="text-sm font-medium leading-snug line-clamp-2 mb-3">{{ soal.soal }}</p>
+
+          <!-- Badges + action -->
+          <div class="flex items-center justify-between gap-2 flex-wrap">
+            <div class="flex items-center gap-2 flex-wrap">
+              <span
+                class="px-2 py-0.5 rounded-full text-xs font-medium"
+                [ngClass]="getDifficultyBadgeClass(soal.difficulty_est)"
+              >{{ getDifficultyLabel(soal.difficulty_est) }}</span>
+              <span
+                *ngIf="soal.format"
+                class="px-2 py-0.5 rounded-full text-xs font-medium"
+                [ngClass]="isDarkMode ? 'bg-gray-700 text-gray-300' : 'bg-gray-100 text-gray-600'"
+              >{{ getFormatLabel(soal.format) }}</span>
+              <span
+                *ngIf="soal.tag"
+                class="px-2 py-0.5 rounded-full text-xs font-medium bg-indigo-50 text-indigo-600"
+              >{{ soal.tag }}</span>
+            </div>
+            <button
+              type="button"
+              (click)="startLatihan(soal)"
+              class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-indigo-600 text-white hover:bg-indigo-700 transition-colors whitespace-nowrap"
+            >Mulai Latihan</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Pagination -->
+      <div *ngIf="!isLoading && totalPages > 1" class="flex items-center justify-center gap-1.5 mt-6">
+        <button
+          type="button"
+          (click)="goToPage(currentPage - 1)"
+          [disabled]="currentPage === 1"
+          class="px-3 py-1.5 rounded-lg text-sm border disabled:opacity-40 transition-colors"
+          [ngClass]="isDarkMode ? 'bg-gray-800 border-gray-700 text-gray-200' : 'bg-white border-gray-300 text-gray-700'"
+        >‹</button>
+
+        <button
+          *ngFor="let p of pageNumbers"
+          type="button"
+          (click)="goToPage(p)"
+          class="px-3 py-1.5 rounded-lg text-sm border transition-colors"
+          [ngClass]="p === currentPage
+            ? 'bg-indigo-600 text-white border-indigo-600'
+            : (isDarkMode ? 'bg-gray-800 border-gray-700 text-gray-200' : 'bg-white border-gray-300 text-gray-700')"
+        >{{ p }}</button>
+
+        <button
+          type="button"
+          (click)="goToPage(currentPage + 1)"
+          [disabled]="currentPage === totalPages"
+          class="px-3 py-1.5 rounded-lg text-sm border disabled:opacity-40 transition-colors"
+          [ngClass]="isDarkMode ? 'bg-gray-800 border-gray-700 text-gray-200' : 'bg-white border-gray-300 text-gray-700'"
+        >›</button>
+      </div>
+
+    </div>
+  </div>
+</div>
