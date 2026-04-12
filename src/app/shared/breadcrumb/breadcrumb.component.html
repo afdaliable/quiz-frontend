@@ -1,0 +1,13 @@
+<nav class="flex items-center gap-1 text-sm text-gray-500 dark:text-gray-400 flex-wrap">
+  <ng-container *ngFor="let item of items; let last = last; let i = index">
+    <a
+      *ngIf="item.route && !last"
+      [routerLink]="item.route"
+      class="hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
+    >{{ item.label }}</a>
+    <span *ngIf="!item.route || last" [class.text-gray-800]="last" [class.dark:text-gray-100]="last" [class.font-medium]="last">
+      {{ item.label }}
+    </span>
+    <span *ngIf="!last" class="text-gray-400 dark:text-gray-600">›</span>
+  </ng-container>
+</nav>

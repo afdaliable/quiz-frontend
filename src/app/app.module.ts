@@ -46,6 +46,8 @@ import { EmptyStateComponent } from './shared/empty-state/empty-state.component'
 import { ScoreChartComponent } from './score-chart/score-chart.component';
 import { PublicProfileComponent } from './public-profile/public-profile.component';
 import { LevelUpModalComponent } from './level-up-modal/level-up-modal.component';
+import { JalurUjianComponent } from './jalur-ujian/jalur-ujian.component';
+import { BreadcrumbComponent } from './shared/breadcrumb/breadcrumb.component';
 
 @NgModule({
   declarations: [
@@ -80,8 +82,10 @@ import { LevelUpModalComponent } from './level-up-modal/level-up-modal.component
     ScoreChartComponent,
     PublicProfileComponent,
     LevelUpModalComponent,
+    JalurUjianComponent,
   ],
   imports: [
+    BreadcrumbComponent,
     BrowserModule,
     HttpClientModule,
     PremiumPlansComponent,

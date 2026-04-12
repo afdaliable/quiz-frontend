@@ -23,6 +23,7 @@ import { SubscriptionComponent } from './subscription/subscription.component';
 import { OnboardingComponent } from './onboarding/onboarding.component';
 import { OnboardingGuard } from './auth/onboarding.guard';
 import { PublicProfileComponent } from './public-profile/public-profile.component';
+import { JalurUjianComponent } from './jalur-ujian/jalur-ujian.component';
 
 const routes: Routes = [
   {
@@ -92,6 +93,21 @@ const routes: Routes = [
   {
     path: 'categories',
     component: CategoryComponent,
+    canActivate: [AuthGuard]
+  },
+  {
+    path: 'jalur-ujian',
+    component: JalurUjianComponent,
+    canActivate: [AuthGuard]
+  },
+  {
+    path: 'jalur-ujian/:trackSlug',
+    component: JalurUjianComponent,
+    canActivate: [AuthGuard]
+  },
+  {
+    path: 'jalur-ujian/:trackSlug/:categorySlug',
+    component: JalurUjianComponent,
     canActivate: [AuthGuard]
   },
   {
