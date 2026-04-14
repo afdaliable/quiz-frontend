@@ -309,6 +309,12 @@
                 *ngIf="soal.tag"
                 class="px-2 py-0.5 rounded-full text-xs font-medium bg-indigo-50 text-indigo-600"
               >{{ soal.tag }}</span>
+              <!-- AFD-226: multi-topic badge -->
+              <span
+                *ngIf="soal.topic_ids?.length"
+                class="px-2 py-0.5 rounded-full text-xs font-medium bg-amber-50 text-amber-700"
+                [title]="soal.topic_ids!.length + ' klasifikasi topik'"
+              >✦ {{ soal.topic_ids!.length }} topik</span>
             </div>
             <button
               type="button"

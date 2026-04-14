@@ -14,6 +14,8 @@ export interface SoalBrowseItem {
   category_id: string | null;
   subcategory_id: string | null;
   topic_id: string | null;
+  /// Additional topic IDs from question_topics M2M (AFD-226)
+  topic_ids?: string[];
   tag: string | null;
   modul: string | null;
   pelajaran: string | null;
