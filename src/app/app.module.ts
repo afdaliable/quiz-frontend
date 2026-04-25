@@ -49,6 +49,7 @@ import { PublicProfileComponent } from './public-profile/public-profile.componen
 import { LevelUpModalComponent } from './level-up-modal/level-up-modal.component';
 import { JalurUjianComponent } from './jalur-ujian/jalur-ujian.component';
 import { BreadcrumbComponent } from './shared/breadcrumb/breadcrumb.component';
+import { BrowseSoalComponent } from './browse-soal/browse-soal.component';
 
 @NgModule({
   declarations: [
@@ -85,6 +86,7 @@ import { BreadcrumbComponent } from './shared/breadcrumb/breadcrumb.component';
     PublicProfileComponent,
     LevelUpModalComponent,
     JalurUjianComponent,
+    BrowseSoalComponent,
   ],
   imports: [
     BreadcrumbComponent,
