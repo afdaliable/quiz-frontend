@@ -46,6 +46,7 @@ import { EmptyStateComponent } from './shared/empty-state/empty-state.component'
 import { ScoreChartComponent } from './score-chart/score-chart.component';
 import { PublicProfileComponent } from './public-profile/public-profile.component';
 import { LevelUpModalComponent } from './level-up-modal/level-up-modal.component';
+import { MathTextPipe } from './shared/math-text.pipe';
 
 @NgModule({
   declarations: [
@@ -80,6 +81,7 @@ import { LevelUpModalComponent } from './level-up-modal/level-up-modal.component
     ScoreChartComponent,
     PublicProfileComponent,
     LevelUpModalComponent,
+    MathTextPipe,
   ],
   imports: [
     BrowserModule,
