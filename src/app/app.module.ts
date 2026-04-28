@@ -111,6 +111,9 @@ import { MathTextPipe } from './shared/math-text.pipe';
     ThemeService,
     PremiumService
   ],
+  exports: [
+    MathTextPipe,
+  ],
   bootstrap: [AppComponent]
 })
 export class AppModule { }
