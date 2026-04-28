@@ -38,6 +38,7 @@ import { QuestionDiscussionComponent } from './question-discussion/question-disc
 import { AboutComponent } from './about/about.component';
 import { SubscriptionComponent } from './subscription/subscription.component';
 import { OnboardingComponent } from './onboarding/onboarding.component';
+import { SearchComponent } from './search/search.component';
 import { QuestionRatingComponent } from './question-rating/question-rating.component';
 import { QuestionReportModalComponent } from './question-report-modal/question-report-modal.component';
 import { PomodoroWidgetComponent } from './pomodoro-widget/pomodoro-widget.component';
@@ -46,6 +47,9 @@ import { EmptyStateComponent } from './shared/empty-state/empty-state.component'
 import { ScoreChartComponent } from './score-chart/score-chart.component';
 import { PublicProfileComponent } from './public-profile/public-profile.component';
 import { LevelUpModalComponent } from './level-up-modal/level-up-modal.component';
+import { JalurUjianComponent } from './jalur-ujian/jalur-ujian.component';
+import { BreadcrumbComponent } from './shared/breadcrumb/breadcrumb.component';
+import { BrowseSoalComponent } from './browse-soal/browse-soal.component';
 import { MathTextPipe } from './shared/math-text.pipe';
 
 @NgModule({
@@ -74,6 +78,7 @@ import { MathTextPipe } from './shared/math-text.pipe';
     AboutComponent,
     SubscriptionComponent,
     OnboardingComponent,
+    SearchComponent,
     QuestionRatingComponent,
     QuestionReportModalComponent,
     PomodoroWidgetComponent,
@@ -81,9 +86,12 @@ import { MathTextPipe } from './shared/math-text.pipe';
     ScoreChartComponent,
     PublicProfileComponent,
     LevelUpModalComponent,
+    JalurUjianComponent,
+    BrowseSoalComponent,
     MathTextPipe,
   ],
   imports: [
+    BreadcrumbComponent,
     BrowserModule,
     HttpClientModule,
     PremiumPlansComponent,

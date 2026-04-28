@@ -249,7 +249,7 @@ export class SubscriptionComponent implements OnInit, OnDestroy {
     this.showCancelModal = false;
     // No backend cancel endpoint yet — show info message
     this.showToastMessage(
-      'Untuk membatalkan langganan, hubungi support di support@canducation.com',
+      'Untuk membatalkan langganan, hubungi support di support@nagih.id',
       'error'
     );
   }

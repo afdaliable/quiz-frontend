@@ -22,7 +22,10 @@ import { AboutComponent } from './about/about.component';
 import { SubscriptionComponent } from './subscription/subscription.component';
 import { OnboardingComponent } from './onboarding/onboarding.component';
 import { OnboardingGuard } from './auth/onboarding.guard';
+import { SearchComponent } from './search/search.component';
 import { PublicProfileComponent } from './public-profile/public-profile.component';
+import { JalurUjianComponent } from './jalur-ujian/jalur-ujian.component';
+import { BrowseSoalComponent } from './browse-soal/browse-soal.component';
 
 const routes: Routes = [
   {
@@ -95,6 +98,26 @@ const routes: Routes = [
     canActivate: [AuthGuard]
   },
   {
+    path: 'browse-soal',
+    component: BrowseSoalComponent,
+    canActivate: [AuthGuard]
+  },
+  {
+    path: 'jalur-ujian',
+    component: JalurUjianComponent,
+    canActivate: [AuthGuard]
+  },
+  {
+    path: 'jalur-ujian/:trackSlug',
+    component: JalurUjianComponent,
+    canActivate: [AuthGuard]
+  },
+  {
+    path: 'jalur-ujian/:trackSlug/:categorySlug',
+    component: JalurUjianComponent,
+    canActivate: [AuthGuard]
+  },
+  {
     path: 'paket-soal/:kategori',
     component: DaftarSoalComponent,
     canActivate: [AuthGuard]
@@ -112,6 +135,10 @@ const routes: Routes = [
   {
     path: 'aktivasi-berlangganan',
     component: LicenseActivationComponent
+  },
+  {
+    path: 'search',
+    component: SearchComponent,
   },
   {
     path: 'about',

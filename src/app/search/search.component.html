@@ -1,0 +1,229 @@
+<div class="min-h-screen transition-colors duration-200" [ngClass]="isDarkMode ? 'bg-gray-900' : 'bg-gray-50'">
+
+  <!-- Header -->
+  <div class="bg-gradient-to-r from-indigo-600 via-indigo-700 to-violet-700 px-4 sm:px-6 lg:px-8 py-4">
+    <div class="max-w-3xl mx-auto flex items-center gap-3">
+      <button (click)="goBack()"
+        class="flex-shrink-0 p-2 rounded-xl text-white/80 hover:text-white hover:bg-white/10 transition-colors">
+        <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+        </svg>
+      </button>
+      <h1 class="text-lg font-bold text-white">Cari Soal</h1>
+    </div>
+  </div>
+
+  <div class="max-w-3xl mx-auto px-4 sm:px-6 py-6">
+
+    <!-- Search Input -->
+    <div class="relative mb-4">
+      <svg class="absolute left-3.5 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 pointer-events-none"
+        fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+          d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0"/>
+      </svg>
+      <input
+        type="text"
+        [(ngModel)]="query"
+        (ngModelChange)="onQueryChange()"
+        placeholder="Cari soal: pengertian APBN..."
+        class="w-full rounded-xl pl-11 pr-10 py-3 text-sm border focus:outline-none focus:ring-2 focus:ring-indigo-400 transition-colors"
+        [ngClass]="isDarkMode
+          ? 'bg-gray-800 border-gray-700 text-white placeholder-gray-500'
+          : 'bg-white border-gray-200 text-gray-900 placeholder-gray-400'">
+      <button *ngIf="query"
+        (click)="clearQuery()"
+        class="absolute right-3 top-1/2 -translate-y-1/2 p-1 rounded-lg text-gray-400 hover:text-gray-600 transition-colors">
+        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+        </svg>
+      </button>
+    </div>
+
+    <!-- Filters -->
+    <div class="flex gap-3 mb-6 flex-wrap">
+      <select
+        [(ngModel)]="selectedModul"
+        (change)="onFilterChange()"
+        class="flex-1 min-w-0 rounded-xl px-3 py-2.5 text-sm border focus:outline-none focus:ring-2 focus:ring-indigo-400 transition-colors"
+        [ngClass]="isDarkMode
+          ? 'bg-gray-800 border-gray-700 text-white'
+          : 'bg-white border-gray-200 text-gray-900'">
+        <option value="">Semua Modul</option>
+        <option *ngFor="let m of filters.modul" [value]="m">{{ m }}</option>
+      </select>
+
+      <select
+        [(ngModel)]="selectedPelajaran"
+        (change)="onFilterChange()"
+        class="flex-1 min-w-0 rounded-xl px-3 py-2.5 text-sm border focus:outline-none focus:ring-2 focus:ring-indigo-400 transition-colors"
+        [ngClass]="isDarkMode
+          ? 'bg-gray-800 border-gray-700 text-white'
+          : 'bg-white border-gray-200 text-gray-900'">
+        <option value="">Semua Pelajaran</option>
+        <option *ngFor="let p of filters.pelajaran" [value]="p">{{ p }}</option>
+      </select>
+    </div>
+
+    <!-- Loading Skeleton -->
+    <ng-container *ngIf="loading">
+      <div class="space-y-3">
+        <div *ngFor="let i of [1,2,3]"
+          class="rounded-2xl p-5 animate-pulse"
+          [ngClass]="isDarkMode ? 'bg-gray-800' : 'bg-white'">
+          <div class="h-4 rounded-lg w-3/4 mb-3"
+            [ngClass]="isDarkMode ? 'bg-gray-700' : 'bg-gray-200'"></div>
+          <div class="h-3 rounded-lg w-1/3 mb-4"
+            [ngClass]="isDarkMode ? 'bg-gray-700' : 'bg-gray-200'"></div>
+          <div class="h-3 rounded-lg w-1/2"
+            [ngClass]="isDarkMode ? 'bg-gray-700' : 'bg-gray-200'"></div>
+        </div>
+      </div>
+    </ng-container>
+
+    <!-- Error -->
+    <div *ngIf="error && !loading"
+      class="rounded-2xl p-4 text-sm text-center"
+      [ngClass]="isDarkMode ? 'bg-red-900/30 text-red-300' : 'bg-red-50 text-red-600'">
+      {{ error }}
+    </div>
+
+    <!-- Results -->
+    <ng-container *ngIf="!loading && !error">
+
+      <!-- Result count -->
+      <p *ngIf="total > 0"
+        class="text-sm mb-4 font-medium"
+        [ngClass]="isDarkMode ? 'text-gray-400' : 'text-gray-500'">
+        {{ total }} soal ditemukan
+      </p>
+
+      <!-- Result Cards -->
+      <div class="space-y-3 mb-6">
+        <div *ngFor="let result of results"
+          class="rounded-2xl p-5 border transition-all duration-150"
+          [ngClass]="isDarkMode
+            ? 'bg-gray-800 border-gray-700'
+            : 'bg-white border-gray-100 shadow-sm'">
+
+          <!-- Soal snippet -->
+          <p class="text-sm leading-relaxed mb-3"
+            [ngClass]="isDarkMode ? 'text-gray-200' : 'text-gray-800'">
+            {{ snippetOf(result.soal) }}
+          </p>
+
+          <!-- Badges: modul · pelajaran -->
+          <div class="flex flex-wrap gap-2 mb-4">
+            <span *ngIf="result.modul"
+              class="inline-flex items-center px-2.5 py-0.5 rounded-lg text-xs font-medium"
+              [ngClass]="isDarkMode ? 'bg-indigo-900/40 text-indigo-300' : 'bg-indigo-50 text-indigo-700'">
+              {{ result.modul }}
+            </span>
+            <span *ngIf="result.pelajaran"
+              class="inline-flex items-center px-2.5 py-0.5 rounded-lg text-xs font-medium"
+              [ngClass]="isDarkMode ? 'bg-violet-900/40 text-violet-300' : 'bg-violet-50 text-violet-700'">
+              {{ result.pelajaran }}
+            </span>
+          </div>
+
+          <!-- Paket soal row -->
+          <div class="flex items-center justify-between gap-3">
+            <div class="flex items-center gap-2 min-w-0">
+              <svg class="w-4 h-4 flex-shrink-0"
+                [ngClass]="isDarkMode ? 'text-gray-500' : 'text-gray-400'"
+                fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/>
+              </svg>
+              <span class="text-sm truncate"
+                [ngClass]="isDarkMode ? 'text-gray-400' : 'text-gray-500'">
+                {{ result.nama_paket_soal || 'Tidak ada paket' }}
+              </span>
+            </div>
+            <button
+              (click)="goToPackage(result)"
+              [disabled]="!result.nama_paket_soal"
+              class="flex-shrink-0 flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-semibold transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+              [ngClass]="isDarkMode
+                ? 'bg-indigo-600 hover:bg-indigo-500 text-white'
+                : 'bg-indigo-600 hover:bg-indigo-700 text-white'">
+              Kerjakan
+              <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Empty State -->
+      <div *ngIf="results.length === 0 && (query || selectedModul || selectedPelajaran)"
+        class="text-center py-16">
+        <div class="text-5xl mb-4">🔍</div>
+        <p class="font-semibold mb-1"
+          [ngClass]="isDarkMode ? 'text-gray-300' : 'text-gray-700'">
+          Tidak ada hasil ditemukan
+        </p>
+        <p class="text-sm"
+          [ngClass]="isDarkMode ? 'text-gray-500' : 'text-gray-400'">
+          Coba kata kunci lain atau ubah filter
+        </p>
+      </div>
+
+      <!-- Initial State (nothing typed yet) -->
+      <div *ngIf="results.length === 0 && !query && !selectedModul && !selectedPelajaran"
+        class="text-center py-16">
+        <div class="text-5xl mb-4">📝</div>
+        <p class="font-semibold mb-1"
+          [ngClass]="isDarkMode ? 'text-gray-300' : 'text-gray-700'">
+          Ketik kata kunci untuk mulai mencari
+        </p>
+        <p class="text-sm"
+          [ngClass]="isDarkMode ? 'text-gray-500' : 'text-gray-400'">
+          Contoh: "pengertian APBN", "hukum newton", "fotosintesis"
+        </p>
+      </div>
+
+      <!-- Pagination -->
+      <div *ngIf="total > limit"
+        class="flex items-center justify-center gap-2 mt-2">
+        <button
+          (click)="onPageChange(page - 1)"
+          [disabled]="page === 1"
+          class="px-3 py-2 rounded-xl text-sm font-semibold transition-colors disabled:opacity-40"
+          [ngClass]="isDarkMode
+            ? 'bg-gray-800 text-gray-300 hover:bg-gray-700'
+            : 'bg-white text-gray-600 hover:bg-gray-100 border border-gray-200'">
+          ← Prev
+        </button>
+
+        <button *ngFor="let p of pageNumbers()"
+          (click)="onPageChange(p)"
+          class="px-3 py-2 rounded-xl text-sm font-semibold transition-colors"
+          [ngClass]="p === page
+            ? 'bg-indigo-600 text-white'
+            : (isDarkMode ? 'bg-gray-800 text-gray-300 hover:bg-gray-700' : 'bg-white text-gray-600 hover:bg-gray-100 border border-gray-200')">
+          {{ p }}
+        </button>
+
+        <button
+          (click)="onPageChange(page + 1)"
+          [disabled]="page >= totalPages()"
+          class="px-3 py-2 rounded-xl text-sm font-semibold transition-colors disabled:opacity-40"
+          [ngClass]="isDarkMode
+            ? 'bg-gray-800 text-gray-300 hover:bg-gray-700'
+            : 'bg-white text-gray-600 hover:bg-gray-100 border border-gray-200'">
+          Next →
+        </button>
+      </div>
+
+    </ng-container>
+  </div>
+
+  <!-- Toast -->
+  <div *ngIf="toastVisible"
+    class="fixed bottom-20 left-1/2 -translate-x-1/2 z-50 px-4 py-2.5 rounded-xl text-sm font-medium text-white bg-gray-800 shadow-lg transition-opacity">
+    {{ toastMessage }}
+  </div>
+
+</div>
