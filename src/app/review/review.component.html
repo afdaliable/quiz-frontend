@@ -47,7 +47,7 @@
             <!-- Question text -->
             <p class="text-base leading-relaxed mb-6"
               [ngClass]="isDarkMode ? 'text-gray-100' : 'text-gray-800'"
-              [innerHTML]="questionList[currentQuestion].questionText">
+              [innerHTML]="questionList[currentQuestion].questionText | mathText">
             </p>
 
             <!-- Options: Multiple Choice (default) -->

@@ -191,7 +191,7 @@
           <!-- Question text -->
           <p class="text-base sm:text-lg leading-relaxed mb-7 transition-colors duration-200"
             [ngClass]="isDarkMode ? 'text-gray-100' : 'text-gray-800'"
-            [innerHTML]="questionList[currentQuestion]?.questionText">
+            [innerHTML]="questionList[currentQuestion]?.questionText | mathText">
           </p>
 
           <!-- Options: Multiple Choice (default) -->
@@ -222,7 +222,7 @@
                   : (isDarkMode ? 'bg-gray-700 text-gray-300' : 'bg-indigo-50 text-indigo-700')">
                 {{ ['A','B','C','D','E'][i] }}
               </span>
-              <span class="text-sm leading-relaxed" aria-hidden="true" [innerHTML]="option.text"></span>
+              <span class="text-sm leading-relaxed" aria-hidden="true" [innerHTML]="option.text | mathText"></span>
             </div>
           </div>
 
@@ -281,7 +281,7 @@
                 [ngClass]="isDarkMode ? 'text-emerald-300' : 'text-emerald-700'">Pembahasan:</h4>
               <p class="text-sm leading-relaxed"
                 [ngClass]="isDarkMode ? 'text-gray-300' : 'text-gray-700'"
-                [innerHTML]="questionList[currentQuestion]?.solution || questionList[currentQuestion]?.explanation || 'Tidak ada pembahasan untuk soal ini.'">
+                [innerHTML]="(questionList[currentQuestion]?.solution || questionList[currentQuestion]?.explanation || 'Tidak ada pembahasan untuk soal ini.') | mathText">
               </p>
             </div>
           </div>
@@ -320,7 +320,7 @@
                   [ngClass]="isDarkMode ? 'text-amber-300' : 'text-amber-700'">Pembahasan:</h4>
                 <p class="text-sm leading-relaxed"
                   [ngClass]="isDarkMode ? 'text-gray-300' : 'text-gray-700'"
-                  [innerHTML]="questionList[currentQuestion]?.solution || questionList[currentQuestion]?.explanation || 'Tidak ada pembahasan untuk soal ini.'">
+                  [innerHTML]="(questionList[currentQuestion]?.solution || questionList[currentQuestion]?.explanation || 'Tidak ada pembahasan untuk soal ini.') | mathText">
                 </p>
               </div>
             </div>

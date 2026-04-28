@@ -50,6 +50,7 @@ import { LevelUpModalComponent } from './level-up-modal/level-up-modal.component
 import { JalurUjianComponent } from './jalur-ujian/jalur-ujian.component';
 import { BreadcrumbComponent } from './shared/breadcrumb/breadcrumb.component';
 import { BrowseSoalComponent } from './browse-soal/browse-soal.component';
+import { MathTextPipe } from './shared/math-text.pipe';
 
 @NgModule({
   declarations: [
@@ -87,6 +88,7 @@ import { BrowseSoalComponent } from './browse-soal/browse-soal.component';
     LevelUpModalComponent,
     JalurUjianComponent,
     BrowseSoalComponent,
+    MathTextPipe,
   ],
   imports: [
     BreadcrumbComponent,
@@ -116,6 +118,9 @@ import { BrowseSoalComponent } from './browse-soal/browse-soal.component';
     AuthService,
     ThemeService,
     PremiumService
+  ],
+  exports: [
+    MathTextPipe,
   ],
   bootstrap: [AppComponent]
 })
