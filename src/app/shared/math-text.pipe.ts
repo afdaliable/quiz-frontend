@@ -7,15 +7,27 @@ function escapeHtml(s: string): string {
     .replace(/&/g, '&amp;')
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
 }
 
 function textToHtml(text: string): string {
-  const parts = text.split(/(\*\*.*?\*\*)/g)
-  return parts.map((part) => {
-    if (part.startsWith('**') && part.endsWith('**') && part.length > 4) {
-      return `<strong>${escapeHtml(part.slice(2, -2))}</strong>`
+  // Step A: split on ![alt](url) image markdown
+  const imgParts = text.split(/(!\[[^\]]*\]\([^)]+\))/g)
+  return imgParts.map((part) => {
+    const imgMatch = part.match(/^!\[([^\]]*)\]\(([^)]+)\)$/)
+    if (imgMatch) {
+      const alt = escapeHtml(imgMatch[1])
+      const src = escapeHtml(imgMatch[2])
+      return `<img src="${src}" alt="${alt}" class="max-w-full rounded my-1" />`
     }
-    return escapeHtml(part)
+    // Step B: bold markdown
+    const boldParts = part.split(/(\*\*.*?\*\*)/g)
+    return boldParts.map((p) => {
+      if (p.startsWith('**') && p.endsWith('**') && p.length > 4) {
+        return `<strong>${escapeHtml(p.slice(2, -2))}</strong>`
+      }
+      return escapeHtml(p)
+    }).join('')
   }).join('')
 }
 
