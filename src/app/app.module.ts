@@ -48,6 +48,7 @@ import { ScoreChartComponent } from './score-chart/score-chart.component';
 import { PublicProfileComponent } from './public-profile/public-profile.component';
 import { LevelUpModalComponent } from './level-up-modal/level-up-modal.component';
 import { JalurUjianComponent } from './jalur-ujian/jalur-ujian.component';
+import { SimulasiUjianComponent } from './simulasi-ujian/simulasi-ujian.component';
 import { BreadcrumbComponent } from './shared/breadcrumb/breadcrumb.component';
 import { BrowseSoalComponent } from './browse-soal/browse-soal.component';
 import { MathTextPipe } from './shared/math-text.pipe';
@@ -87,6 +88,7 @@ import { MathTextPipe } from './shared/math-text.pipe';
     PublicProfileComponent,
     LevelUpModalComponent,
     JalurUjianComponent,
+    SimulasiUjianComponent,
     BrowseSoalComponent,
     MathTextPipe,
   ],

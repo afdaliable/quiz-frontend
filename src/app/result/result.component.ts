@@ -1,4 +1,4 @@
-import { Component, OnInit, ElementRef, ViewChild } from '@angular/core';
+import { Component, OnInit, OnDestroy, ElementRef, ViewChild } from '@angular/core';
 import { Router } from '@angular/router';
 import { UserService } from '../services/user.service';
 import { ThemeService } from '../services/theme.service';
@@ -21,7 +21,7 @@ interface PaketSoal {
   templateUrl: './result.component.html',
   styleUrls: ['./result.component.scss']
 })
-export class ResultComponent implements OnInit {
+export class ResultComponent implements OnInit, OnDestroy {
   name: string = '';
   selectedPaket: any = null;
   totalQuestions: number = 0;
@@ -33,7 +33,8 @@ export class ResultComponent implements OnInit {
   incorrectAnswers: number = 0;
   currentUser: any;
   isDarkMode: boolean = false;
-  quizMode: 'exam' | 'study' | 'review' = 'exam';
+  quizMode: 'exam' | 'study' | 'review' | 'simulasi' = 'exam';
+  simulasiData: { simulasi_id: number; attempt_number: number; passing_score: number; session_id: string } | null = null;
   @ViewChild('resultCard', { static: false }) resultCard!: ElementRef;
 
   motivationMessage: string = '';
@@ -65,6 +66,28 @@ export class ResultComponent implements OnInit {
     );
   }
 
+  ngOnDestroy(): void {
+    // Clean up simulasi-specific keys when leaving the result page
+    if (this.quizMode === 'simulasi') {
+      localStorage.removeItem('simulasiData');
+      localStorage.removeItem('quizMode');
+    }
+  }
+
+  get isSimulasiResult(): boolean {
+    return this.quizMode === 'simulasi';
+  }
+
+  get simulasiPassed(): boolean {
+    if (!this.simulasiData) return false;
+    return this.points >= this.simulasiData.passing_score;
+  }
+
+  get simulasiShortfall(): number {
+    if (!this.simulasiData) return 0;
+    return Math.max(0, this.simulasiData.passing_score - this.points);
+  }
+
   loadResultData(): void {
     const userData = localStorage.getItem('user');
     if (userData) {
@@ -76,7 +99,12 @@ export class ResultComponent implements OnInit {
       this.selectedPaket = JSON.parse(paketData);
     }
 
-    this.quizMode = (localStorage.getItem('quizMode') as 'exam' | 'study' | 'review') || 'exam';
+    this.quizMode = (localStorage.getItem('quizMode') as 'exam' | 'study' | 'review' | 'simulasi') || 'exam';
+
+    const simRaw = localStorage.getItem('simulasiData');
+    if (simRaw) {
+      try { this.simulasiData = JSON.parse(simRaw); } catch { this.simulasiData = null; }
+    }
 
     this.totalQuestions = parseInt(localStorage.getItem('totalQuestions') || '0');
     this.answeredQuestions = parseInt(localStorage.getItem('answeredQuestions') || '0');
