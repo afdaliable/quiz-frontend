@@ -45,7 +45,10 @@
           </div>
           <div>
             <h1 class="text-xl font-bold" [ngClass]="isDarkMode ? 'text-white' : 'text-gray-900'">
-              {{ quizMode === 'exam' ? 'Hasil Quiz' : quizMode === 'study' ? 'Ringkasan Belajar' : 'Ringkasan Review' }}
+              {{ quizMode === 'exam' ? 'Hasil Quiz'
+                : quizMode === 'study' ? 'Ringkasan Belajar'
+                : quizMode === 'simulasi' ? 'Hasil Simulasi Ujian'
+                : 'Ringkasan Review' }}
             </h1>
             <p class="text-sm" [ngClass]="isDarkMode ? 'text-gray-400' : 'text-gray-500'">
               {{ selectedPaket?.kategori_soal }} · {{ selectedPaket?.nama_paket_soal }}
@@ -53,8 +56,26 @@
           </div>
         </div>
 
-        <!-- Score Circle (exam mode only) -->
-        <div *ngIf="quizMode === 'exam'" class="flex flex-col items-center py-6">
+        <!-- Simulasi Banner: LULUS / BELUM LULUS -->
+        <div *ngIf="isSimulasiResult && simulasiData" class="rounded-xl p-4 mb-4 text-center"
+             [ngClass]="simulasiPassed
+                ? (isDarkMode ? 'bg-emerald-900/30 text-emerald-200' : 'bg-emerald-50 text-emerald-900')
+                : (isDarkMode ? 'bg-rose-900/30 text-rose-200' : 'bg-rose-50 text-rose-900')">
+          <p class="text-lg font-bold">
+            <span *ngIf="simulasiPassed">✅ LULUS</span>
+            <span *ngIf="!simulasiPassed">❌ BELUM LULUS</span>
+          </p>
+          <p class="text-sm mt-1" *ngIf="simulasiPassed">
+            Skor kamu {{ points }}% melewati passing score ({{ simulasiData.passing_score }}%)
+          </p>
+          <p class="text-sm mt-1" *ngIf="!simulasiPassed">
+            Perlu {{ simulasiShortfall }}% lagi untuk lulus (passing {{ simulasiData.passing_score }}%)
+          </p>
+          <p class="text-xs mt-2 opacity-80">Attempt ke-{{ simulasiData.attempt_number }}</p>
+        </div>
+
+        <!-- Score Circle (exam & simulasi) -->
+        <div *ngIf="quizMode === 'exam' || quizMode === 'simulasi'" class="flex flex-col items-center py-6">
           <div class="relative w-44 h-44">
             <svg class="w-full h-full -rotate-90" viewBox="0 0 100 100">
               <circle cx="50" cy="50" r="40" fill="none"

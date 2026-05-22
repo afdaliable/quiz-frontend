@@ -1,0 +1,83 @@
+<div class="simulasi-page" [class.dark]="isDarkMode">
+  <div class="header">
+    <h1>Simulasi Ujian</h1>
+    <p class="subtitle">Uji kemampuanmu seperti ujian sesungguhnya — timer berjalan, tidak bisa di-pause.</p>
+  </div>
+
+  <div *ngIf="errorMessage" class="error-banner">
+    {{ errorMessage }}
+    <button (click)="errorMessage = null" class="close-btn">×</button>
+  </div>
+
+  <div *ngIf="loading" class="loading">Memuat daftar simulasi…</div>
+
+  <div *ngIf="!loading && simulasiList.length === 0" class="empty">
+    Belum ada simulasi yang tersedia.
+  </div>
+
+  <div *ngIf="!loading && simulasiList.length > 0" class="simulasi-grid">
+    <div *ngFor="let sim of simulasiList" class="simulasi-card">
+      <div class="card-header">
+        <span class="icon">📋</span>
+        <h3>{{ sim.nama_simulasi }}</h3>
+        <span *ngIf="sim.is_premium" class="badge-premium">Premium</span>
+      </div>
+
+      <div class="card-meta">
+        <span>📝 {{ sim.total_questions }} soal</span>
+        <span>⏱ {{ getDurationLabel(sim.duration_minutes) }}</span>
+        <span>🎯 Pass {{ sim.passing_score }}%</span>
+      </div>
+
+      <div class="card-attempts" *ngIf="(sim.user_attempts ?? 0) > 0">
+        <span>Skor terbaik: <strong>{{ sim.best_score ?? '-' }}%</strong></span>
+        <span *ngIf="sim.max_attempts > 0">Attempts: {{ sim.user_attempts ?? 0 }}/{{ sim.max_attempts }}</span>
+        <span *ngIf="sim.max_attempts === 0">Attempts: {{ sim.user_attempts ?? 0 }}</span>
+      </div>
+
+      <button class="btn-detail" (click)="openDetail(sim)">Lihat Detail</button>
+    </div>
+  </div>
+
+  <div *ngIf="showDetailModal && selectedSimulasi" class="modal-backdrop" (click)="closeDetail()">
+    <div class="modal" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h2>{{ selectedSimulasi.nama_simulasi }}</h2>
+        <button class="close-btn" (click)="closeDetail()">×</button>
+      </div>
+
+      <p *ngIf="selectedSimulasi.deskripsi" class="deskripsi">{{ selectedSimulasi.deskripsi }}</p>
+
+      <ul class="info-list">
+        <li>⏱ Durasi: <strong>{{ getDurationLabel(selectedSimulasi.duration_minutes) }}</strong></li>
+        <li>📝 Jumlah Soal: <strong>{{ selectedSimulasi.total_questions }}</strong></li>
+        <li>🎯 Passing Score: <strong>{{ selectedSimulasi.passing_score }}%</strong></li>
+        <li>🔄 Batas Attempt: <strong>{{ selectedSimulasi.max_attempts === 0 ? 'Tidak terbatas' : selectedSimulasi.max_attempts + '×' }}</strong></li>
+      </ul>
+
+      <div *ngIf="detailAttempts.length > 0" class="history">
+        <h3>Riwayat Kamu</h3>
+        <ul>
+          <li *ngFor="let a of detailAttempts">
+            Attempt {{ a.attempt_number }}:
+            <strong *ngIf="a.score != null">{{ a.score }}%</strong>
+            <span *ngIf="a.score == null">belum selesai</span>
+            <span *ngIf="a.is_passed === true"> ✅</span>
+            <span *ngIf="a.is_passed === false"> ❌</span>
+            <small>({{ formatDate(a.completed_at || a.created_at) }})</small>
+          </li>
+        </ul>
+      </div>
+
+      <div class="warning">
+        ⚠️ Timer berjalan terus dan tidak bisa di-pause. Pastikan kamu siap sebelum mulai.
+      </div>
+
+      <button class="btn-start"
+              [disabled]="startingSimulasi || selectedSimulasi.can_attempt === false"
+              (click)="startSimulasi(selectedSimulasi)">
+        {{ startingSimulasi ? 'Memulai…' : (selectedSimulasi.can_attempt === false ? 'Batas tercapai' : 'Mulai Simulasi →') }}
+      </button>
+    </div>
+  </div>
+</div>

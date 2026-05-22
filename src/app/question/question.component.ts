@@ -43,7 +43,7 @@ export class QuestionComponent implements OnInit, OnDestroy {
   currentUser: any;
   isDarkMode: boolean = false;
   isReviewMode: boolean = false;
-  quizMode: 'exam' | 'study' | 'review' = 'exam';
+  quizMode: 'exam' | 'study' | 'review' | 'simulasi' = 'exam';
   showExplanation: boolean = false;
   isAnswerChecked: boolean = false;
   currentAnswerIsCorrect: boolean = false;
@@ -92,11 +92,38 @@ export class QuestionComponent implements OnInit, OnDestroy {
     this.totalTime = parseInt(localStorage.getItem('durasi')!) * 60;
     this.remainingTime = this.totalTime;
     this.isReviewMode = localStorage.getItem('isReviewMode') === 'true';
-    this.quizMode = (localStorage.getItem('quizMode') as 'exam' | 'study' | 'review') || 'exam';
+    this.quizMode = (localStorage.getItem('quizMode') as 'exam' | 'study' | 'review' | 'simulasi') || 'exam';
     // Derive isReviewMode from quizMode for backward compatibility
     this.isReviewMode = this.quizMode === 'review';
 
     this.themeService.darkMode$.subscribe(isDark => this.isDarkMode = isDark);
+
+    // Handle simulasi session — preloaded questions from /simulasi-ujian/:id/start
+    const simulasiSessionDataStr = localStorage.getItem('simulasiSessionData');
+    if (this.quizMode === 'simulasi' && simulasiSessionDataStr) {
+      localStorage.removeItem('simulasiSessionData');
+      try {
+        const simData = JSON.parse(simulasiSessionDataStr);
+        this.selectedPaket = {
+          id: 0,
+          id_nama_paket_soal: 0,
+          kategori_soal: simData.kategori_soal || 'Simulasi',
+          nama_paket_soal: simData.nama_paket_soal || 'Simulasi Ujian',
+          jumlah_soal: simData.total_questions,
+          is_premium: false,
+          created_at: new Date().toISOString(),
+        } as any;
+        this.currentSession = { id: simData.session_id, session_type: 'simulasi' } as QuizSession;
+        this.sessionInitialized = true;
+        this.loadRandomQuestions(simData.questions);
+        this.setupAutoSave();
+      } catch (error) {
+        console.error('Error loading simulasi session:', error);
+        alert('Gagal memuat soal simulasi. Silakan coba lagi.');
+        this.router.navigate(['/simulasi-ujian']);
+      }
+      return;
+    }
 
     // Handle random session
     const randomSessionDataStr = localStorage.getItem('randomSessionData');
@@ -917,6 +944,7 @@ export class QuestionComponent implements OnInit, OnDestroy {
     switch (this.quizMode) {
       case 'study': return 'Akhiri Belajar';
       case 'review': return 'Akhiri Review';
+      case 'simulasi': return 'Submit Simulasi';
       default: return 'Akhiri Kuis';
     }
   }
@@ -925,6 +953,7 @@ export class QuestionComponent implements OnInit, OnDestroy {
     switch (this.quizMode) {
       case 'study': return 'Yakin ingin mengakhiri belajar?';
       case 'review': return 'Yakin ingin mengakhiri review?';
+      case 'simulasi': return 'Yakin ingin submit simulasi?';
       default: return 'Yakin ingin mengakhiri kuis?';
     }
   }
@@ -933,7 +962,26 @@ export class QuestionComponent implements OnInit, OnDestroy {
     switch (this.quizMode) {
       case 'study': return 'Lanjutkan Belajar';
       case 'review': return 'Lanjutkan Review';
+      case 'simulasi': return 'Lanjutkan Simulasi';
       default: return 'Lanjutkan Kuis';
+    }
+  }
+
+  get isSimulasiMode(): boolean {
+    return this.quizMode === 'simulasi';
+  }
+
+  get simulasiData(): { simulasi_id: number; attempt_number: number; passing_score: number; session_id: string } | null {
+    const raw = localStorage.getItem('simulasiData');
+    if (!raw) return null;
+    try { return JSON.parse(raw); } catch { return null; }
+  }
+
+  @HostListener('window:beforeunload', ['$event'])
+  onBeforeUnload(event: BeforeUnloadEvent) {
+    if (this.isSimulasiMode && !this.isQuizCompleted) {
+      event.preventDefault();
+      event.returnValue = 'Simulasi sedang berjalan. Timer tidak berhenti jika kamu keluar. Yakin keluar?';
     }
   }
 }

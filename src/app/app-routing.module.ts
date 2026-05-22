@@ -25,6 +25,7 @@ import { OnboardingGuard } from './auth/onboarding.guard';
 import { SearchComponent } from './search/search.component';
 import { PublicProfileComponent } from './public-profile/public-profile.component';
 import { JalurUjianComponent } from './jalur-ujian/jalur-ujian.component';
+import { SimulasiUjianComponent } from './simulasi-ujian/simulasi-ujian.component';
 import { BrowseSoalComponent } from './browse-soal/browse-soal.component';
 
 const routes: Routes = [
@@ -105,6 +106,11 @@ const routes: Routes = [
   {
     path: 'jalur-ujian',
     component: JalurUjianComponent,
+    canActivate: [AuthGuard]
+  },
+  {
+    path: 'simulasi-ujian',
+    component: SimulasiUjianComponent,
     canActivate: [AuthGuard]
   },
   {
