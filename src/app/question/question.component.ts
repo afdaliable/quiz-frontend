@@ -215,14 +215,24 @@ export class QuestionComponent implements OnInit, OnDestroy {
   }
 
   private loadRandomQuestions(questions: any[]): void {
-    this.questionList = questions.map((q: any) => ({
-      id: q.id,
-      question: q.soal,
-      options: [q.opt1, q.opt2, q.opt3, q.opt4, q.opt5]
-        .filter((o: any) => !!o)
-        .map((text: string) => ({ text, correct: false })),
-      explanation: q.solution || '',
-    }));
+    this.questionList = questions.map((q: any) => {
+      const optKeys = ['opt1', 'opt2', 'opt3', 'opt4', 'opt5'];
+      const opts = optKeys
+        .filter(k => q[k] != null && String(q[k]).trim() !== '')
+        .map(k => ({
+          text: q[k],
+          correct: q.correct_answer === k,
+          tkp_score: q.option_scores ? (q.option_scores[k] || null) : null,
+        }));
+      return {
+        id: q.id,
+        question: q.soal,
+        question_type: q.question_type || 'multiple_choice',
+        options: opts,
+        option_scores: q.option_scores || null,
+        explanation: q.solution || '',
+      };
+    });
 
     this.answeredQuestions = new Array(this.questionList.length).fill(false);
     this.selectedAnswers = new Array(this.questionList.length).fill(null);
@@ -331,7 +341,7 @@ export class QuestionComponent implements OnInit, OnDestroy {
     if (this.keyboardHintTimer) {
       clearTimeout(this.keyboardHintTimer);
     }
-    
+
     // Save final progress before leaving
     if (this.currentSession && !this.isQuizCompleted) {
       this.saveProgressToSession();
@@ -349,10 +359,10 @@ export class QuestionComponent implements OnInit, OnDestroy {
     try {
       // Initialize session with the quiz session service
       this.currentSession = await this.quizSessionService.initializeQuizSession(
-        this.selectedPaket, 
+        this.selectedPaket,
         this.totalTime
       );
-      
+
       if (this.currentSession) {
         this.sessionInitialized = true;
         console.log('Quiz session initialized:', this.currentSession);
@@ -396,13 +406,13 @@ export class QuestionComponent implements OnInit, OnDestroy {
     this.currentQuestion = this.currentSession.current_question || 0;
     this.selectedAnswers = this.currentSession.answers || [];
     this.markedQuestions = this.currentSession.marked_questions || [];
-    
+
     if (this.currentSession.time_remaining !== null) {
       this.remainingTime = this.currentSession.time_remaining;
     } else {
       this.remainingTime = this.totalTime;
     }
-    
+
     console.log('Loaded session data:', {
       currentQuestion: this.currentQuestion,
       answersCount: this.selectedAnswers.length,
@@ -465,7 +475,7 @@ export class QuestionComponent implements OnInit, OnDestroy {
       .pipe(
         tap((res: Question[]) => {
           this.questionList = res;
-          
+
           // Initialize arrays only if not resuming from session
           if (!this.currentSession || this.selectedAnswers.length === 0) {
             this.answeredQuestions = new Array(this.questionList.length).fill(false);
@@ -482,7 +492,7 @@ export class QuestionComponent implements OnInit, OnDestroy {
             while (this.markedQuestions.length < this.questionList.length) {
               this.markedQuestions.push(false);
             }
-            
+
             // Update answeredQuestions based on selectedAnswers
             this.selectedAnswers.forEach((answer, index) => {
               this.answeredQuestions[index] = answer !== null;
@@ -593,10 +603,20 @@ export class QuestionComponent implements OnInit, OnDestroy {
     // In study mode, show immediate full feedback (correct answer + explanation auto-open)
     if (this.quizMode === 'study' && currentQno === this.currentQuestion) {
       const currentQuestionObj = this.questionList[currentQno];
-      this.correctAnswerIndex = currentQuestionObj.options.findIndex((opt: any) => opt.correct);
-      this.currentAnswerIsCorrect = currentQuestionObj.options[option].correct;
+      const isTkp = currentQuestionObj.question_type === 'tkp';
+
+      if (isTkp) {
+        const optKey = `opt${option + 1}`;
+        const poin = currentQuestionObj.option_scores?.[optKey] ?? 1;
+        this.currentAnswerIsCorrect = poin === 5;
+        this.correctAnswerIndex = currentQuestionObj.options.findIndex((o: any) => o.tkp_score === 5);
+      } else {
+        this.correctAnswerIndex = currentQuestionObj.options.findIndex((opt: any) => opt.correct);
+        this.currentAnswerIsCorrect = currentQuestionObj.options[option].correct;
+      }
       this.isAnswerChecked = true;
-      this.answerExplanation = currentQuestionObj.explanation || currentQuestionObj.solution || 'Tidak ada penjelasan tersedia untuk soal ini.';
+      this.answerExplanation = currentQuestionObj.explanation || currentQuestionObj.solution
+        || 'Tidak ada penjelasan tersedia untuk soal ini.';
       this.showExplanation = true;
     } else if (this.quizMode === 'review') {
       // Review mode: user manually checks answer via button
@@ -608,24 +628,36 @@ export class QuestionComponent implements OnInit, OnDestroy {
   calculateScore() {
     this.correctAnswer = 0;
     this.incorrectAnswer = 0;
+    let rawScore = 0;
+    let maxScore = 0;
     const wrongNumbers: number[] = [];
 
     this.questionList.forEach((question: any, index: number) => {
       const selectedAnswer = this.selectedAnswers[index];
+      const isTkp = question.question_type === 'tkp';
+      maxScore += 5;
+
       if (selectedAnswer !== null && selectedAnswer !== undefined) {
-        if (question.options[selectedAnswer]?.correct) {
-          this.correctAnswer++;
+        if (isTkp) {
+          const optKey = `opt${selectedAnswer + 1}`;
+          const poin = question.option_scores?.[optKey] ?? 1;
+          rawScore += poin;
+          if (poin === 5) this.correctAnswer++;
         } else {
-          this.incorrectAnswer++;
-          wrongNumbers.push(index + 1);
+          if (question.options[selectedAnswer]?.correct) {
+            rawScore += 5;
+            this.correctAnswer++;
+          } else {
+            this.incorrectAnswer++;
+            wrongNumbers.push(index + 1);
+          }
         }
       }
     });
 
-    // Perhitungan skor baru
-    this.points = Math.round(
-      (this.correctAnswer / this.questionList.length) * 100
-    );
+    this.points = maxScore > 0
+      ? Math.round((rawScore / maxScore) * 100)
+      : 0;
 
     localStorage.setItem('wrongQuestions', JSON.stringify(wrongNumbers));
   }
@@ -764,7 +796,7 @@ export class QuestionComponent implements OnInit, OnDestroy {
   toggleMarkQuestion() {
     this.markedQuestions[this.currentQuestion] =
       !this.markedQuestions[this.currentQuestion];
-    
+
     // Save to session
     if (this.currentSession) {
       this.saveProgressToSession();
@@ -902,7 +934,7 @@ export class QuestionComponent implements OnInit, OnDestroy {
     if (this.isReviewMode && this.currentQuestion < this.questionList.length) {
       const currentQuestionObj = this.questionList[this.currentQuestion];
       const selectedAnswer = this.selectedAnswers[this.currentQuestion];
-      
+
       if (selectedAnswer !== null && selectedAnswer !== undefined) {
         this.isAnswerChecked = true;
         this.currentAnswerIsCorrect = currentQuestionObj.options[selectedAnswer].correct;
