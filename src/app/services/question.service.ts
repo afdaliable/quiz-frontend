@@ -107,7 +107,7 @@ export class QuestionService {
 
       console.log(`Fetching questions for quiz ID: ${quizId}`);
       
-      const url = this.getApiUrl(`paket-soal-response/${kategori}/${namaPaket}`);
+      const url = this.getApiUrl(`paket-soal-response/${encodeURIComponent(kategori)}/${encodeURIComponent(namaPaket)}`);
       
       console.log('Getting questions from URL:', url);
       
