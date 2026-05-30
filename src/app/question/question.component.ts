@@ -642,7 +642,7 @@ export class QuestionComponent implements OnInit, OnDestroy {
           const optKey = `opt${selectedAnswer + 1}`;
           const poin = question.option_scores?.[optKey] ?? 1;
           rawScore += poin;
-          if (poin === 5) this.correctAnswer++;
+          this.correctAnswer++;
         } else {
           if (question.options[selectedAnswer]?.correct) {
             rawScore += 5;
