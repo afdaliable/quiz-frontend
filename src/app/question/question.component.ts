@@ -222,7 +222,7 @@ export class QuestionComponent implements OnInit, OnDestroy {
         .map(k => ({
           text: q[k],
           correct: q.correct_answer === k,
-          tkp_score: q.option_scores ? (q.option_scores[k] || null) : null,
+          tkp_score: q.option_scores ? (q.option_scores[k] ?? null) : null,
         }));
       return {
         id: q.id,
