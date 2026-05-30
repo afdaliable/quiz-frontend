@@ -13,7 +13,7 @@ import {
 })
 export class PomodoroWidgetComponent implements OnInit, OnDestroy {
   @Input() isDarkMode = false;
-  @Input() quizMode: 'exam' | 'study' | 'review' = 'exam';
+  @Input() quizMode: 'exam' | 'study' | 'review' | 'simulasi' = 'exam';
 
   phase: PomodoroPhase = 'idle';
   timeLeft = 0;
