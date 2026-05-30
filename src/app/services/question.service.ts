@@ -81,33 +81,7 @@ export class QuestionService {
   }
 
   getQuestions(kategori: string, namaPaket: string): Observable<any> {
-    const token = localStorage.getItem('token');
-    if (!token) {
-      console.error('No token found');
-      this.router.navigate(['/login']);
-      return throwError(() => new Error('No token found'));
-    }
-
-    // Get the selected paket from localStorage
-    const selectedPaketStr = localStorage.getItem('selectedPaket');
-    if (!selectedPaketStr) {
-      console.error('No selected paket found in localStorage');
-      return throwError(() => new Error('No selected paket found'));
-    }
-
-    try {
-      const selectedPaket = JSON.parse(selectedPaketStr);
-      // Use either id or id_nama_paket_soal for the quiz ID
-      const quizId = selectedPaket.id || selectedPaket.id_nama_paket_soal;
-      
-      if (!quizId) {
-        console.error('Invalid quiz ID:', selectedPaket);
-        return throwError(() => new Error('Invalid quiz ID'));
-      }
-
-      console.log(`Fetching questions for quiz ID: ${quizId}`);
-      
-      const url = this.getApiUrl(`paket-soal-response/${encodeURIComponent(kategori)}/${encodeURIComponent(namaPaket)}`);
+    const url = this.getApiUrl(`paket-soal-response/${encodeURIComponent(kategori)}/${encodeURIComponent(namaPaket)}`);
       
       console.log('Getting questions from URL:', url);
       
@@ -168,20 +142,9 @@ export class QuestionService {
         }),
         catchError(error => {
           console.error('Error fetching questions:', error);
-          
-          if (error.status === 401) {
-            console.error('Unauthorized access, clearing token');
-            localStorage.clear();
-            this.router.navigate(['/login']);
-          }
-          
           return throwError(() => error);
         })
       );
-    } catch (error) {
-      console.error('Error parsing selected paket:', error);
-      return throwError(() => error);
-    }
   }
 
   getQuizHistory(page: number = 1, limit: number = 20): Observable<QuizHistoryResponse> {

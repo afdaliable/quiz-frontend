@@ -127,10 +127,6 @@ export class QuizSessionService {
 
   private handleError = (error: any) => {
     console.error('QuizSessionService Error:', error);
-    if (error.status === 401) {
-      localStorage.clear();
-      this.router.navigate(['/login']);
-    }
     return throwError(() => error);
   };
 
