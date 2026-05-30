@@ -21,6 +21,7 @@ interface ApiResponse {
     opt5: string | null;
     correct_answer: string;
     solution: string;
+    option_scores?: { [key: string]: number } | null;
   }[];
 }
 
@@ -31,7 +32,9 @@ export interface Question {
   options: {
     text: string;
     correct: boolean;
+    tkp_score?: number | null;
   }[];
+  option_scores?: { [key: string]: number } | null;
   solution: string;
 }
 
@@ -51,7 +54,7 @@ export class QuestionService {
       if (endpoint.startsWith('/')) {
         endpoint = endpoint.substring(1);
       }
-      
+
       // Use window.location.origin to get the base URL
       const baseUrl = window.location.origin;
       return `${baseUrl}/api/${endpoint}`;
@@ -63,9 +66,9 @@ export class QuestionService {
 
   getListPaketSoal(): Observable<any> {
     const url = this.getApiUrl('listpaketsoal');
-    
+
     console.log('Getting paket soal list from URL:', url);
-    
+
     return this.http.get(url, {
       withCredentials: true
     }).pipe(
@@ -82,27 +85,27 @@ export class QuestionService {
 
   getQuestions(kategori: string, namaPaket: string): Observable<any> {
     const url = this.getApiUrl(`paket-soal-response/${encodeURIComponent(kategori)}/${encodeURIComponent(namaPaket)}`);
-      
+
       console.log('Getting questions from URL:', url);
-      
+
       return this.http.get<any>(url, {
         withCredentials: true
       }).pipe(
         map(response => {
           console.log('Question API response:', response);
-          
+
           // Check if access is denied for premium quiz
           if (response.success === false && response.message?.includes('premium')) {
             console.error('Premium access denied:', response.message);
-            this.router.navigate(['/home'], { 
-              queryParams: { message: 'Premium subscription required to access this quiz.' } 
+            this.router.navigate(['/home'], {
+              queryParams: { message: 'Premium subscription required to access this quiz.' }
             });
             return [];
           }
-          
+
           // Handle different response structures
           let questions = [];
-          
+
           if (response.kumpulan_soal) {
             // Direct questions array in response
             questions = response.kumpulan_soal;
@@ -116,17 +119,16 @@ export class QuestionService {
             console.error('Unexpected response structure:', response);
             return [];
           }
-          
+
           // Transform questions to match the expected format
           return questions.map((q: any) => {
             const questionType: string = q.question_type || 'multiple_choice';
-            const allOptions = [
-              { text: q.opt1, correct: q.correct_answer === 'opt1' },
-              { text: q.opt2, correct: q.correct_answer === 'opt2' },
-              { text: q.opt3, correct: q.correct_answer === 'opt3' },
-              { text: q.opt4, correct: q.correct_answer === 'opt4' },
-              { text: q.opt5, correct: q.correct_answer === 'opt5' },
-            ];
+            const optKeys = ['opt1', 'opt2', 'opt3', 'opt4', 'opt5'];
+            const allOptions = optKeys.map(k => ({
+              text: (q as any)[k],
+              correct: q.correct_answer === k,
+              tkp_score: q.option_scores ? (q.option_scores[k] ?? null) : null,
+            }));
             // Filter out null / empty options
             const options = allOptions.filter(
               o => o.text != null && String(o.text).trim() !== ''
@@ -136,6 +138,7 @@ export class QuestionService {
               questionText: q.soal,
               question_type: questionType,
               options,
+              option_scores: q.option_scores || null,
               solution: q.solution,
             };
           });
@@ -159,7 +162,7 @@ export class QuestionService {
 
   getAllCategories(): Observable<any> {
     const url = this.getApiUrl('semuaKategori');
-    
+
     console.log('Getting categories from URL:', url);
 
     return this.http.get(url, {
