@@ -1,3 +1,100 @@
+<!-- ── Section Time-Up Modal (auto-dismiss 3s, AFD-253) ───────────────────── -->
+<div *ngIf="showSectionTimeUpModal"
+  class="fixed inset-0 z-50 flex items-center justify-center px-4">
+  <div class="absolute inset-0 bg-black/60"></div>
+  <div class="relative w-full max-w-sm rounded-2xl shadow-2xl p-6 text-center"
+    [ngClass]="isDarkMode ? 'bg-gray-800' : 'bg-white'">
+    <div class="text-4xl mb-3">⏰</div>
+    <h3 class="text-base font-bold mb-2" [ngClass]="isDarkMode ? 'text-white' : 'text-gray-900'">
+      Waktu {{ activeSection?.name }} habis!
+    </h3>
+    <p class="text-sm mb-4" [ngClass]="isDarkMode ? 'text-gray-300' : 'text-gray-600'">
+      Beralih ke {{ sections[activeSectionIndex + 1]?.name ?? 'section berikutnya' }}…
+    </p>
+    <div class="text-4xl font-bold text-orange-500">{{ sectionTimeUpCountdown }}</div>
+  </div>
+</div>
+
+<!-- ── Section Confirm Modal (manual advance, AFD-253) ──────────────────── -->
+<div *ngIf="showSectionConfirmModal"
+  class="fixed inset-0 z-50 flex items-center justify-center px-4">
+  <div class="absolute inset-0 bg-black/50"></div>
+  <div class="relative w-full max-w-sm rounded-2xl shadow-xl p-6"
+    [ngClass]="isDarkMode ? 'bg-gray-800' : 'bg-white'"
+    (click)="$event.stopPropagation()">
+    <div class="flex items-center justify-center w-12 h-12 rounded-xl mb-4 mx-auto"
+      [ngClass]="isDarkMode ? 'bg-orange-900/30' : 'bg-orange-50'">
+      <span class="text-2xl">⚠️</span>
+    </div>
+    <h3 class="text-base font-bold text-center mb-2"
+      [ngClass]="isDarkMode ? 'text-white' : 'text-gray-900'">
+      Lanjut ke {{ sections[activeSectionIndex + 1]?.name }}?
+    </h3>
+    <p class="text-sm text-center mb-1" [ngClass]="isDarkMode ? 'text-gray-300' : 'text-gray-600'">
+      <span *ngIf="hasPerSectionTimer">Sisa waktu: <strong>{{ formatSectionTime(sectionRemainingSeconds) }}</strong> di {{ activeSection?.name }}.</span>
+      Setelah lanjut, kamu <strong>tidak bisa kembali</strong>.
+    </p>
+    <p class="text-sm text-center mb-6 font-semibold"
+      [ngClass]="isDarkMode ? 'text-amber-400' : 'text-amber-600'">
+      Soal belum dijawab di section ini:
+      {{ activeSection ? (activeSection.count - getAnsweredCountForSection(activeSection)) : 0 }} soal
+    </p>
+    <div class="flex gap-3">
+      <button (click)="showSectionConfirmModal = false"
+        class="flex-1 py-2.5 rounded-xl text-sm font-semibold transition-colors"
+        [ngClass]="isDarkMode ? 'bg-gray-700 text-gray-200 hover:bg-gray-600' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'">
+        Batalkan
+      </button>
+      <button (click)="advanceToNextSection('manual')"
+        class="flex-1 py-2.5 rounded-xl text-sm font-semibold transition-colors bg-red-600 hover:bg-red-700 text-white">
+        Lanjut Sekarang →
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ── Submit Review Modal (AFD-253) ────────────────────────────────────── -->
+<div *ngIf="showSubmitReviewModal"
+  class="fixed inset-0 z-50 flex items-center justify-center px-4"
+  (click)="cancelSubmitReview()">
+  <div class="absolute inset-0 bg-black/50"></div>
+  <div class="relative w-full max-w-sm rounded-2xl shadow-xl p-6"
+    [ngClass]="isDarkMode ? 'bg-gray-800' : 'bg-white'"
+    (click)="$event.stopPropagation()">
+    <div class="text-2xl text-center mb-3">📋</div>
+    <h3 class="text-base font-bold text-center mb-4"
+      [ngClass]="isDarkMode ? 'text-white' : 'text-gray-900'">
+      Review Sebelum Submit
+    </h3>
+    <div class="space-y-3 mb-6 text-sm">
+      <div class="p-3 rounded-xl" [ngClass]="isDarkMode ? 'bg-gray-700' : 'bg-gray-50'">
+        <p class="font-semibold mb-1" [ngClass]="isDarkMode ? 'text-gray-200' : 'text-gray-700'">
+          Belum dijawab: <span class="text-red-500">{{ getUnansweredInCurrentSession().length }} soal</span>
+        </p>
+        <p class="text-xs" [ngClass]="isDarkMode ? 'text-gray-400' : 'text-gray-500'">
+          No. {{ getUnansweredInCurrentSession().slice(0, 8).join(', ') }}{{ getUnansweredInCurrentSession().length > 8 ? '…' : '' }}
+        </p>
+      </div>
+      <div class="p-3 rounded-xl" [ngClass]="isDarkMode ? 'bg-gray-700' : 'bg-gray-50'">
+        <p class="font-semibold" [ngClass]="isDarkMode ? 'text-gray-200' : 'text-gray-700'">
+          Ditandai ⭐: <span class="text-amber-500">{{ getMarkedNumbers().length }} soal</span>
+        </p>
+      </div>
+    </div>
+    <div class="flex gap-3">
+      <button (click)="cancelSubmitReview()"
+        class="flex-1 py-2.5 rounded-xl text-sm font-semibold transition-colors"
+        [ngClass]="isDarkMode ? 'bg-indigo-600 hover:bg-indigo-500 text-white' : 'bg-indigo-600 hover:bg-indigo-700 text-white'">
+        Cek Lagi
+      </button>
+      <button (click)="confirmSubmit()"
+        class="flex-1 py-2.5 rounded-xl text-sm font-semibold bg-red-600 hover:bg-red-700 text-white transition-colors">
+        Submit Sekarang
+      </button>
+    </div>
+  </div>
+</div>
+
 <!-- End Quiz Confirmation Modal -->
 <div *ngIf="showEndModal"
   class="fixed inset-0 z-50 flex items-center justify-center px-4"
@@ -113,8 +210,40 @@
           <span aria-hidden="true">{{ formatTime(remainingTime) }}</span>
         </div>
 
+        <!-- Simulasi global timer (free / section_locked without per-section duration) -->
+        <div *ngIf="quizMode === 'simulasi' && !hasPerSectionTimer"
+          class="flex items-center gap-2 px-4 py-1.5 rounded-full font-semibold text-sm border transition-colors duration-500"
+          role="timer"
+          [class.timer-critical]="remainingTime <= 300"
+          [ngClass]="remainingTime <= 300
+            ? (isDarkMode ? 'bg-red-900/40 text-red-400 border-red-600' : 'bg-red-100 text-red-600 border-red-400')
+            : remainingTime <= 900
+            ? (isDarkMode ? 'bg-orange-900/40 text-orange-400 border-orange-600' : 'bg-orange-100 text-orange-600 border-orange-400')
+            : (isDarkMode ? 'bg-gray-800 text-gray-300 border-gray-700' : 'bg-gray-100 text-gray-700 border-transparent')">
+          <svg class="w-4 h-4" aria-hidden="true" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+          {{ formatTime(remainingTime) }}
+        </div>
+
+        <!-- Simulasi per-section timer (LPDP) -->
+        <div *ngIf="quizMode === 'simulasi' && hasPerSectionTimer && activeSection"
+          class="flex flex-col items-end">
+          <span class="text-[10px] font-medium" [ngClass]="isDarkMode ? 'text-gray-400' : 'text-gray-500'">
+            {{ activeSection.name }} ({{ activeSectionIndex + 1 }}/{{ sections.length }})
+          </span>
+          <div class="flex items-center gap-1.5 px-3 py-1 rounded-full font-mono font-bold text-sm border"
+            [ngClass]="sectionRemainingSeconds <= 300
+              ? (isDarkMode ? 'bg-red-900/40 text-red-400 border-red-600 animate-pulse' : 'bg-red-100 text-red-600 border-red-400 animate-pulse')
+              : sectionRemainingSeconds <= 900
+              ? (isDarkMode ? 'bg-orange-900/40 text-orange-400 border-orange-600' : 'bg-orange-100 text-orange-600 border-orange-400')
+              : (isDarkMode ? 'bg-gray-800 text-gray-300 border-gray-700' : 'bg-gray-100 text-gray-700 border-transparent')">
+            ⏱ {{ formatSectionTime(sectionRemainingSeconds) }}
+          </div>
+        </div>
+
         <!-- Mode badge (study/review) -->
-        <div *ngIf="quizMode !== 'exam'"
+        <div *ngIf="quizMode !== 'exam' && quizMode !== 'simulasi'"
           class="px-3 py-1.5 rounded-full text-xs font-semibold"
           [ngClass]="quizMode === 'study'
             ? (isDarkMode ? 'bg-emerald-900/40 text-emerald-400' : 'bg-emerald-100 text-emerald-700')
@@ -148,10 +277,13 @@
               [ngClass]="markedQuestions[currentQuestion] ? 'border-white/30 bg-white/10' : (isDarkMode ? 'border-gray-600 bg-gray-700' : 'border-gray-300 bg-gray-100')">T</kbd>
           </button>
 
-          <button (click)="confirmEndQuiz()"
+          <button
+            (click)="quizMode === 'simulasi' ? openSubmitReview() : confirmEndQuiz()"
             [attr.aria-label]="getEndButtonLabel()"
             class="px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors"
             [ngClass]="quizMode === 'exam'
+              ? 'bg-rose-600 hover:bg-rose-700 text-white'
+              : quizMode === 'simulasi'
               ? 'bg-rose-600 hover:bg-rose-700 text-white'
               : quizMode === 'study'
               ? 'bg-emerald-600 hover:bg-emerald-700 text-white'
@@ -169,6 +301,45 @@
     <div class="h-full rounded-r-full transition-all duration-400 ease-in-out"
       style="background: linear-gradient(90deg, #6366f1, #8b5cf6)"
       [style.width.%]="((currentQuestion + 1) / questionList.length) * 100">
+    </div>
+  </div>
+
+  <!-- Section tabs (simulasi section_locked) -->
+  <div *ngIf="quizMode === 'simulasi' && navigationMode === 'section_locked' && sections.length > 1"
+    class="border-b transition-colors duration-200"
+    [ngClass]="isDarkMode ? 'bg-gray-900 border-gray-700' : 'bg-white border-gray-200'">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex items-center gap-2 py-2 overflow-x-auto">
+        <span *ngFor="let sec of sections; let i = index"
+          class="flex-shrink-0 px-3 py-1 rounded-full text-xs font-semibold"
+          [ngClass]="{
+            'bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-400': i < activeSectionIndex,
+            'bg-blue-600 text-white': i === activeSectionIndex,
+            'bg-gray-100 text-gray-400 dark:bg-gray-800 dark:text-gray-500': i > activeSectionIndex
+          }">
+          {{ i < activeSectionIndex ? '✓' : (i === activeSectionIndex ? '●' : '🔒') }}
+          {{ sec.name }}
+          <span *ngIf="i === activeSectionIndex" class="ml-1 opacity-70">
+            {{ getAnsweredCountForSection(sec) }}/{{ sec.count }}
+          </span>
+        </span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Section progress header (free mode) -->
+  <div *ngIf="quizMode === 'simulasi' && navigationMode === 'free' && sections.length > 1"
+    class="border-b transition-colors duration-200"
+    [ngClass]="isDarkMode ? 'bg-gray-900 border-gray-700' : 'bg-white border-gray-200'">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex items-center gap-4 py-2 text-xs overflow-x-auto">
+        <span *ngFor="let sec of sections"
+          class="flex-shrink-0 font-medium cursor-pointer hover:text-indigo-500 transition-colors"
+          [ngClass]="isDarkMode ? 'text-gray-300' : 'text-gray-600'"
+          (click)="goToQuestion(sec.startIndex)">
+          {{ sec.name }}: <span class="font-bold text-emerald-500">{{ getAnsweredCountForSection(sec) }}</span>/{{ sec.count }}
+        </span>
+      </div>
     </div>
   </div>
 
@@ -353,14 +524,19 @@
                 [ngClass]="isDarkMode ? 'border-gray-500 bg-gray-600' : 'border-gray-300 bg-gray-50'">P</kbd>
             </button>
 
-            <button (click)="nextQuestion()" [disabled]="currentQuestion === questionList.length - 1 || isAnimating"
-              aria-label="Soal selanjutnya"
+            <button (click)="nextQuestion()"
+              [disabled]="(currentQuestion === questionList.length - 1 && quizMode !== 'simulasi') || isAnimating"
+              [attr.aria-label]="nextButtonLabel"
               class="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold transition-colors duration-200"
-              [ngClass]="currentQuestion === questionList.length - 1 || isAnimating
+              [ngClass]="(currentQuestion === questionList.length - 1 && quizMode !== 'simulasi') || isAnimating
                 ? 'opacity-30 cursor-not-allowed pointer-events-none ' + (isDarkMode ? 'bg-gray-700 text-gray-500' : 'bg-gray-200 text-gray-400')
+                : isNextButtonSectionAdvance
+                ? 'bg-orange-500 text-white hover:bg-orange-600'
+                : (currentQuestion === questionList.length - 1 && quizMode === 'simulasi')
+                ? 'bg-red-600 text-white hover:bg-red-700'
                 : 'bg-indigo-600 text-white hover:bg-indigo-700'">
-              <kbd class="hidden md:inline font-mono text-[10px] px-1 py-0.5 rounded border opacity-60 border-indigo-400 bg-indigo-500">N</kbd>
-              {{ quizMode === 'exam' ? 'Selanjutnya' : 'Soal Berikutnya' }}
+              <kbd *ngIf="!isNextButtonSectionAdvance" class="hidden md:inline font-mono text-[10px] px-1 py-0.5 rounded border opacity-60 border-indigo-400 bg-indigo-500">N</kbd>
+              {{ nextButtonLabel }}
               <svg class="w-4 h-4" aria-hidden="true" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
               </svg>
@@ -396,22 +572,65 @@
             </div>
           </div>
 
-          <div class="grid grid-cols-5 gap-1.5 mb-4" role="navigation" aria-label="Navigasi soal">
-            <button
-              *ngFor="let q of questionList; let i = index"
-              (click)="goToQuestion(i)"
-              [attr.aria-label]="'Soal ' + (i + 1) + (answeredQuestions[i] ? ', sudah dijawab' : '') + (markedQuestions[i] ? ', ditandai' : '') + (currentQuestion === i ? ', sedang aktif' : '')"
-              [attr.aria-current]="currentQuestion === i ? 'true' : null"
-              class="aspect-square flex items-center justify-center text-xs font-semibold rounded-lg transition-colors duration-150 relative"
-              [ngClass]="getQuestionButtonClass(i)">
-              {{ i + 1 }}
-              <svg *ngIf="markedQuestions[i]"
-                class="absolute top-1 right-1 w-2.5 h-2.5"
-                [ngClass]="isDarkMode ? 'text-yellow-300' : 'text-yellow-600'"
-                fill="currentColor" viewBox="0 0 20 20">
-                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
-              </svg>
-            </button>
+          <div class="mb-4" role="navigation" aria-label="Navigasi soal">
+            <!-- free mode: section separator + all buttons -->
+            <ng-container *ngIf="navigationMode !== 'section_locked' || sections.length === 0">
+              <ng-container *ngFor="let q of questionList; let i = index">
+                <!-- Section separator (simulasi free mode) -->
+                <div *ngIf="quizMode === 'simulasi' && sections.length > 1 && isSectionStart(i)"
+                  class="text-xs font-semibold mt-2 mb-1 pb-1 border-b truncate"
+                  [ngClass]="isDarkMode ? 'text-gray-400 border-gray-700' : 'text-gray-500 border-gray-200'">
+                  {{ getSectionName(i) }}
+                </div>
+                <button
+                  *ngIf="i === 0 || !isSectionStart(i) || sections.length === 0"
+                  (click)="goToQuestion(i)"
+                  [attr.aria-label]="'Soal ' + (i + 1)"
+                  [attr.aria-current]="currentQuestion === i ? 'true' : null"
+                  class="aspect-square m-0.5 inline-flex items-center justify-center text-xs font-semibold rounded-lg transition-colors duration-150 relative w-9 h-9"
+                  [ngClass]="getQuestionButtonClass(i)">
+                  {{ i + 1 }}
+                  <svg *ngIf="markedQuestions[i]" class="absolute top-0.5 right-0.5 w-2 h-2" fill="currentColor" viewBox="0 0 20 20">
+                    <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
+                  </svg>
+                </button>
+                <!-- Show button even when it's a section start (but grid-based) -->
+                <button
+                  *ngIf="i > 0 && isSectionStart(i) && sections.length > 0"
+                  (click)="goToQuestion(i)"
+                  [attr.aria-label]="'Soal ' + (i + 1)"
+                  [attr.aria-current]="currentQuestion === i ? 'true' : null"
+                  class="aspect-square m-0.5 inline-flex items-center justify-center text-xs font-semibold rounded-lg transition-colors duration-150 relative w-9 h-9"
+                  [ngClass]="getQuestionButtonClass(i)">
+                  {{ i + 1 }}
+                  <svg *ngIf="markedQuestions[i]" class="absolute top-0.5 right-0.5 w-2 h-2" fill="currentColor" viewBox="0 0 20 20">
+                    <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
+                  </svg>
+                </button>
+              </ng-container>
+            </ng-container>
+
+            <!-- section_locked: only show active section buttons -->
+            <ng-container *ngIf="navigationMode === 'section_locked' && sections.length > 0">
+              <p class="text-xs mb-2 font-medium" [ngClass]="isDarkMode ? 'text-gray-400' : 'text-gray-500'">
+                {{ activeSection?.name }}
+              </p>
+              <div class="grid grid-cols-5 gap-1.5">
+                <ng-container *ngFor="let q of questionList; let i = index">
+                  <button *ngIf="canNavigateToQuestion(i)"
+                    (click)="goToQuestion(i)"
+                    [attr.aria-label]="'Soal ' + (i + 1)"
+                    [attr.aria-current]="currentQuestion === i ? 'true' : null"
+                    class="aspect-square flex items-center justify-center text-xs font-semibold rounded-lg transition-colors duration-150 relative"
+                    [ngClass]="getQuestionButtonClass(i)">
+                    {{ i + 1 }}
+                    <svg *ngIf="markedQuestions[i]" class="absolute top-1 right-1 w-2.5 h-2.5" fill="currentColor" viewBox="0 0 20 20">
+                      <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
+                    </svg>
+                  </button>
+                </ng-container>
+              </div>
+            </ng-container>
           </div>
 
           <!-- Summary -->
@@ -426,9 +645,10 @@
             </div>
           </div>
 
-          <button (click)="confirmEndQuiz()"
+          <button
+            (click)="quizMode === 'simulasi' ? openSubmitReview() : confirmEndQuiz()"
             class="w-full py-2.5 rounded-xl text-white text-sm font-semibold transition-colors text-center"
-            [ngClass]="quizMode === 'exam'
+            [ngClass]="quizMode === 'exam' || quizMode === 'simulasi'
               ? 'bg-rose-600 hover:bg-rose-700'
               : 'bg-amber-600 hover:bg-amber-700'">
             {{ getEndButtonLabel() }}
