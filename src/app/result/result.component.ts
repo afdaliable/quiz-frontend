@@ -16,6 +16,16 @@ interface PaketSoal {
   jumlah_soal: number;
 }
 
+// AFD-254: per-subtest score breakdown
+interface SectionResult {
+  name: string;
+  answered: number;
+  count: number;
+  rawScore: number;
+  maxScore: number;
+  percent: number;
+}
+
 @Component({
   selector: 'app-result',
   templateUrl: './result.component.html',
@@ -44,6 +54,10 @@ export class ResultComponent implements OnInit, OnDestroy {
 
   // Pomodoro stats
   pomodoroRecords: PomodoroPhaseRecord[] = [];
+
+  // AFD-254/256: simulasi section breakdown + review
+  sectionResults: SectionResult[] = [];
+  hasSimulasiReview: boolean = false;
 
   xpBreakdown: XpBreakdown | null = null;
   xpResult: XpAwardResult | null = null;
@@ -104,6 +118,10 @@ export class ResultComponent implements OnInit, OnDestroy {
     const simRaw = localStorage.getItem('simulasiData');
     if (simRaw) {
       try { this.simulasiData = JSON.parse(simRaw); } catch { this.simulasiData = null; }
+    }
+
+    if (this.quizMode === 'simulasi') {
+      this.computeSectionBreakdown();
     }
 
     this.totalQuestions = parseInt(localStorage.getItem('totalQuestions') || '0');
@@ -221,6 +239,55 @@ export class ResultComponent implements OnInit, OnDestroy {
 
   reviewAnswers(): void {
     this.router.navigate(['/review']);
+  }
+
+  // AFD-254: compute per-subtest score breakdown from the simulasi review snapshot
+  computeSectionBreakdown(): void {
+    const raw = localStorage.getItem('simulasiReview');
+    if (!raw) return;
+    let data: any;
+    try { data = JSON.parse(raw); } catch { return; }
+
+    const questions: any[] = Array.isArray(data?.questions) ? data.questions : [];
+    const answers: any[] = Array.isArray(data?.selectedAnswers) ? data.selectedAnswers : [];
+    const sections: any[] = Array.isArray(data?.sections) ? data.sections : [];
+
+    this.hasSimulasiReview = questions.length > 0;
+    if (!sections.length) return;
+
+    this.sectionResults = sections.map((sec: any) => {
+      let answered = 0;
+      let rawScore = 0;
+      let maxScore = 0;
+      for (let i = sec.startIndex; i < sec.endIndex; i++) {
+        const q = questions[i];
+        if (!q) continue;
+        maxScore += 5;
+        const ans = answers[i];
+        if (ans === null || ans === undefined) continue;
+        answered++;
+        if (q.question_type === 'tkp') {
+          const optKey = `opt${ans + 1}`;
+          rawScore += q.option_scores?.[optKey] ?? 1;
+        } else if (q.options?.[ans]?.correct) {
+          rawScore += 5;
+        }
+      }
+      const count = (sec.endIndex - sec.startIndex) || sec.count || 0;
+      return {
+        name: sec.name,
+        answered,
+        count,
+        rawScore,
+        maxScore,
+        percent: maxScore > 0 ? Math.round((rawScore / maxScore) * 100) : 0,
+      };
+    });
+  }
+
+  // AFD-256: navigate to full per-subtest review page
+  goToSimulasiReview(): void {
+    this.router.navigate(['/simulasi-review']);
   }
 
   retryQuiz(): void {

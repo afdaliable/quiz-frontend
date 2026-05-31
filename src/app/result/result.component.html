@@ -136,6 +136,31 @@
           </div>
         </div>
 
+        <!-- AFD-254: Breakdown skor per subtest (simulasi) -->
+        <div *ngIf="isSimulasiResult && sectionResults.length > 0" class="mb-8 rounded-xl p-4 border"
+          [ngClass]="isDarkMode ? 'bg-gray-700/40 border-gray-600' : 'bg-gray-50 border-gray-100'">
+          <h3 class="text-sm font-semibold mb-3 flex items-center gap-2"
+            [ngClass]="isDarkMode ? 'text-gray-200' : 'text-gray-700'">
+            <span>📊</span> Breakdown per Subtest
+          </h3>
+          <div class="space-y-2">
+            <div *ngFor="let s of sectionResults"
+              class="flex items-center justify-between gap-2 text-sm rounded-lg px-3 py-2"
+              [ngClass]="isDarkMode ? 'bg-gray-800' : 'bg-white'">
+              <span class="font-semibold flex-shrink-0 w-20 truncate"
+                [ngClass]="isDarkMode ? 'text-white' : 'text-gray-900'">{{ s.name }}</span>
+              <span class="text-xs flex-1 text-center"
+                [ngClass]="isDarkMode ? 'text-gray-400' : 'text-gray-500'">
+                Dijawab {{ s.answered }}/{{ s.count }}
+              </span>
+              <span class="text-xs font-semibold tabular-nums flex-shrink-0"
+                [ngClass]="s.percent >= 60 ? 'text-emerald-500' : s.percent >= 40 ? 'text-amber-500' : 'text-rose-500'">
+                {{ s.rawScore }}/{{ s.maxScore }} ({{ s.percent }}%)
+              </span>
+            </div>
+          </div>
+        </div>
+
         <!-- XP Diperoleh -->
         <div *ngIf="xpBreakdown && xpResult && quizMode === 'exam'"
           class="mb-6 rounded-xl p-4 border"
@@ -331,13 +356,21 @@
             </svg>
             Coba Lagi
           </button>
-          <button (click)="reviewAnswers()"
+          <button *ngIf="!isSimulasiResult" (click)="reviewAnswers()"
             class="flex-1 py-3 px-4 rounded-xl font-semibold text-sm bg-indigo-600 hover:bg-indigo-700 text-white transition-colors duration-200 flex items-center justify-center gap-2">
             <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
             </svg>
             Review Jawaban
+          </button>
+          <!-- AFD-256: Review per-subtest untuk simulasi -->
+          <button *ngIf="isSimulasiResult && hasSimulasiReview" (click)="goToSimulasiReview()"
+            class="flex-1 py-3 px-4 rounded-xl font-semibold text-sm bg-indigo-600 hover:bg-indigo-700 text-white transition-colors duration-200 flex items-center justify-center gap-2">
+            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
+            </svg>
+            Review Soal
           </button>
           <button (click)="goToHome()"
             class="flex-1 py-3 px-4 rounded-xl font-semibold text-sm transition-colors duration-200 flex items-center justify-center gap-2 border"

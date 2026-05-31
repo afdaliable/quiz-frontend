@@ -1095,6 +1095,21 @@ export class QuestionComponent implements OnInit, OnDestroy {
     );
     this.saveUserAnswers();
 
+    // AFD-254/256: persist simulasi review snapshot (sections + answers + questions)
+    if (this.quizMode === 'simulasi') {
+      try {
+        localStorage.setItem('simulasiReview', JSON.stringify({
+          questions: this.questionList,
+          selectedAnswers: this.selectedAnswers,
+          sections: this.sections,
+          navigationMode: this.navigationMode,
+          examName: this.selectedPaket?.nama_paket_soal ?? 'Simulasi Ujian',
+        }));
+      } catch (e) {
+        console.error('Failed to persist simulasi review data:', e);
+      }
+    }
+
     // Collect Pomodoro stats before stopping
     const pomodoroStats = this.pomodoroService.getCompletionStats();
     this.pomodoroService.stop();

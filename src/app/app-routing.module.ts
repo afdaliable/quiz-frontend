@@ -27,6 +27,7 @@ import { PublicProfileComponent } from './public-profile/public-profile.componen
 import { JalurUjianComponent } from './jalur-ujian/jalur-ujian.component';
 import { SimulasiUjianComponent } from './simulasi-ujian/simulasi-ujian.component';
 import { BrowseSoalComponent } from './browse-soal/browse-soal.component';
+import { SimulasiReviewComponent } from './simulasi-review/simulasi-review.component';
 
 const routes: Routes = [
   {
@@ -111,6 +112,11 @@ const routes: Routes = [
   {
     path: 'simulasi-ujian',
     component: SimulasiUjianComponent,
+    canActivate: [AuthGuard]
+  },
+  {
+    path: 'simulasi-review',
+    component: SimulasiReviewComponent,
     canActivate: [AuthGuard]
   },
   {

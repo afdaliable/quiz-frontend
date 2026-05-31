@@ -1,0 +1,121 @@
+<div class="min-h-screen transition-colors duration-200" [ngClass]="isDarkMode ? 'bg-gray-900' : 'bg-gray-50'">
+  <div class="max-w-3xl mx-auto px-4 sm:px-6 py-8">
+
+    <!-- Header -->
+    <div class="flex items-center justify-between mb-6">
+      <div class="flex items-center gap-3">
+        <span class="text-2xl">📋</span>
+        <div>
+          <h1 class="text-xl font-bold" [ngClass]="isDarkMode ? 'text-white' : 'text-gray-900'">
+            Review Simulasi
+          </h1>
+          <p class="text-sm" [ngClass]="isDarkMode ? 'text-gray-400' : 'text-gray-500'">{{ examName }}</p>
+        </div>
+      </div>
+      <button (click)="goBack()"
+        class="px-3 py-2 rounded-lg text-sm font-semibold transition-colors"
+        [ngClass]="isDarkMode ? 'bg-gray-800 text-gray-200 hover:bg-gray-700' : 'bg-white text-gray-700 border border-gray-200 hover:bg-gray-50'">
+        ← Kembali
+      </button>
+    </div>
+
+    <!-- Empty state -->
+    <div *ngIf="!hasData" class="rounded-2xl p-8 text-center"
+      [ngClass]="isDarkMode ? 'bg-gray-800 text-gray-400' : 'bg-white text-gray-500 shadow-sm'">
+      <p class="text-sm">Data review tidak tersedia. Mulai dan selesaikan simulasi terlebih dahulu.</p>
+    </div>
+
+    <!-- Sections accordion -->
+    <div *ngIf="hasData" class="space-y-4">
+      <div *ngFor="let sec of sections" class="rounded-2xl overflow-hidden transition-colors"
+        [ngClass]="isDarkMode ? 'bg-gray-800' : 'bg-white shadow-sm'">
+
+        <!-- Section header -->
+        <button (click)="toggleSection(sec)"
+          class="w-full flex items-center justify-between px-5 py-4 text-left transition-colors"
+          [ngClass]="isDarkMode ? 'hover:bg-gray-700/50' : 'hover:bg-gray-50'">
+          <div class="flex items-center gap-3">
+            <span class="font-bold" [ngClass]="isDarkMode ? 'text-white' : 'text-gray-900'">{{ sec.name }}</span>
+            <span class="text-xs px-2 py-0.5 rounded-full"
+              [ngClass]="isDarkMode ? 'bg-gray-700 text-gray-300' : 'bg-gray-100 text-gray-600'">
+              {{ sec.correct }}/{{ sec.count }} benar
+            </span>
+          </div>
+          <svg class="w-5 h-5 transition-transform" [class.rotate-180]="sec.expanded"
+            [ngClass]="isDarkMode ? 'text-gray-400' : 'text-gray-500'"
+            fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+          </svg>
+        </button>
+
+        <!-- Section questions -->
+        <div *ngIf="sec.expanded" class="px-5 pb-5 space-y-5 border-t"
+          [ngClass]="isDarkMode ? 'border-gray-700' : 'border-gray-100'">
+
+          <div *ngFor="let item of questionsInSection(sec)" class="pt-4">
+            <!-- Question number + status badge -->
+            <div class="flex items-center gap-2 mb-2">
+              <span class="text-xs font-bold px-2 py-0.5 rounded"
+                [ngClass]="isDarkMode ? 'bg-gray-700 text-gray-300' : 'bg-gray-100 text-gray-600'">
+                Soal {{ item.index + 1 }}
+              </span>
+              <span *ngIf="!isTkp(item.q)" class="text-xs font-semibold"
+                [ngClass]="statusClass(item.q, item.index)">
+                {{ statusLabel(item.q, item.index) }}
+              </span>
+              <span *ngIf="isTkp(item.q)" class="text-xs font-semibold text-indigo-400">
+                {{ tkpLabel(item.q, item.index) }}
+              </span>
+            </div>
+
+            <!-- Question text -->
+            <p class="text-sm leading-relaxed mb-3"
+              [ngClass]="isDarkMode ? 'text-gray-100' : 'text-gray-800'"
+              [innerHTML]="item.q.questionText | mathText"></p>
+
+            <!-- Options -->
+            <div class="space-y-2">
+              <div *ngFor="let opt of item.q.options; let oi = index"
+                class="flex items-start gap-2 p-3 rounded-lg border text-sm"
+                [ngClass]="{
+                  'border-emerald-500 bg-emerald-500/10': isCorrectOption(item.q, oi),
+                  'border-rose-500 bg-rose-500/10': isWrongPick(item.q, item.index, oi),
+                  'border-indigo-500 bg-indigo-500/10': isTkp(item.q) && isPicked(item.index, oi),
+                  'border-gray-200 dark:border-gray-700': !isCorrectOption(item.q, oi) && !isWrongPick(item.q, item.index, oi) && !(isTkp(item.q) && isPicked(item.index, oi))
+                }">
+                <span class="flex-shrink-0 w-6 h-6 rounded flex items-center justify-center text-xs font-bold"
+                  [ngClass]="isDarkMode ? 'bg-gray-700 text-gray-200' : 'bg-gray-100 text-gray-700'">
+                  {{ letters[oi] }}
+                </span>
+                <span class="flex-1" [ngClass]="isDarkMode ? 'text-gray-200' : 'text-gray-700'"
+                  [innerHTML]="opt.text | mathText"></span>
+                <!-- TKP per-option score badge -->
+                <span *ngIf="isTkp(item.q) && opt.tkp_score != null"
+                  class="flex-shrink-0 text-xs font-bold px-1.5 py-0.5 rounded"
+                  [ngClass]="{
+                    'bg-emerald-500 text-white': opt.tkp_score === 5,
+                    'bg-amber-400 text-gray-900': opt.tkp_score === 4,
+                    'bg-orange-400 text-white': opt.tkp_score === 3,
+                    'bg-rose-400 text-white': opt.tkp_score <= 2
+                  }">{{ opt.tkp_score }}</span>
+                <!-- Picked indicator -->
+                <span *ngIf="isPicked(item.index, oi)"
+                  class="flex-shrink-0 text-xs font-semibold"
+                  [ngClass]="isDarkMode ? 'text-gray-300' : 'text-gray-500'">Pilihanmu</span>
+              </div>
+            </div>
+
+            <!-- Explanation -->
+            <div *ngIf="item.q.explanation" class="mt-3 p-3 rounded-lg text-sm"
+              [ngClass]="isDarkMode ? 'bg-amber-900/20 text-gray-300' : 'bg-amber-50 text-gray-700'">
+              <p class="font-semibold mb-1 text-xs" [ngClass]="isDarkMode ? 'text-amber-300' : 'text-amber-700'">Pembahasan:</p>
+              <p [innerHTML]="item.q.explanation | mathText"></p>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>

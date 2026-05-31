@@ -52,6 +52,7 @@ import { SimulasiUjianComponent } from './simulasi-ujian/simulasi-ujian.componen
 import { BreadcrumbComponent } from './shared/breadcrumb/breadcrumb.component';
 import { BrowseSoalComponent } from './browse-soal/browse-soal.component';
 import { MathTextPipe } from './shared/math-text.pipe';
+import { SimulasiReviewComponent } from './simulasi-review/simulasi-review.component';
 
 @NgModule({
   declarations: [
@@ -91,6 +92,7 @@ import { MathTextPipe } from './shared/math-text.pipe';
     SimulasiUjianComponent,
     BrowseSoalComponent,
     MathTextPipe,
+    SimulasiReviewComponent,
   ],
   imports: [
     BreadcrumbComponent,
