@@ -138,11 +138,13 @@ export class AuthService {
   mockLogin(username: string, password: string): Observable<AuthResponse> {
     // Simple mock authentication for development
     if (username && password) {
-      const userId = '12e31b19-2ac8-492b-b38b-d7fe8233a978'; // Same as your Postman script
-      const email = username.includes('@') ? username : `${username}@example.com`;
-      
-      // Generate real JWT token
-      const jwtToken = this.generateJWTToken(userId, email);
+      const userId = '340d5e19-045b-4c7d-8a59-8fd3960548e2'; // afdalsitp@gmail.com — dev user
+      const email = username.includes('@') ? username : `afdalsitp@gmail.com`;
+
+      // If devToken is set in environment, use it (real prod token for API testing)
+      const jwtToken = (environment as any).devToken
+        ? (environment as any).devToken
+        : this.generateJWTToken(userId, email);
       
       const mockResponse: AuthResponse = {
         access_token: jwtToken,

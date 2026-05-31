@@ -296,16 +296,33 @@ export class QuestionComponent implements OnInit, OnDestroy {
   private loadRandomQuestions(questions: any[]): void {
     this.questionList = questions.map((q: any) => {
       const optKeys = ['opt1', 'opt2', 'opt3', 'opt4', 'opt5'];
-      const opts = optKeys
+      let opts = optKeys
         .filter(k => q[k] != null && String(q[k]).trim() !== '')
         .map(k => ({
           text: q[k],
           correct: q.correct_answer === k,
           tkp_score: q.option_scores ? (q.option_scores[k] ?? null) : null,
         }));
+
+      let questionText = q.soal || '';
+
+      // Some soal have options embedded in soal text (opt1-opt5 are empty).
+      // Parse "A. ... B. ... C. ..." pattern out of the text.
+      if (opts.length === 0 && questionText) {
+        const parsed = this.parseEmbeddedOptions(questionText);
+        if (parsed) {
+          questionText = parsed.stem;
+          opts = parsed.options.map((text, i) => ({
+            text,
+            correct: q.correct_answer === optKeys[i],
+            tkp_score: q.option_scores ? (q.option_scores[optKeys[i]] ?? null) : null,
+          }));
+        }
+      }
+
       return {
         id: q.id,
-        question: q.soal,
+        questionText,
         question_type: q.question_type || 'multiple_choice',
         options: opts,
         option_scores: q.option_scores || null,
@@ -334,6 +351,31 @@ export class QuestionComponent implements OnInit, OnDestroy {
     this.keyboardHintTimer = setTimeout(() => {
       this.showKeyboardHint = false;
     }, 5000);
+  }
+
+  private parseEmbeddedOptions(text: string): { stem: string; options: string[] } | null {
+    const stripped = text.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
+
+    // Try multiple option formats: "A. ", "(A) ", "A) ", "A : "
+    const formats = [
+      // A. opt  B. opt  C. opt  (D. opt)  (E. opt)
+      /^([\s\S]*?)\s+A\.\s+([\s\S]+?)\s+B\.\s+([\s\S]+?)\s+C\.\s+([\s\S]+?)(?:\s+D\.\s+([\s\S]+?))?(?:\s+E\.\s+([\s\S]+?))?$/,
+      // (A) opt  (B) opt  (C) opt  ((D) opt)  ((E) opt)
+      /^([\s\S]*?)\s+\(A\)\s+([\s\S]+?)\s+\(B\)\s+([\s\S]+?)\s+\(C\)\s+([\s\S]+?)(?:\s+\(D\)\s+([\s\S]+?))?(?:\s+\(E\)\s+([\s\S]+?))?$/,
+      // A) opt  B) opt  C) opt
+      /^([\s\S]*?)\s+A\)\s+([\s\S]+?)\s+B\)\s+([\s\S]+?)\s+C\)\s+([\s\S]+?)(?:\s+D\)\s+([\s\S]+?))?(?:\s+E\)\s+([\s\S]+?))?$/,
+    ];
+
+    for (const pattern of formats) {
+      const match = stripped.match(pattern);
+      if (!match) continue;
+      const stem = match[1].trim();
+      const options = [match[2], match[3], match[4], match[5], match[6]]
+        .filter(Boolean)
+        .map(o => o.trim());
+      if (options.length >= 2) return { stem, options };
+    }
+    return null;
   }
 
   private loadBookmarkQuestions(questions: any[]): void {

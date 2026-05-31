@@ -368,6 +368,15 @@
           <!-- Options: Multiple Choice (default) -->
           <div *ngIf="questionList[currentQuestion]?.question_type !== 'true_false'"
             class="space-y-3" role="radiogroup" aria-label="Pilihan jawaban">
+
+            <!-- Fallback: soal tanpa pilihan jawaban (gambar/format tidak didukung) -->
+            <div *ngIf="!questionList[currentQuestion]?.options?.length"
+              class="flex items-center gap-3 p-4 rounded-xl border border-dashed"
+              [ngClass]="isDarkMode ? 'border-gray-600 bg-gray-800/50 text-gray-400' : 'border-gray-300 bg-gray-50 text-gray-500'">
+              <span class="text-2xl">🖼️</span>
+              <p class="text-sm">Soal ini menggunakan media visual (gambar) yang belum tersedia di platform. Lewati soal ini dan lanjutkan ke soal berikutnya.</p>
+            </div>
+
             <div *ngFor="let option of questionList[currentQuestion]?.options; let i = index"
               (click)="answer(currentQuestion, i)"
               (keydown.enter)="answer(currentQuestion, i)"
@@ -645,14 +654,29 @@
             </div>
           </div>
 
-          <button
-            (click)="quizMode === 'simulasi' ? openSubmitReview() : confirmEndQuiz()"
-            class="w-full py-2.5 rounded-xl text-white text-sm font-semibold transition-colors text-center"
-            [ngClass]="quizMode === 'exam' || quizMode === 'simulasi'
-              ? 'bg-rose-600 hover:bg-rose-700'
-              : 'bg-amber-600 hover:bg-amber-700'">
-            {{ getEndButtonLabel() }}
-          </button>
+          <!-- Section_locked: show "Lanjut ke Section Berikutnya" or "Submit" -->
+          <ng-container *ngIf="quizMode === 'simulasi' && navigationMode === 'section_locked' && sections.length > 1; else defaultEndBtn">
+            <button *ngIf="!isLastSection"
+              (click)="showSectionConfirmModal = true"
+              class="w-full py-2.5 rounded-xl text-white text-sm font-semibold transition-colors text-center bg-orange-500 hover:bg-orange-600">
+              Lanjut ke {{ sections[activeSectionIndex + 1]?.name }} →
+            </button>
+            <button *ngIf="isLastSection"
+              (click)="openSubmitReview()"
+              class="w-full py-2.5 rounded-xl text-white text-sm font-semibold transition-colors text-center bg-rose-600 hover:bg-rose-700">
+              Submit Simulasi
+            </button>
+          </ng-container>
+          <ng-template #defaultEndBtn>
+            <button
+              (click)="quizMode === 'simulasi' ? openSubmitReview() : confirmEndQuiz()"
+              class="w-full py-2.5 rounded-xl text-white text-sm font-semibold transition-colors text-center"
+              [ngClass]="quizMode === 'exam' || quizMode === 'simulasi'
+                ? 'bg-rose-600 hover:bg-rose-700'
+                : 'bg-amber-600 hover:bg-amber-700'">
+              {{ getEndButtonLabel() }}
+            </button>
+          </ng-template>
         </div>
       </div>
     </div>
