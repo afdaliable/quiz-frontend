@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, HostListener } from '@angular/core';
+import { Component, OnInit, OnDestroy, HostListener, ChangeDetectorRef } from '@angular/core';
 import { interval } from 'rxjs';
 import { QuestionService } from '../services/question.service';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -9,6 +9,14 @@ import { ThemeService } from '../services/theme.service';
 import { PaketSoal } from '../models/paket-soal.model';
 import { QuizSessionService, QuizSession } from '../services/quiz-session.service';
 import { PomodoroService } from '../services/pomodoro.service';
+
+interface SectionInfo {
+  name: string;
+  count: number;
+  section_duration_minutes?: number;
+  startIndex: number;
+  endIndex: number;
+}
 
 @Component({
   selector: 'app-question',
@@ -53,6 +61,57 @@ export class QuestionComponent implements OnInit, OnDestroy {
   // End quiz confirmation modal
   showEndModal: boolean = false;
 
+  // ── Section-aware simulasi (AFD-253) ──────────────────────────────────────
+  sections: SectionInfo[] = [];
+  activeSectionIndex: number = 0;
+  navigationMode: 'free' | 'section_locked' = 'free';
+  hasPerSectionTimer: boolean = false;
+  sectionRemainingSeconds: number = 0;
+  private sectionTimerInterval: any;
+  private sectionTimerToast30Shown: boolean = false;
+  private sectionTimerToast15Shown: boolean = false;
+  private sectionTimerToast5Shown: boolean = false;
+
+  // Section modals
+  showSectionConfirmModal: boolean = false;
+  showSectionTimeUpModal: boolean = false;
+  sectionTimeUpCountdown: number = 3;
+  private sectionTimeUpInterval: any;
+  showSubmitReviewModal: boolean = false;
+
+  get activeSection(): SectionInfo | null {
+    return this.sections[this.activeSectionIndex] ?? null;
+  }
+  get isLastSection(): boolean {
+    return this.activeSectionIndex === this.sections.length - 1;
+  }
+  canNavigateToQuestion(index: number): boolean {
+    if (this.navigationMode !== 'section_locked' || this.sections.length === 0) return true;
+    const sec = this.activeSection;
+    return sec ? (index >= sec.startIndex && index < sec.endIndex) : true;
+  }
+  isSectionStart(index: number): boolean {
+    return this.sections.some(s => s.startIndex === index);
+  }
+  getSectionName(index: number): string {
+    return this.sections.find(s => s.startIndex <= index && index < s.endIndex)?.name ?? '';
+  }
+  getAnsweredCountForSection(sec: SectionInfo): number {
+    let count = 0;
+    for (let i = sec.startIndex; i < sec.endIndex; i++) {
+      if (this.answeredQuestions[i]) count++;
+    }
+    return count;
+  }
+  formatSectionTime(seconds: number): string {
+    const h = Math.floor(seconds / 3600);
+    const m = Math.floor((seconds % 3600) / 60);
+    const s = seconds % 60;
+    if (h > 0) return `${h}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+    return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+  }
+  // ──────────────────────────────────────────────────────────────────────────
+
   // Timer visual warning
   showToast: boolean = false;
   toastMessage: string = '';
@@ -78,6 +137,7 @@ export class QuestionComponent implements OnInit, OnDestroy {
     private route: ActivatedRoute,
     private router: Router,
     private userService: UserService,
+    private cdr: ChangeDetectorRef,
     private themeService: ThemeService,
     private quizSessionService: QuizSessionService,
     public pomodoroService: PomodoroService
@@ -115,6 +175,25 @@ export class QuestionComponent implements OnInit, OnDestroy {
         } as any;
         this.currentSession = { id: simData.session_id, session_type: 'simulasi' } as QuizSession;
         this.sessionInitialized = true;
+
+        // AFD-253: parse navigation_mode + sections
+        this.navigationMode = (simData.navigation_mode as 'free' | 'section_locked') ?? 'free';
+        if (Array.isArray(simData.sections) && simData.sections.length > 0) {
+          let pos = 0;
+          this.sections = simData.sections.map((s: any) => {
+            const sec: SectionInfo = {
+              name: s.name,
+              count: s.count,
+              section_duration_minutes: s.section_duration_minutes,
+              startIndex: pos,
+              endIndex: pos + s.count,
+            };
+            pos += s.count;
+            return sec;
+          });
+          this.hasPerSectionTimer = this.sections.some(s => s.section_duration_minutes != null);
+        }
+
         this.loadRandomQuestions(simData.questions);
         this.setupAutoSave();
       } catch (error) {
@@ -240,6 +319,14 @@ export class QuestionComponent implements OnInit, OnDestroy {
 
     if (this.quizMode === 'exam') {
       this.startTimer();
+    } else if (this.quizMode === 'simulasi') {
+      if (this.hasPerSectionTimer) {
+        // LPDP: per-section timer only, no global countdown
+        this.startSectionTimer();
+      } else {
+        // SKD/RBB/STAN/PPPK: global countdown
+        this.startTimer();
+      }
     }
     this.getProgressPercent();
 
@@ -341,6 +428,9 @@ export class QuestionComponent implements OnInit, OnDestroy {
     if (this.keyboardHintTimer) {
       clearTimeout(this.keyboardHintTimer);
     }
+    // Section timer cleanup (AFD-253)
+    this.stopSectionTimer();
+    if (this.sectionTimeUpInterval) clearInterval(this.sectionTimeUpInterval);
 
     // Save final progress before leaving
     if (this.currentSession && !this.isQuizCompleted) {
@@ -527,11 +617,28 @@ export class QuestionComponent implements OnInit, OnDestroy {
 
   nextQuestion() {
     if (this.isAnimating) return;
+
+    // section_locked: check if at end of active section
+    if (this.quizMode === 'simulasi' && this.navigationMode === 'section_locked' && this.activeSection) {
+      const sec = this.activeSection;
+      if (this.currentQuestion === sec.endIndex - 1) {
+        // At last question of current section
+        if (this.isLastSection) {
+          this.openSubmitReview();
+        } else {
+          this.showSectionConfirmModal = true;
+        }
+        return;
+      }
+    }
+
     if (this.currentQuestion < this.questionList.length - 1) {
       this.navigateWithAnimation(this.currentQuestion + 1, 'forward');
     } else if (this.quizMode === 'exam') {
       this.isQuizCompleted = true;
       this.stopTimer();
+    } else if (this.quizMode === 'simulasi') {
+      this.openSubmitReview();
     }
     // In study/review mode, don't auto-complete — user uses the end button
   }
@@ -730,6 +837,7 @@ export class QuestionComponent implements OnInit, OnDestroy {
 
   goToQuestion(index: number) {
     if (index === this.currentQuestion) return;
+    if (!this.canNavigateToQuestion(index)) return;
     this.navigateWithAnimation(index, 'direct');
   }
 
@@ -785,6 +893,127 @@ export class QuestionComponent implements OnInit, OnDestroy {
     }
   }
 
+  // ── Section timer methods (AFD-253) ───────────────────────────────────────
+
+  startSectionTimer(): void {
+    this.stopSectionTimer();
+    const sec = this.activeSection;
+    if (!sec?.section_duration_minutes) return;
+    this.sectionRemainingSeconds = sec.section_duration_minutes * 60;
+    this.sectionTimerToast30Shown = false;
+    this.sectionTimerToast15Shown = false;
+    this.sectionTimerToast5Shown = false;
+    this.sectionTimerInterval = setInterval(() => {
+      if (this.sectionRemainingSeconds > 0) {
+        this.sectionRemainingSeconds--;
+        if (this.sectionRemainingSeconds === 30 * 60 && !this.sectionTimerToast30Shown) {
+          this.sectionTimerToast30Shown = true;
+          this.triggerToast(`⏱️ Sisa 30 menit di ${this.activeSection?.name}`);
+        } else if (this.sectionRemainingSeconds === 15 * 60 && !this.sectionTimerToast15Shown) {
+          this.sectionTimerToast15Shown = true;
+          this.triggerToast(`⚠️ Sisa 15 menit di ${this.activeSection?.name}`);
+        } else if (this.sectionRemainingSeconds === 5 * 60 && !this.sectionTimerToast5Shown) {
+          this.sectionTimerToast5Shown = true;
+          this.triggerToast(`🔴 Sisa 5 menit di ${this.activeSection?.name}`);
+        }
+      } else {
+        this.stopSectionTimer();
+        this.onSectionTimerExpired();
+      }
+    }, 1000);
+  }
+
+  stopSectionTimer(): void {
+    if (this.sectionTimerInterval) {
+      clearInterval(this.sectionTimerInterval);
+      this.sectionTimerInterval = null;
+    }
+  }
+
+  onSectionTimerExpired(): void {
+    const expiredName = this.activeSection?.name ?? 'Section';
+    this.sectionTimeUpCountdown = 3;
+    this.showSectionTimeUpModal = true;
+    this.sectionTimeUpInterval = setInterval(() => {
+      this.sectionTimeUpCountdown--;
+      this.cdr.detectChanges();
+      if (this.sectionTimeUpCountdown <= 0) {
+        clearInterval(this.sectionTimeUpInterval);
+        this.showSectionTimeUpModal = false;
+        this.advanceToNextSection('timer_expired');
+      }
+    }, 1000);
+  }
+
+  advanceToNextSection(reason: 'manual' | 'timer_expired'): void {
+    this.stopSectionTimer();
+    this.showSectionConfirmModal = false;
+    if (this.isLastSection) {
+      this.endQuiz();
+      return;
+    }
+    this.activeSectionIndex++;
+    const sec = this.activeSection;
+    if (sec) {
+      this.navigateWithAnimation(sec.startIndex, 'forward');
+    }
+    if (this.hasPerSectionTimer) {
+      this.startSectionTimer();
+    }
+  }
+
+  openSubmitReview(): void {
+    this.showSubmitReviewModal = true;
+  }
+
+  confirmSubmit(): void {
+    this.showSubmitReviewModal = false;
+    this.endQuiz();
+  }
+
+  cancelSubmitReview(): void {
+    this.showSubmitReviewModal = false;
+  }
+
+  getUnansweredInCurrentSession(): number[] {
+    const unanswered: number[] = [];
+    for (let i = 0; i < this.questionList.length; i++) {
+      if (!this.answeredQuestions[i]) unanswered.push(i + 1);
+    }
+    return unanswered;
+  }
+
+  getMarkedNumbers(): number[] {
+    const marked: number[] = [];
+    for (let i = 0; i < this.questionList.length; i++) {
+      if (this.markedQuestions[i]) marked.push(i + 1);
+    }
+    return marked;
+  }
+
+  get nextButtonLabel(): string {
+    if (this.quizMode === 'simulasi' && this.navigationMode === 'section_locked' && this.activeSection) {
+      const sec = this.activeSection;
+      if (this.currentQuestion === sec.endIndex - 1) {
+        if (this.isLastSection) return 'Submit Simulasi';
+        const nextSec = this.sections[this.activeSectionIndex + 1];
+        return `Lanjut ke ${nextSec?.name ?? 'Section Berikutnya'} →`;
+      }
+    }
+    if (this.currentQuestion === this.questionList.length - 1 && this.quizMode === 'simulasi') {
+      return 'Submit Simulasi';
+    }
+    return this.quizMode === 'exam' ? 'Selanjutnya' : 'Soal Berikutnya';
+  }
+
+  get isNextButtonSectionAdvance(): boolean {
+    if (this.quizMode !== 'simulasi' || this.navigationMode !== 'section_locked') return false;
+    const sec = this.activeSection;
+    return sec != null && this.currentQuestion === sec.endIndex - 1 && !this.isLastSection;
+  }
+
+  // ──────────────────────────────────────────────────────────────────────────
+
   formatTime(seconds: number): string {
     const minutes = Math.floor(seconds / 60);
     const remainingSeconds = seconds % 60;
@@ -807,6 +1036,7 @@ export class QuestionComponent implements OnInit, OnDestroy {
     console.log('Ending quiz...');
     this.isQuizCompleted = true;
     this.stopCounter();
+    this.stopSectionTimer();
     this.calculateScore();
 
     // Save to localStorage - for all modes so result page can display stats
@@ -827,8 +1057,8 @@ export class QuestionComponent implements OnInit, OnDestroy {
     const pomodoroStats = this.pomodoroService.getCompletionStats();
     this.pomodoroService.stop();
 
-    // Complete session (new feature) - only in exam mode
-    if (this.quizMode === 'exam' && this.currentSession) {
+    // Complete session — exam and simulasi modes
+    if ((this.quizMode === 'exam' || this.quizMode === 'simulasi') && this.currentSession) {
       this.quizSessionService.completeQuizSession(this.currentSession.id, {
         answers: this.selectedAnswers,
         time_remaining: this.remainingTime,

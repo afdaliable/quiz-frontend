@@ -21,6 +21,12 @@ export interface SimulasiUjian {
   can_attempt?: boolean;
 }
 
+export interface SimulasiSection {
+  name: string;
+  count: number;
+  section_duration_minutes?: number;
+}
+
 export interface StartSimulasiResponse {
   session_id: string;
   simulasi_id: number;
@@ -28,6 +34,8 @@ export interface StartSimulasiResponse {
   duration_minutes: number;
   total_questions: number;
   passing_score: number;
+  navigation_mode: string;
+  sections: SimulasiSection[];
   questions: any[];
 }
 

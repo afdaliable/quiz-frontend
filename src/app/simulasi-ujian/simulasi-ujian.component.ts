@@ -113,6 +113,8 @@ export class SimulasiUjianComponent implements OnInit, OnDestroy {
           questions: res.questions,
           nama_paket_soal: sim.nama_simulasi,
           kategori_soal: sim.paket_soal_nama ?? 'Simulasi Ujian',
+          navigation_mode: res.navigation_mode ?? 'free',
+          sections: res.sections ?? [],
         }));
 
         this.startingSimulasi = false;
