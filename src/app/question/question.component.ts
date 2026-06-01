@@ -305,6 +305,7 @@ export class QuestionComponent implements OnInit, OnDestroy {
         }));
 
       let questionText = q.soal || '';
+      let imageChoiceMode = false;
 
       // Some soal have options embedded in soal text (opt1-opt5 are empty).
       // Parse "A. ... B. ... C. ..." pattern out of the text.
@@ -320,11 +321,23 @@ export class QuestionComponent implements OnInit, OnDestroy {
         }
       }
 
+      // Figural / image soal: options (A-E) are drawn inside the image itself.
+      // Still answerable — synthesize 5 letter-only options so the user can pick.
+      if (opts.length === 0 && /<img/i.test(questionText)) {
+        imageChoiceMode = true;
+        opts = optKeys.map((k) => ({
+          text: '',
+          correct: q.correct_answer === k,
+          tkp_score: null,
+        }));
+      }
+
       return {
         id: q.id,
         questionText,
         question_type: q.question_type || 'multiple_choice',
         options: opts,
+        imageChoiceMode,
         option_scores: q.option_scores || null,
         explanation: q.solution || '',
       };

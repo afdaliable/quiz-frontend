@@ -369,13 +369,20 @@
           <div *ngIf="questionList[currentQuestion]?.question_type !== 'true_false'"
             class="space-y-3" role="radiogroup" aria-label="Pilihan jawaban">
 
-            <!-- Fallback: soal tanpa pilihan jawaban (gambar/format tidak didukung) -->
+            <!-- Fallback: soal benar-benar tanpa pilihan jawaban (bukan figural) -->
             <div *ngIf="!questionList[currentQuestion]?.options?.length"
               class="flex items-center gap-3 p-4 rounded-xl border border-dashed"
               [ngClass]="isDarkMode ? 'border-gray-600 bg-gray-800/50 text-gray-400' : 'border-gray-300 bg-gray-50 text-gray-500'">
               <span class="text-2xl">🖼️</span>
               <p class="text-sm">Soal ini menggunakan media visual (gambar) yang belum tersedia di platform. Lewati soal ini dan lanjutkan ke soal berikutnya.</p>
             </div>
+
+            <!-- Hint untuk figural soal: opsi A-E ada di dalam gambar -->
+            <p *ngIf="questionList[currentQuestion]?.imageChoiceMode"
+              class="text-xs mb-1"
+              [ngClass]="isDarkMode ? 'text-gray-400' : 'text-gray-500'">
+              Pilihan jawaban (A–E) ada di dalam gambar. Klik huruf yang sesuai.
+            </p>
 
             <div *ngFor="let option of questionList[currentQuestion]?.options; let i = index"
               (click)="answer(currentQuestion, i)"
@@ -402,7 +409,8 @@
                   : (isDarkMode ? 'bg-gray-700 text-gray-300' : 'bg-indigo-50 text-indigo-700')">
                 {{ ['A','B','C','D','E'][i] }}
               </span>
-              <span class="text-sm leading-relaxed" aria-hidden="true" [innerHTML]="option.text | mathText"></span>
+              <span *ngIf="!questionList[currentQuestion]?.imageChoiceMode" class="text-sm leading-relaxed" aria-hidden="true" [innerHTML]="option.text | mathText"></span>
+              <span *ngIf="questionList[currentQuestion]?.imageChoiceMode" class="text-sm leading-relaxed" aria-hidden="true">Pilihan {{ ['A','B','C','D','E'][i] }}</span>
               <!-- TKP poin badge: shown when answer is checked and option has a tkp_score -->
               <span
                 *ngIf="questionList[currentQuestion]?.question_type === 'tkp' && isAnswerChecked && option.tkp_score != null"
