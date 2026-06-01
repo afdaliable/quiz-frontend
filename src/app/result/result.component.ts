@@ -6,6 +6,7 @@ import { XpBreakdown, XpAwardResult, LEVEL_CONFIGS, LevelInfo } from '../models/
 import { PomodoroService, PomodoroPhaseRecord } from '../services/pomodoro.service';
 import { AnalyticsService } from '../services/analytics.service';
 import { ScoreDataPoint } from '../models/score-history.model';
+import { SimulasiUjianService } from '../services/simulasi-ujian.service';
 import html2canvas from 'html2canvas';
 
 interface PaketSoal {
@@ -70,7 +71,8 @@ export class ResultComponent implements OnInit, OnDestroy {
     private router: Router,
     private userService: UserService,
     private themeService: ThemeService,
-    private analyticsService: AnalyticsService
+    private analyticsService: AnalyticsService,
+    private simulasiService: SimulasiUjianService
   ) {}
 
   ngOnInit(): void {
@@ -241,25 +243,60 @@ export class ResultComponent implements OnInit, OnDestroy {
     this.router.navigate(['/review']);
   }
 
-  // AFD-254: compute per-subtest score breakdown from the simulasi review snapshot
+  // AFD-254: compute per-subtest score breakdown.
+  // The answer key is withheld during the live quiz, so the localStorage
+  // snapshot can't score sections correctly — fetch authoritative data
+  // (questions + correct_answer + user answers) from the review endpoint.
   computeSectionBreakdown(): void {
     const raw = localStorage.getItem('simulasiReview');
     if (!raw) return;
     let data: any;
     try { data = JSON.parse(raw); } catch { return; }
 
-    const questions: any[] = Array.isArray(data?.questions) ? data.questions : [];
-    const answers: any[] = Array.isArray(data?.selectedAnswers) ? data.selectedAnswers : [];
-    const sections: any[] = Array.isArray(data?.sections) ? data.sections : [];
+    this.hasSimulasiReview = Array.isArray(data?.questions) && data.questions.length > 0;
 
-    this.hasSimulasiReview = questions.length > 0;
-    if (!sections.length) return;
+    const sessionId: string | null = data?.sessionId ?? null;
+    if (sessionId) {
+      this.simulasiService.getSessionReview(sessionId).subscribe({
+        next: (res) => {
+          this.sectionResults = this.buildSectionResults(
+            res?.questions || [],
+            res?.answers || [],
+            res?.sections || [],
+            /*fromServer*/ true
+          );
+          this.hasSimulasiReview = (res?.questions?.length ?? 0) > 0;
+        },
+        error: () => {
+          // fallback to snapshot (will likely show 0 correct, but better than nothing)
+          this.sectionResults = this.buildSectionResults(
+            data?.questions || [], data?.selectedAnswers || [], data?.sections || [], false
+          );
+        },
+      });
+    } else {
+      this.sectionResults = this.buildSectionResults(
+        data?.questions || [], data?.selectedAnswers || [], data?.sections || [], false
+      );
+    }
+  }
 
-    this.sectionResults = sections.map((sec: any) => {
-      let answered = 0;
-      let rawScore = 0;
-      let maxScore = 0;
-      for (let i = sec.startIndex; i < sec.endIndex; i++) {
+  private buildSectionResults(
+    questions: any[],
+    answers: any[],
+    sections: any[],
+    fromServer: boolean
+  ): SectionResult[] {
+    if (!sections.length) return [];
+    // server sections carry {name, count}; derive indices
+    let pos = 0;
+    return sections.map((sec: any) => {
+      const startIndex = sec.startIndex ?? pos;
+      const endIndex = sec.endIndex ?? startIndex + (sec.count ?? 0);
+      pos = endIndex;
+
+      let answered = 0, rawScore = 0, maxScore = 0;
+      for (let i = startIndex; i < endIndex; i++) {
         const q = questions[i];
         if (!q) continue;
         maxScore += 5;
@@ -269,20 +306,28 @@ export class ResultComponent implements OnInit, OnDestroy {
         if (q.question_type === 'tkp') {
           const optKey = `opt${ans + 1}`;
           rawScore += q.option_scores?.[optKey] ?? 1;
-        } else if (q.options?.[ans]?.correct) {
+        } else if (this.isAnswerCorrect(q, ans, fromServer)) {
           rawScore += 5;
         }
       }
-      const count = (sec.endIndex - sec.startIndex) || sec.count || 0;
       return {
         name: sec.name,
         answered,
-        count,
+        count: (endIndex - startIndex) || sec.count || 0,
         rawScore,
         maxScore,
         percent: maxScore > 0 ? Math.round((rawScore / maxScore) * 100) : 0,
       };
     });
+  }
+
+  private isAnswerCorrect(q: any, ans: number, fromServer: boolean): boolean {
+    if (fromServer) {
+      // server question has correct_answer = 'optN'
+      return q.correct_answer === `opt${ans + 1}`;
+    }
+    // snapshot question has options[].correct
+    return !!q.options?.[ans]?.correct;
   }
 
   // AFD-256: navigate to full per-subtest review page
