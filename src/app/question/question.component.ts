@@ -1112,6 +1112,7 @@ export class QuestionComponent implements OnInit, OnDestroy {
     if (this.quizMode === 'simulasi') {
       try {
         localStorage.setItem('simulasiReview', JSON.stringify({
+          sessionId: this.currentSession?.id ?? null,
           questions: this.questionList,
           selectedAnswers: this.selectedAnswers,
           sections: this.sections,

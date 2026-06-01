@@ -19,13 +19,19 @@
       </button>
     </div>
 
+    <!-- Loading -->
+    <div *ngIf="loading" class="rounded-2xl p-8 text-center"
+      [ngClass]="isDarkMode ? 'bg-gray-800 text-gray-400' : 'bg-white text-gray-500 shadow-sm'">
+      <p class="text-sm animate-pulse">Memuat review…</p>
+    </div>
+
     <!-- Empty state -->
-    <div *ngIf="!hasData" class="rounded-2xl p-8 text-center"
+    <div *ngIf="!loading && !hasData" class="rounded-2xl p-8 text-center"
       [ngClass]="isDarkMode ? 'bg-gray-800 text-gray-400' : 'bg-white text-gray-500 shadow-sm'">
       <p class="text-sm">Data review tidak tersedia. Mulai dan selesaikan simulasi terlebih dahulu.</p>
     </div>
 
-    <ng-container *ngIf="hasData && currentQuestion as q">
+    <ng-container *ngIf="!loading && hasData && currentQuestion as q">
       <!-- Section + progress bar -->
       <div class="flex items-center justify-between mb-3">
         <span class="text-xs font-semibold px-2.5 py-1 rounded-full"

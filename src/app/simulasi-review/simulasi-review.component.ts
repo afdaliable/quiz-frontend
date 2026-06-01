@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { ThemeService } from '../services/theme.service';
+import { SimulasiUjianService } from '../services/simulasi-ujian.service';
 
 interface ReviewOption {
   text: string;
@@ -46,7 +47,13 @@ export class SimulasiReviewComponent implements OnInit {
   // One-question-per-page navigation (anti screenshot-dump)
   currentIndex = 0;
 
-  constructor(private router: Router, private themeService: ThemeService) {}
+  loading = true;
+
+  constructor(
+    private router: Router,
+    private themeService: ThemeService,
+    private simulasiService: SimulasiUjianService,
+  ) {}
 
   get currentQuestion(): ReviewQuestion | undefined {
     return this.questions[this.currentIndex];
@@ -102,6 +109,7 @@ export class SimulasiReviewComponent implements OnInit {
     const raw = localStorage.getItem('simulasiReview');
     if (!raw) {
       this.hasData = false;
+      this.loading = false;
       return;
     }
 
@@ -110,25 +118,98 @@ export class SimulasiReviewComponent implements OnInit {
       data = JSON.parse(raw);
     } catch {
       this.hasData = false;
+      this.loading = false;
       return;
     }
 
+    this.examName = data?.examName || 'Simulasi Ujian';
+
+    // Authoritative source: backend review endpoint (includes correct_answer).
+    // The localStorage snapshot has no answer key (withheld during the quiz),
+    // so it can only be a last-resort fallback.
+    const sessionId: string | null = data?.sessionId ?? null;
+    if (sessionId) {
+      this.simulasiService.getSessionReview(sessionId).subscribe({
+        next: (res) => {
+          this.examName = res?.nama || this.examName;
+          this.questions = (res?.questions || []).map((q: any) => this.mapServerQuestion(q));
+          this.selectedAnswers = Array.isArray(res?.answers) ? res.answers : [];
+          this.buildSectionsFrom(res?.sections);
+          this.finishLoad();
+        },
+        error: (err) => {
+          console.warn('Review fetch failed, falling back to local snapshot:', err);
+          this.loadFromSnapshot(data);
+        },
+      });
+    } else {
+      this.loadFromSnapshot(data);
+    }
+  }
+
+  private loadFromSnapshot(data: any): void {
     this.questions = Array.isArray(data?.questions) ? data.questions : [];
     this.selectedAnswers = Array.isArray(data?.selectedAnswers) ? data.selectedAnswers : [];
-    this.examName = data?.examName || 'Simulasi Ujian';
-    this.hasData = this.questions.length > 0;
+    this.buildSectionsFrom(data?.sections);
+    this.finishLoad();
+  }
 
-    const rawSections: any[] = Array.isArray(data?.sections) ? data.sections : [];
-    if (rawSections.length > 0) {
-      this.sections = rawSections.map((s: any) => this.buildSection(s));
-    } else if (this.hasData) {
-      // No section metadata — treat whole quiz as one section
+  private finishLoad(): void {
+    this.hasData = this.questions.length > 0;
+    this.loading = false;
+  }
+
+  private buildSectionsFrom(rawSections: any): void {
+    const arr: any[] = Array.isArray(rawSections) ? rawSections : [];
+    if (arr.length > 0) {
+      // server sections carry only {name, count, ...}; derive start/end indices
+      let pos = 0;
+      this.sections = arr.map((s: any) => {
+        const startIndex = s.startIndex ?? pos;
+        const endIndex = s.endIndex ?? startIndex + (s.count ?? 0);
+        pos = endIndex;
+        return this.buildSection({ ...s, startIndex, endIndex });
+      });
+    } else if (this.questions.length > 0) {
       this.sections = [
-        this.buildSection(
-          { name: 'Semua Soal', count: this.questions.length, startIndex: 0, endIndex: this.questions.length }
-        ),
+        this.buildSection({ name: 'Semua Soal', count: this.questions.length, startIndex: 0, endIndex: this.questions.length }),
       ];
     }
+  }
+
+  // Map a backend soal row (opt1-opt5 + correct_answer) into a ReviewQuestion
+  private mapServerQuestion(q: any): ReviewQuestion {
+    const optKeys = ['opt1', 'opt2', 'opt3', 'opt4', 'opt5'];
+    let options: ReviewOption[] = optKeys
+      .filter(k => q[k] != null && String(q[k]).trim() !== '')
+      .map(k => ({
+        text: q[k],
+        correct: q.correct_answer === k,
+        tkp_score: q.option_scores ? (q.option_scores[k] ?? null) : null,
+      }));
+
+    let questionText = q.soal || '';
+    let imageChoiceMode = false;
+
+    // Figural soal: options live inside the image — synthesize A-E
+    if (options.length === 0 && /<img/i.test(questionText)) {
+      imageChoiceMode = true;
+      options = optKeys.map(k => ({
+        text: '',
+        correct: q.correct_answer === k,
+        tkp_score: null,
+      }));
+    }
+
+    return {
+      id: q.id,
+      questionText,
+      question_type: q.question_type || 'multiple_choice',
+      options,
+      imageChoiceMode,
+      option_scores: q.option_scores || null,
+      explanation: q.solution || '',
+    };
   }
 
   private buildSection(s: any): ReviewSection {

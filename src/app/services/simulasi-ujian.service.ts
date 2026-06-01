@@ -76,4 +76,17 @@ export class SimulasiUjianService {
   getMyAttempts(simulasiId: number): Observable<SimulasiUserAttempt[]> {
     return this.http.get<SimulasiUserAttempt[]>(this.apiUrl(`/simulasi-ujian/${simulasiId}/my-attempts`));
   }
+
+  // Review a completed session — returns questions WITH correct_answer + user's answers
+  getSessionReview(sessionId: string): Observable<SimulasiReviewResponse> {
+    return this.http.get<SimulasiReviewResponse>(this.apiUrl(`/simulasi-ujian/session/${sessionId}/review`));
+  }
+}
+
+export interface SimulasiReviewResponse {
+  session_id: string;
+  nama: string | null;
+  sections: SimulasiSection[];
+  questions: any[];
+  answers: (number | null)[];
 }
