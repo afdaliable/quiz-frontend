@@ -303,11 +303,25 @@ export class HomeComponent implements OnInit, OnDestroy {
     return this.paketSoalList.length;
   }
 
+  // Single source of truth for the grid: mode → jalur → search → sort.
+  // Every filter/search/sort action funnels through here so the displayed
+  // count and the grid always agree with the active tab.
   private applyFilters(): void {
     let list = this.paketsForMode();
+
     if (this.selectedCategory) {
       list = list.filter(p => p.kategori_soal === this.selectedCategory);
     }
+
+    const term = this.searchTerm.trim().toLowerCase();
+    if (term) {
+      list = list.filter(p => (p.nama_paket_soal || '').toLowerCase().includes(term));
+    }
+
+    const field = this.sortField;
+    const dir = this.sortDirection === 'asc' ? 1 : -1;
+    list = [...list].sort((a, b) => (a[field] > b[field] ? 1 : -1) * dir);
+
     this.filteredPaketSoalList = list;
   }
 
@@ -318,7 +332,7 @@ export class HomeComponent implements OnInit, OnDestroy {
 
   clearFilter(): void {
     this.selectedCategory = '';
-    this.filteredPaketSoalList = this.paketSoalList;
+    this.applyFilters();
   }
 
   selectPaketSoal(paketSoal: PaketSoal): void {
@@ -389,9 +403,7 @@ export class HomeComponent implements OnInit, OnDestroy {
   }
 
   searchPaketSoal(): void {
-    this.filteredPaketSoalList = this.paketSoalList.filter(paket =>
-      paket.nama_paket_soal.toLowerCase().includes(this.searchTerm.toLowerCase())
-    );
+    this.applyFilters();
   }
 
   sortPaketSoal(field: 'nama_paket_soal' | 'jumlah_soal'): void {
@@ -402,11 +414,7 @@ export class HomeComponent implements OnInit, OnDestroy {
       // If clicking different field, update field and keep same direction
       this.sortField = field;
     }
-    
-    this.filteredPaketSoalList.sort((a, b) => {
-      const compareResult = a[field] > b[field] ? 1 : -1;
-      return this.sortDirection === 'asc' ? compareResult : -compareResult;
-    });
+    this.applyFilters();
   }
 
   filterAndScrollToList(category: string | null): void {
@@ -517,8 +525,10 @@ export class HomeComponent implements OnInit, OnDestroy {
     return created >= sevenDaysAgo;
   }
 
+  // Mode-aware: count pakets of this jalur *within the active mode*, so the
+  // chip badge matches exactly what the grid shows when the chip is clicked.
   countForCategory(categoryName: string): number {
-    return this.paketSoalList.filter(p => p.kategori_soal === categoryName).length;
+    return this.paketsForMode().filter(p => p.kategori_soal === categoryName).length;
   }
 
   resetFilters(): void {

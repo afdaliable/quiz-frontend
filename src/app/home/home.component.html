@@ -70,6 +70,156 @@
 
   <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
 
+    <!-- Quick-action cards: Quiz Terakhir / Random / Simulasi Ujian -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-6 items-stretch">
+
+    <!-- Continue Learning Card (Quiz Terakhir) -->
+    <div *ngIf="showContinueLearning && latestHistory" class="h-full">
+      <div
+        (click)="selectHistoryPackage(latestHistory)"
+        class="h-full group rounded-2xl p-5 cursor-pointer transition-all duration-200 border hover:-translate-y-1 hover:shadow-xl relative"
+        [ngClass]="isDarkMode
+          ? 'bg-gradient-to-br from-violet-900/50 to-purple-900/30 border-violet-700 hover:border-violet-500'
+          : 'bg-gradient-to-br from-indigo-50 to-purple-50 border-indigo-200 hover:border-indigo-400'">
+        <!-- Ribbon badge -->
+        <div class="absolute -top-1 -right-1 px-3 py-1 rounded-lg text-xs font-bold"
+          [ngClass]="isDarkMode ? 'bg-violet-500 text-white' : 'bg-indigo-500 text-white'">
+          Lanjutkan Belajar
+        </div>
+
+        <div class="flex items-start gap-4">
+          <!-- Icon -->
+          <div class="flex-shrink-0 w-14 h-14 rounded-2xl flex items-center justify-center text-3xl"
+            [ngClass]="isDarkMode ? 'bg-violet-800' : 'bg-indigo-100'">
+            📚
+          </div>
+
+          <div class="flex-1 min-w-0">
+            <!-- Label -->
+            <p class="text-xs font-semibold mb-1"
+              [ngClass]="isDarkMode ? 'text-violet-300' : 'text-indigo-600'">
+              QUIZ TERAKHIR
+            </p>
+
+            <!-- Package name -->
+            <h3 class="text-base font-bold mb-2 leading-snug"
+              [ngClass]="isDarkMode ? 'text-white' : 'text-gray-900'">
+              {{ latestHistory.package_name }}
+            </h3>
+
+            <!-- Score + Category + Time -->
+            <div class="flex flex-wrap gap-4 text-sm">
+              <span class="flex items-center gap-1"
+                [ngClass]="isDarkMode ? 'text-gray-400' : 'text-gray-600'">
+                <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2l-4-4m6 2l4 4m-6-6a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                {{ latestHistory.category }}
+              </span>
+              <span class="flex items-center gap-1 font-semibold"
+                [ngClass]="latestHistory.score >= 80 ? 'text-emerald-500' : latestHistory.score >= 60 ? 'text-amber-500' : 'text-rose-500'">
+                <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2l-4-4m6 2l4 4m-6-6a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                Skor: {{ latestHistory.score }}/100
+              </span>
+            </div>
+          </div>
+
+          <!-- Arrow icon -->
+          <div class="flex-shrink-0">
+            <svg class="w-6 h-6 transition-transform duration-200 group-hover:translate-x-1"
+              [ngClass]="isDarkMode ? 'text-violet-400' : 'text-indigo-500'"
+              fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+            </svg>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Latihan Random Card -->
+    <div class="h-full">
+      <div
+        (click)="openRandomModal()"
+        class="h-full group rounded-2xl p-5 cursor-pointer transition-all duration-200 border hover:-translate-y-1 hover:shadow-xl relative overflow-hidden"
+        [ngClass]="isDarkMode
+          ? 'bg-gradient-to-br from-violet-900/60 to-indigo-900/40 border-violet-700 hover:border-violet-500'
+          : 'bg-gradient-to-br from-violet-50 to-indigo-50 border-violet-200 hover:border-violet-400'">
+
+        <!-- Decorative dots -->
+        <div class="absolute top-0 right-0 w-32 h-32 opacity-10 pointer-events-none">
+          <div class="text-8xl select-none">🎲</div>
+        </div>
+
+        <div class="flex items-center gap-4">
+          <div class="flex-shrink-0 w-12 h-12 rounded-2xl flex items-center justify-center text-2xl"
+            [ngClass]="isDarkMode ? 'bg-violet-800' : 'bg-violet-100'">
+            🎲
+          </div>
+          <div class="flex-1 min-w-0">
+            <p class="text-xs font-bold mb-0.5 uppercase tracking-wide"
+              [ngClass]="isDarkMode ? 'text-violet-300' : 'text-violet-600'">
+              LATIHAN RANDOM
+            </p>
+            <h3 class="text-base font-bold leading-snug"
+              [ngClass]="isDarkMode ? 'text-white' : 'text-gray-900'">
+              Uji kemampuan dengan soal acak
+            </h3>
+            <p class="text-xs mt-0.5"
+              [ngClass]="isDarkMode ? 'text-gray-400' : 'text-gray-500'">
+              10, 20, atau 30 soal dari semua kategori
+            </p>
+          </div>
+          <div class="flex-shrink-0 px-4 py-2 rounded-xl text-sm font-semibold transition-all group-hover:scale-105"
+            [ngClass]="isDarkMode ? 'bg-violet-600 text-white' : 'bg-violet-600 text-white'">
+            Mulai
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Simulasi Ujian CTA -->
+    <div class="h-full">
+      <a routerLink="/simulasi-ujian"
+        class="h-full group block rounded-2xl p-5 cursor-pointer transition-all duration-200 border hover:-translate-y-1 hover:shadow-xl relative overflow-hidden"
+        [ngClass]="isDarkMode
+          ? 'bg-gradient-to-br from-rose-900/60 to-orange-900/40 border-rose-700 hover:border-rose-500'
+          : 'bg-gradient-to-br from-rose-50 to-orange-50 border-rose-200 hover:border-rose-400'">
+
+        <div class="absolute top-0 right-0 w-32 h-32 opacity-10 pointer-events-none">
+          <div class="text-8xl select-none">📋</div>
+        </div>
+
+        <div class="flex items-center gap-4">
+          <div class="flex-shrink-0 w-12 h-12 rounded-2xl flex items-center justify-center text-2xl"
+            [ngClass]="isDarkMode ? 'bg-rose-800' : 'bg-rose-100'">
+            📋
+          </div>
+          <div class="flex-1 min-w-0">
+            <p class="text-xs font-bold mb-0.5 uppercase tracking-wide"
+              [ngClass]="isDarkMode ? 'text-rose-300' : 'text-rose-600'">
+              SIMULASI UJIAN
+            </p>
+            <h3 class="text-base font-bold leading-snug"
+              [ngClass]="isDarkMode ? 'text-white' : 'text-gray-900'">
+              Latihan seperti ujian sesungguhnya
+            </h3>
+            <p class="text-xs mt-0.5"
+              [ngClass]="isDarkMode ? 'text-gray-400' : 'text-gray-500'">
+              Timer ketat, passing score, attempt terbatas
+            </p>
+          </div>
+          <div class="flex-shrink-0 px-4 py-2 rounded-xl text-sm font-semibold transition-all group-hover:scale-105 bg-rose-600 text-white">
+            Mulai
+          </div>
+        </div>
+      </a>
+    </div>
+
+    </div>
+    <!-- /Quick-action cards -->
+
     <!-- Mode tabs: Semua / Simulasi Ujian / Latihan -->
     <div class="mb-4">
       <div class="inline-flex p-1 rounded-xl gap-1"
@@ -134,151 +284,6 @@
           </span>
         </button>
       </div>
-    </div>
-
-    <!-- Continue Learning Card -->
-    <div *ngIf="showContinueLearning && latestHistory"
-      class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-4">
-      <div
-        (click)="selectHistoryPackage(latestHistory)"
-        class="group rounded-2xl p-5 cursor-pointer transition-all duration-200 border hover:-translate-y-1 hover:shadow-xl relative"
-        [ngClass]="isDarkMode
-          ? 'bg-gradient-to-br from-violet-900/50 to-purple-900/30 border-violet-700 hover:border-violet-500'
-          : 'bg-gradient-to-br from-indigo-50 to-purple-50 border-indigo-200 hover:border-indigo-400'">
-        <!-- Ribbon badge -->
-        <div class="absolute -top-1 -right-1 px-3 py-1 rounded-lg text-xs font-bold"
-          [ngClass]="isDarkMode ? 'bg-violet-500 text-white' : 'bg-indigo-500 text-white'">
-          Lanjutkan Belajar
-        </div>
-
-        <div class="flex items-start gap-4">
-          <!-- Icon -->
-          <div class="flex-shrink-0 w-14 h-14 rounded-2xl flex items-center justify-center text-3xl"
-            [ngClass]="isDarkMode ? 'bg-violet-800' : 'bg-indigo-100'">
-            📚
-          </div>
-
-          <div class="flex-1 min-w-0">
-            <!-- Label -->
-            <p class="text-xs font-semibold mb-1"
-              [ngClass]="isDarkMode ? 'text-violet-300' : 'text-indigo-600'">
-              QUIZ TERAKHIR
-            </p>
-
-            <!-- Package name -->
-            <h3 class="text-base font-bold mb-2 leading-snug"
-              [ngClass]="isDarkMode ? 'text-white' : 'text-gray-900'">
-              {{ latestHistory.package_name }}
-            </h3>
-
-            <!-- Score + Category + Time -->
-            <div class="flex flex-wrap gap-4 text-sm">
-              <span class="flex items-center gap-1"
-                [ngClass]="isDarkMode ? 'text-gray-400' : 'text-gray-600'">
-                <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2l-4-4m6 2l4 4m-6-6a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-                {{ latestHistory.category }}
-              </span>
-              <span class="flex items-center gap-1 font-semibold"
-                [ngClass]="latestHistory.score >= 80 ? 'text-emerald-500' : latestHistory.score >= 60 ? 'text-amber-500' : 'text-rose-500'">
-                <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2l-4-4m6 2l4 4m-6-6a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-                Skor: {{ latestHistory.score }}/100
-              </span>
-            </div>
-          </div>
-
-          <!-- Arrow icon -->
-          <div class="flex-shrink-0">
-            <svg class="w-6 h-6 transition-transform duration-200 group-hover:translate-x-1"
-              [ngClass]="isDarkMode ? 'text-violet-400' : 'text-indigo-500'"
-              fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
-            </svg>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Latihan Random Card -->
-    <div class="mb-6">
-      <div
-        (click)="openRandomModal()"
-        class="group rounded-2xl p-5 cursor-pointer transition-all duration-200 border hover:-translate-y-1 hover:shadow-xl relative overflow-hidden"
-        [ngClass]="isDarkMode
-          ? 'bg-gradient-to-br from-violet-900/60 to-indigo-900/40 border-violet-700 hover:border-violet-500'
-          : 'bg-gradient-to-br from-violet-50 to-indigo-50 border-violet-200 hover:border-violet-400'">
-
-        <!-- Decorative dots -->
-        <div class="absolute top-0 right-0 w-32 h-32 opacity-10 pointer-events-none">
-          <div class="text-8xl select-none">🎲</div>
-        </div>
-
-        <div class="flex items-center gap-4">
-          <div class="flex-shrink-0 w-12 h-12 rounded-2xl flex items-center justify-center text-2xl"
-            [ngClass]="isDarkMode ? 'bg-violet-800' : 'bg-violet-100'">
-            🎲
-          </div>
-          <div class="flex-1 min-w-0">
-            <p class="text-xs font-bold mb-0.5 uppercase tracking-wide"
-              [ngClass]="isDarkMode ? 'text-violet-300' : 'text-violet-600'">
-              LATIHAN RANDOM
-            </p>
-            <h3 class="text-base font-bold leading-snug"
-              [ngClass]="isDarkMode ? 'text-white' : 'text-gray-900'">
-              Uji kemampuan dengan soal acak
-            </h3>
-            <p class="text-xs mt-0.5"
-              [ngClass]="isDarkMode ? 'text-gray-400' : 'text-gray-500'">
-              10, 20, atau 30 soal dari semua kategori
-            </p>
-          </div>
-          <div class="flex-shrink-0 px-4 py-2 rounded-xl text-sm font-semibold transition-all group-hover:scale-105"
-            [ngClass]="isDarkMode ? 'bg-violet-600 text-white' : 'bg-violet-600 text-white'">
-            Mulai
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Simulasi Ujian CTA -->
-    <div class="mb-6">
-      <a routerLink="/simulasi-ujian"
-        class="group block rounded-2xl p-5 cursor-pointer transition-all duration-200 border hover:-translate-y-1 hover:shadow-xl relative overflow-hidden"
-        [ngClass]="isDarkMode
-          ? 'bg-gradient-to-br from-rose-900/60 to-orange-900/40 border-rose-700 hover:border-rose-500'
-          : 'bg-gradient-to-br from-rose-50 to-orange-50 border-rose-200 hover:border-rose-400'">
-
-        <div class="absolute top-0 right-0 w-32 h-32 opacity-10 pointer-events-none">
-          <div class="text-8xl select-none">📋</div>
-        </div>
-
-        <div class="flex items-center gap-4">
-          <div class="flex-shrink-0 w-12 h-12 rounded-2xl flex items-center justify-center text-2xl"
-            [ngClass]="isDarkMode ? 'bg-rose-800' : 'bg-rose-100'">
-            📋
-          </div>
-          <div class="flex-1 min-w-0">
-            <p class="text-xs font-bold mb-0.5 uppercase tracking-wide"
-              [ngClass]="isDarkMode ? 'text-rose-300' : 'text-rose-600'">
-              SIMULASI UJIAN
-            </p>
-            <h3 class="text-base font-bold leading-snug"
-              [ngClass]="isDarkMode ? 'text-white' : 'text-gray-900'">
-              Latihan seperti ujian sesungguhnya
-            </h3>
-            <p class="text-xs mt-0.5"
-              [ngClass]="isDarkMode ? 'text-gray-400' : 'text-gray-500'">
-              Timer ketat, passing score, attempt terbatas
-            </p>
-          </div>
-          <div class="flex-shrink-0 px-4 py-2 rounded-xl text-sm font-semibold transition-all group-hover:scale-105 bg-rose-600 text-white">
-            Mulai
-          </div>
-        </div>
-      </a>
     </div>
 
     <!-- Section "Untuk Kamu" — personalisasi berdasarkan goals onboarding -->
