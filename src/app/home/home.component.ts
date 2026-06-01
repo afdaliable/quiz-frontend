@@ -317,9 +317,10 @@ export class HomeComponent implements OnInit, OnDestroy {
   }
 
   countForMode(mode: 'all' | 'simulasi' | 'latihan'): number {
+    // simulasi pakets already live in paketSoalList, so 'all' = paketSoalList.
     if (mode === 'simulasi') return this.simulasiList.length;
     if (mode === 'latihan') return this.paketSoalList.filter(p => p.kategori_soal !== this.SIMULASI_CAT).length;
-    return this.paketSoalList.length + this.simulasiList.length;
+    return this.paketSoalList.length;
   }
 
   // ── Simulasi (proper exam flow) ─────────────────────────────────────────
