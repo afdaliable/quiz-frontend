@@ -129,10 +129,10 @@
                 [ngClass]="isDarkMode ? 'bg-indigo-900/20' : 'bg-indigo-50'">
                 <h4 class="text-sm font-semibold mb-1.5"
                   [ngClass]="isDarkMode ? 'text-indigo-300' : 'text-indigo-700'">Penjelasan:</h4>
-                <p class="text-sm leading-relaxed"
-                  [ngClass]="isDarkMode ? 'text-gray-300' : 'text-gray-700'">
-                  {{ questionList[currentQuestion].solution || 'Tidak ada penjelasan untuk soal ini.' }}
-                </p>
+                <div class="text-sm leading-relaxed prose-sm max-w-none"
+                  [ngClass]="isDarkMode ? 'text-gray-300' : 'text-gray-700'"
+                  [innerHTML]="(questionList[currentQuestion].solution || 'Tidak ada penjelasan untuk soal ini.') | mathText">
+                </div>
               </div>
             </div>
 
