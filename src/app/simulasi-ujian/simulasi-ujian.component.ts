@@ -87,36 +87,8 @@ export class SimulasiUjianComponent implements OnInit, OnDestroy {
     this.startingSimulasi = true;
     this.service.startSimulasi(sim.id).subscribe({
       next: (res) => {
-        // Wire localStorage to reuse the existing question component flow.
-        localStorage.setItem('durasi', String(res.duration_minutes));
-        localStorage.setItem('quizMode', 'simulasi');
-        localStorage.setItem('selectedPaket', JSON.stringify({
-          id: sim.paket_soal_id ?? 0,
-          id_nama_paket_soal: sim.paket_soal_id ?? 0,
-          kategori_soal: sim.paket_soal_nama ?? 'Simulasi Ujian',
-          nama_paket_soal: sim.nama_simulasi,
-          jumlah_soal: res.total_questions,
-          is_premium: sim.is_premium,
-          created_at: new Date().toISOString(),
-        }));
-        localStorage.setItem('simulasiData', JSON.stringify({
-          simulasi_id: res.simulasi_id,
-          attempt_number: res.attempt_number,
-          passing_score: res.passing_score,
-          session_id: res.session_id,
-        }));
-        // Pre-load the questions just like random session does, so question.component
-        // can pick them up without an extra fetch.
-        localStorage.setItem('simulasiSessionData', JSON.stringify({
-          session_id: res.session_id,
-          total_questions: res.total_questions,
-          questions: res.questions,
-          nama_paket_soal: sim.nama_simulasi,
-          kategori_soal: sim.paket_soal_nama ?? 'Simulasi Ujian',
-          navigation_mode: res.navigation_mode ?? 'free',
-          sections: res.sections ?? [],
-        }));
-
+        // Shared wiring so the exam display is identical to the home entry point.
+        this.service.prepareSimulasiSession(sim, res);
         this.startingSimulasi = false;
         this.router.navigate(['/question']);
       },

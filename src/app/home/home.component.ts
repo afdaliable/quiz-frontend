@@ -11,6 +11,7 @@ import { OnboardingService } from '../services/onboarding.service';
 import { Subscription } from 'rxjs';
 import { QuizHistoryEntry } from '../models/quiz-history.model';
 import { QuizSessionService } from '../services/quiz-session.service';
+import { SimulasiUjian, SimulasiUjianService } from '../services/simulasi-ujian.service';
 
 @Component({
   selector: 'app-home',
@@ -64,6 +65,20 @@ export class HomeComponent implements OnInit, OnDestroy {
   onboardingGoals: string[] = [];
   showPersonalizedSection = false;
 
+  // Simulasi (proper exam flow) — loaded so the Simulasi tab shows real
+  // simulasi items grouped by exam track, all using the same start flow.
+  simulasiList: SimulasiUjian[] = [];
+  startingSimulasiId: number | null = null;
+  // Friendly labels for exam_type grouping keys.
+  readonly examTypeLabels: { [key: string]: string } = {
+    skd: 'SKD CPNS/PPPK',
+    pppk: 'PPPK',
+    stan: 'PKN STAN',
+    rbb: 'BUMN (RBB)',
+    lpdp: 'LPDP',
+    bumn: 'BUMN',
+  };
+
   constructor(
     private questionService: QuestionService,
     private router: Router,
@@ -72,7 +87,8 @@ export class HomeComponent implements OnInit, OnDestroy {
     private authService: AuthService,
     private premiumService: PremiumService,
     private quizSessionService: QuizSessionService,
-    private onboardingService: OnboardingService
+    private onboardingService: OnboardingService,
+    private simulasiService: SimulasiUjianService
   ) {}
 
   ngOnInit(): void {
@@ -91,6 +107,7 @@ export class HomeComponent implements OnInit, OnDestroy {
       this.isLoggedIn = true;
       this.loadCategories();
       this.loadPaketSoal();
+      this.loadSimulasi();
       this.loadUserStats();
       this.loadLatestHistory();
 
@@ -115,6 +132,7 @@ export class HomeComponent implements OnInit, OnDestroy {
       if (this.isLoggedIn) {
         this.loadCategories();
         this.loadPaketSoal();
+        this.loadSimulasi();
         this.loadUserStats();
         this.loadLatestHistory();
 
@@ -294,13 +312,85 @@ export class HomeComponent implements OnInit, OnDestroy {
   setMode(mode: 'all' | 'simulasi' | 'latihan'): void {
     this.activeMode = mode;
     this.selectedCategory = '';
+    this.selectedExamType = '';
     this.applyFilters();
   }
 
   countForMode(mode: 'all' | 'simulasi' | 'latihan'): number {
-    if (mode === 'simulasi') return this.paketSoalList.filter(p => p.kategori_soal === this.SIMULASI_CAT).length;
+    if (mode === 'simulasi') return this.simulasiList.length;
     if (mode === 'latihan') return this.paketSoalList.filter(p => p.kategori_soal !== this.SIMULASI_CAT).length;
-    return this.paketSoalList.length;
+    return this.paketSoalList.length + this.simulasiList.length;
+  }
+
+  // ── Simulasi (proper exam flow) ─────────────────────────────────────────
+  selectedExamType: string = '';
+
+  loadSimulasi(): void {
+    this.simulasiService.getListSimulasi().subscribe({
+      next: (data) => { this.simulasiList = data || []; },
+      error: (err) => { console.error('Error loading simulasi:', err); this.simulasiList = []; },
+    });
+  }
+
+  // Distinct exam tracks present in the simulasi list (for the filter chips).
+  get simulasiExamTypes(): string[] {
+    const seen = new Set<string>();
+    for (const s of this.simulasiList) seen.add(s.exam_type || 'lainnya');
+    return Array.from(seen);
+  }
+
+  examTypeLabel(type: string): string {
+    return this.examTypeLabels[type] || (type === 'lainnya' ? 'Lainnya' : type.toUpperCase());
+  }
+
+  countForExamType(type: string): number {
+    return this.simulasiList.filter(s => (s.exam_type || 'lainnya') === type).length;
+  }
+
+  filterByExamType(type: string | null): void {
+    this.selectedExamType = type || '';
+  }
+
+  // Simulasi cards to show under the Simulasi tab, narrowed by the chip filter.
+  get visibleSimulasi(): SimulasiUjian[] {
+    const term = this.searchTerm.trim().toLowerCase();
+    return this.simulasiList.filter(s => {
+      if (this.selectedExamType && (s.exam_type || 'lainnya') !== this.selectedExamType) return false;
+      if (term && !(s.nama_simulasi || '').toLowerCase().includes(term)) return false;
+      return true;
+    });
+  }
+
+  // Start a simulasi through the SAME flow as the dedicated simulasi page,
+  // so the exam display is identical regardless of entry point.
+  startSimulasiFlow(sim: SimulasiUjian): void {
+    if (this.startingSimulasiId) return;
+    if (sim.can_attempt === false) {
+      alert('Batas attempt sudah tercapai untuk simulasi ini.');
+      return;
+    }
+    this.startingSimulasiId = sim.id;
+    this.simulasiService.startSimulasi(sim.id).subscribe({
+      next: (res) => {
+        this.simulasiService.prepareSimulasiSession(sim, res);
+        this.startingSimulasiId = null;
+        this.router.navigate(['/question']);
+      },
+      error: (err) => {
+        console.error('Failed to start simulasi from home:', err);
+        this.startingSimulasiId = null;
+        alert(err?.error?.error || 'Gagal memulai simulasi. Silakan coba lagi.');
+      },
+    });
+  }
+
+  getDurationLabel(minutes: number): string {
+    if (minutes >= 60) {
+      const h = Math.floor(minutes / 60);
+      const m = minutes % 60;
+      return m > 0 ? `${h} jam ${m} mnt` : `${h} jam`;
+    }
+    return `${minutes} mnt`;
   }
 
   // Single source of truth for the grid: mode → jalur → search → sort.
@@ -342,7 +432,21 @@ export class HomeComponent implements OnInit, OnDestroy {
       console.log('No auth token when selecting paket soal');
       return;
     }
-    
+
+    // Simulasi pakets must NEVER use the regular /welcome quiz flow — route them
+    // into the proper simulasi exam flow so the display is consistent.
+    if (paketSoal.kategori_soal === this.SIMULASI_CAT) {
+      const pid = paketSoal.id ?? paketSoal.id_nama_paket_soal;
+      const sim = this.simulasiList.find(s => s.paket_soal_id === Number(pid));
+      if (sim) {
+        this.startSimulasiFlow(sim);
+      } else {
+        // Simulasi record not loaded/linked — fall back to the simulasi list page.
+        this.router.navigate(['/simulasi-ujian']);
+      }
+      return;
+    }
+
     // If it's a premium quiz, check access specifically for this quiz
     if (paketSoal.is_premium) {
       // Get the correct ID from the paket soal object

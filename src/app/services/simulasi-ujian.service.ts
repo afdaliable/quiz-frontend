@@ -10,6 +10,7 @@ export interface SimulasiUjian {
   paket_soal_id?: number;
   paket_soal_nama?: string;
   generation_mode: string;
+  exam_type?: string;
   duration_minutes: number;
   total_questions: number;
   passing_score: number;
@@ -80,6 +81,40 @@ export class SimulasiUjianService {
   // Review a completed session — returns questions WITH correct_answer + user's answers
   getSessionReview(sessionId: string): Observable<SimulasiReviewResponse> {
     return this.http.get<SimulasiReviewResponse>(this.apiUrl(`/simulasi-ujian/session/${sessionId}/review`));
+  }
+
+  /**
+   * Single source of truth for wiring a started simulasi into the shared
+   * /question flow. Both the simulasi-ujian page and the home page call this
+   * so the exam display is IDENTICAL regardless of entry point.
+   */
+  prepareSimulasiSession(sim: SimulasiUjian, res: StartSimulasiResponse): void {
+    localStorage.setItem('durasi', String(res.duration_minutes));
+    localStorage.setItem('quizMode', 'simulasi');
+    localStorage.setItem('selectedPaket', JSON.stringify({
+      id: sim.paket_soal_id ?? 0,
+      id_nama_paket_soal: sim.paket_soal_id ?? 0,
+      kategori_soal: sim.paket_soal_nama ?? 'Simulasi Ujian',
+      nama_paket_soal: sim.nama_simulasi,
+      jumlah_soal: res.total_questions,
+      is_premium: sim.is_premium,
+      created_at: new Date().toISOString(),
+    }));
+    localStorage.setItem('simulasiData', JSON.stringify({
+      simulasi_id: res.simulasi_id,
+      attempt_number: res.attempt_number,
+      passing_score: res.passing_score,
+      session_id: res.session_id,
+    }));
+    localStorage.setItem('simulasiSessionData', JSON.stringify({
+      session_id: res.session_id,
+      total_questions: res.total_questions,
+      questions: res.questions,
+      nama_paket_soal: sim.nama_simulasi,
+      kategori_soal: sim.paket_soal_nama ?? 'Simulasi Ujian',
+      navigation_mode: res.navigation_mode ?? 'free',
+      sections: res.sections ?? [],
+    }));
   }
 }
 
