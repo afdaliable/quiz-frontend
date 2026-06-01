@@ -22,6 +22,13 @@ export class HomeComponent implements OnInit, OnDestroy {
   paketSoalList: PaketSoal[] = [];
   filteredPaketSoalList: PaketSoal[] = [];
   selectedCategory: string = '';
+
+  // ── Mode tabs (Semua / Simulasi / Latihan) ──────────────────────────────
+  // Separates conceptual axes: a "mode" (how you practice) vs a "jalur"
+  // (exam track). Categories named below are modes, the rest are jalur.
+  readonly SIMULASI_CAT = 'SIMULASI UJIAN';
+  readonly TOPIK_CAT = 'LATIHAN TOPIK';
+  activeMode: 'all' | 'simulasi' | 'latihan' = 'all';
   isLoggedIn: boolean = false;
   searchTerm: string = '';
   sortField: 'nama_paket_soal' | 'jumlah_soal' = 'nama_paket_soal';
@@ -181,7 +188,7 @@ export class HomeComponent implements OnInit, OnDestroy {
       next: (data: PaketSoal[]) => {
         console.log('Paket soal loaded:', data);
         this.paketSoalList = data;
-        this.filteredPaketSoalList = data;
+        this.applyFilters();
         this.isLoading = false;
         // Load personalized section after paket data is available
         this.loadPersonalizedContent();
@@ -260,16 +267,53 @@ export class HomeComponent implements OnInit, OnDestroy {
     this.showPersonalizedSection = false;
   }
 
+  // True if this category is a "mode" (Simulasi / Latihan Topik), not a jalur.
+  isModeCategory(catName: string): boolean {
+    return catName === this.SIMULASI_CAT || catName === this.TOPIK_CAT;
+  }
+
+  // Jalur categories = real exam tracks (everything that isn't a mode and has pakets).
+  get jalurCategories(): Category[] {
+    return this.categories.filter(c =>
+      !this.isModeCategory(c.nama_kategori) && this.countForCategory(c.nama_kategori) > 0
+    );
+  }
+
+  // Pakets visible under the current mode (before jalur chip narrowing).
+  private paketsForMode(): PaketSoal[] {
+    if (this.activeMode === 'simulasi') {
+      return this.paketSoalList.filter(p => p.kategori_soal === this.SIMULASI_CAT);
+    }
+    if (this.activeMode === 'latihan') {
+      // Latihan = everything except simulasi (jalur pakets + latihan topik)
+      return this.paketSoalList.filter(p => p.kategori_soal !== this.SIMULASI_CAT);
+    }
+    return [...this.paketSoalList];
+  }
+
+  setMode(mode: 'all' | 'simulasi' | 'latihan'): void {
+    this.activeMode = mode;
+    this.selectedCategory = '';
+    this.applyFilters();
+  }
+
+  countForMode(mode: 'all' | 'simulasi' | 'latihan'): number {
+    if (mode === 'simulasi') return this.paketSoalList.filter(p => p.kategori_soal === this.SIMULASI_CAT).length;
+    if (mode === 'latihan') return this.paketSoalList.filter(p => p.kategori_soal !== this.SIMULASI_CAT).length;
+    return this.paketSoalList.length;
+  }
+
+  private applyFilters(): void {
+    let list = this.paketsForMode();
+    if (this.selectedCategory) {
+      list = list.filter(p => p.kategori_soal === this.selectedCategory);
+    }
+    this.filteredPaketSoalList = list;
+  }
+
   filterByCategory(category: string | null): void {
     this.selectedCategory = category || '';
-    if (!category) {
-      // Show all paket soal when no category selected
-      this.filteredPaketSoalList = [...this.paketSoalList];
-    } else {
-      this.filteredPaketSoalList = this.paketSoalList.filter(
-        paket => paket.kategori_soal === category
-      );
-    }
+    this.applyFilters();
   }
 
   clearFilter(): void {
@@ -480,7 +524,8 @@ export class HomeComponent implements OnInit, OnDestroy {
   resetFilters(): void {
     this.searchTerm = '';
     this.selectedCategory = '';
-    this.filteredPaketSoalList = [...this.paketSoalList];
+    this.activeMode = 'all';
+    this.applyFilters();
   }
 
   dismissStreakBanner(): void {

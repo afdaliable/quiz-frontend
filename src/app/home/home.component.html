@@ -70,8 +70,46 @@
 
   <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
 
-    <!-- Category Pills (horizontal scroll) -->
-    <div class="mb-6">
+    <!-- Mode tabs: Semua / Simulasi Ujian / Latihan -->
+    <div class="mb-4">
+      <div class="inline-flex p-1 rounded-xl gap-1"
+        [ngClass]="isDarkMode ? 'bg-gray-800' : 'bg-gray-100'">
+        <button (click)="setMode('all')"
+          class="flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-semibold transition-all duration-200 whitespace-nowrap"
+          [ngClass]="activeMode === 'all'
+            ? (isDarkMode ? 'bg-gray-900 text-white shadow' : 'bg-white text-indigo-600 shadow')
+            : (isDarkMode ? 'text-gray-400 hover:text-gray-200' : 'text-gray-500 hover:text-gray-700')">
+          Semua
+          <span class="text-xs opacity-70">{{ countForMode('all') }}</span>
+        </button>
+        <button (click)="setMode('simulasi')"
+          class="flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-semibold transition-all duration-200 whitespace-nowrap"
+          [ngClass]="activeMode === 'simulasi'
+            ? (isDarkMode ? 'bg-gray-900 text-white shadow' : 'bg-white text-indigo-600 shadow')
+            : (isDarkMode ? 'text-gray-400 hover:text-gray-200' : 'text-gray-500 hover:text-gray-700')">
+          🎯 Simulasi
+          <span class="text-xs opacity-70">{{ countForMode('simulasi') }}</span>
+        </button>
+        <button (click)="setMode('latihan')"
+          class="flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-semibold transition-all duration-200 whitespace-nowrap"
+          [ngClass]="activeMode === 'latihan'
+            ? (isDarkMode ? 'bg-gray-900 text-white shadow' : 'bg-white text-indigo-600 shadow')
+            : (isDarkMode ? 'text-gray-400 hover:text-gray-200' : 'text-gray-500 hover:text-gray-700')">
+          📚 Latihan
+          <span class="text-xs opacity-70">{{ countForMode('latihan') }}</span>
+        </button>
+      </div>
+      <p class="text-xs mt-1.5" [ngClass]="isDarkMode ? 'text-gray-500' : 'text-gray-400'">
+        <ng-container [ngSwitch]="activeMode">
+          <span *ngSwitchCase="'simulasi'">Ujian penuh dengan timer & passing grade, per jalur ujian.</span>
+          <span *ngSwitchCase="'latihan'">Latihan soal per jalur atau per topik, tanpa tekanan timer ketat.</span>
+          <span *ngSwitchDefault>Semua paket: simulasi ujian dan latihan.</span>
+        </ng-container>
+      </p>
+    </div>
+
+    <!-- Jalur Pills (only real exam tracks; shown for Simulasi & Latihan) -->
+    <div class="mb-6" *ngIf="activeMode !== 'all' && jalurCategories.length > 0">
       <div class="flex gap-2 overflow-x-auto pb-2 scrollbar-hide" style="scrollbar-width: none; -ms-overflow-style: none;">
         <button
           (click)="filterByCategory(null)"
@@ -79,31 +117,22 @@
           [ngClass]="!selectedCategory
             ? 'bg-indigo-600 text-white shadow-md shadow-indigo-200'
             : (isDarkMode ? 'bg-gray-800 text-gray-300 hover:bg-gray-700 border border-gray-700' : 'bg-white text-gray-600 hover:bg-gray-50 border border-gray-200')">
-          Semua
+          Semua Jalur
+        </button>
+        <button *ngFor="let category of jalurCategories"
+          (click)="filterByCategory(category.nama_kategori)"
+          class="flex-shrink-0 flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-semibold transition-all duration-200 whitespace-nowrap"
+          [ngClass]="selectedCategory === category.nama_kategori
+            ? 'bg-indigo-600 text-white shadow-md shadow-indigo-200'
+            : (isDarkMode ? 'bg-gray-800 text-gray-300 hover:bg-gray-700 border border-gray-700' : 'bg-white text-gray-600 hover:bg-gray-50 border border-gray-200')">
+          {{ category.nama_kategori }}
           <span class="text-xs px-1.5 py-0.5 rounded-full font-medium leading-none"
-            [ngClass]="!selectedCategory
+            [ngClass]="selectedCategory === category.nama_kategori
               ? 'bg-white/20 text-white'
               : (isDarkMode ? 'bg-gray-700 text-gray-400' : 'bg-gray-100 text-gray-500')">
-            {{ paketSoalList.length }}
+            {{ countForCategory(category.nama_kategori) }}
           </span>
         </button>
-        <ng-container *ngFor="let category of categories">
-          <button
-            *ngIf="countForCategory(category.nama_kategori) > 0"
-            (click)="filterByCategory(category.nama_kategori)"
-            class="flex-shrink-0 flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-semibold transition-all duration-200 whitespace-nowrap"
-            [ngClass]="selectedCategory === category.nama_kategori
-              ? 'bg-indigo-600 text-white shadow-md shadow-indigo-200'
-              : (isDarkMode ? 'bg-gray-800 text-gray-300 hover:bg-gray-700 border border-gray-700' : 'bg-white text-gray-600 hover:bg-gray-50 border border-gray-200')">
-            {{ category.nama_kategori }}
-            <span class="text-xs px-1.5 py-0.5 rounded-full font-medium leading-none"
-              [ngClass]="selectedCategory === category.nama_kategori
-                ? 'bg-white/20 text-white'
-                : (isDarkMode ? 'bg-gray-700 text-gray-400' : 'bg-gray-100 text-gray-500')">
-              {{ countForCategory(category.nama_kategori) }}
-            </span>
-          </button>
-        </ng-container>
       </div>
     </div>
 
