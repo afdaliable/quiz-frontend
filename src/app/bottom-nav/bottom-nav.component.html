@@ -7,7 +7,7 @@
       *ngFor="let tab of tabs"
       type="button"
       (click)="navigate(tab.route)"
-      class="flex-1 flex flex-col items-center justify-center gap-0.5 py-2 relative transition-colors duration-150 focus:outline-none"
+      class="flex-1 flex flex-col items-center justify-center gap-1 py-3 min-h-[56px] relative transition-colors duration-150 focus:outline-none"
       [ngClass]="isActive(tab.route)
         ? (isDarkMode ? 'text-indigo-400' : 'text-indigo-600')
         : (isDarkMode ? 'text-gray-500 hover:text-gray-300' : 'text-gray-400 hover:text-gray-600')"
@@ -34,7 +34,7 @@
 
       <!-- Label -->
       <span
-        class="text-[10px] leading-none font-medium transition-all duration-150"
+        class="text-xs leading-none font-medium transition-all duration-150"
         [ngClass]="isActive(tab.route) ? 'font-semibold' : ''"
       >
         {{ tab.label }}

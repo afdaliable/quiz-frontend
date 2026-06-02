@@ -102,7 +102,7 @@
 
   <!-- Expanded panel -->
   <div *ngIf="!isMinimized"
-    class="w-56 rounded-2xl shadow-2xl border overflow-hidden"
+    class="w-64 max-w-[calc(100vw-2rem)] rounded-2xl shadow-2xl border overflow-hidden"
     [ngClass]="isDarkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'">
 
     <!-- Header row -->
@@ -115,17 +115,17 @@
         {{ phaseIcon }} Pomodoro #{{ currentPomodoroNum }}
       </span>
       <div class="flex items-center gap-1">
-        <button (click)="toggleSound()" class="text-xs p-1 rounded opacity-60 hover:opacity-100"
+        <button (click)="toggleSound()" class="text-xs p-2 rounded opacity-60 hover:opacity-100 min-w-[32px] min-h-[32px]"
           [ngClass]="isDarkMode ? 'text-gray-300' : 'text-gray-500'"
           [title]="settings.soundEnabled ? 'Matikan suara' : 'Hidupkan suara'">
           {{ settings.soundEnabled ? '🔔' : '🔕' }}
         </button>
-        <button (click)="toggleMinimize()" class="text-xs px-1.5 py-1 rounded opacity-60 hover:opacity-100"
+        <button (click)="toggleMinimize()" class="text-xs px-2 py-2 rounded opacity-60 hover:opacity-100 min-w-[32px] min-h-[32px]"
           [ngClass]="isDarkMode ? 'text-gray-300 hover:bg-gray-700' : 'text-gray-500 hover:bg-gray-100'"
           title="Minimize">
           _
         </button>
-        <button (click)="requestStop()" class="text-xs px-1.5 py-1 rounded opacity-60 hover:opacity-100"
+        <button (click)="requestStop()" class="text-xs px-2 py-2 rounded opacity-60 hover:opacity-100 min-w-[32px] min-h-[32px]"
           [ngClass]="isDarkMode ? 'text-gray-300 hover:bg-gray-700' : 'text-gray-500 hover:bg-gray-100'"
           title="Hentikan Pomodoro">
           ×

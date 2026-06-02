@@ -53,38 +53,38 @@
   </div>
   
   <!-- Soal list table -->
-  <div *ngIf="!loading && !premiumRequired && soalList.length > 0" class="overflow-x-auto">
-    <table class="w-full border-collapse" [ngClass]="isDarkMode ? 'border-gray-700' : 'border-gray-300'">
+  <div *ngIf="!loading && !premiumRequired && soalList.length > 0" class="overflow-x-auto -mx-4 sm:mx-0">
+    <table class="min-w-max w-full border-collapse text-sm" [ngClass]="isDarkMode ? 'border-gray-700' : 'border-gray-300'">
       <thead>
         <tr [ngClass]="isDarkMode ? 'bg-gray-800' : 'bg-gray-100'">
-          <th class="border px-4 py-2" [ngClass]="isDarkMode ? 'border-gray-700' : 'border-gray-300'">ID</th>
-          <th class="border px-4 py-2" [ngClass]="isDarkMode ? 'border-gray-700' : 'border-gray-300'">Soal</th>
-          <th class="border px-4 py-2" [ngClass]="isDarkMode ? 'border-gray-700' : 'border-gray-300'">Opsi 1</th>
-          <th class="border px-4 py-2" [ngClass]="isDarkMode ? 'border-gray-700' : 'border-gray-300'">Opsi 2</th>
-          <th class="border px-4 py-2" [ngClass]="isDarkMode ? 'border-gray-700' : 'border-gray-300'">Opsi 3</th>
-          <th class="border px-4 py-2" [ngClass]="isDarkMode ? 'border-gray-700' : 'border-gray-300'">Opsi 4</th>
-          <th class="border px-4 py-2" [ngClass]="isDarkMode ? 'border-gray-700' : 'border-gray-300'">Opsi 5</th>
-          <th class="border px-4 py-2" [ngClass]="isDarkMode ? 'border-gray-700' : 'border-gray-300'">Jawaban Benar</th>
-          <th class="border px-4 py-2" [ngClass]="isDarkMode ? 'border-gray-700' : 'border-gray-300'">Kategori</th>
-          <th class="border px-4 py-2" [ngClass]="isDarkMode ? 'border-gray-700' : 'border-gray-300'">Paket Soal</th>
-          <th class="border px-4 py-2" [ngClass]="isDarkMode ? 'border-gray-700' : 'border-gray-300'">ID Kategori</th>
-          <th class="border px-4 py-2" [ngClass]="isDarkMode ? 'border-gray-700' : 'border-gray-300'">ID Paket Soal</th>
-          <th class="border px-4 py-2" [ngClass]="isDarkMode ? 'border-gray-700' : 'border-gray-300'">Solusi</th>
+          <th class="border px-3 py-2 whitespace-nowrap" [ngClass]="isDarkMode ? 'border-gray-700' : 'border-gray-300'">ID</th>
+          <th class="border px-3 py-2 whitespace-nowrap min-w-[200px]" [ngClass]="isDarkMode ? 'border-gray-700' : 'border-gray-300'">Soal</th>
+          <th class="border px-3 py-2 whitespace-nowrap min-w-[120px]" [ngClass]="isDarkMode ? 'border-gray-700' : 'border-gray-300'">Opsi 1</th>
+          <th class="border px-3 py-2 whitespace-nowrap min-w-[120px]" [ngClass]="isDarkMode ? 'border-gray-700' : 'border-gray-300'">Opsi 2</th>
+          <th class="border px-3 py-2 whitespace-nowrap min-w-[120px]" [ngClass]="isDarkMode ? 'border-gray-700' : 'border-gray-300'">Opsi 3</th>
+          <th class="border px-3 py-2 whitespace-nowrap min-w-[120px]" [ngClass]="isDarkMode ? 'border-gray-700' : 'border-gray-300'">Opsi 4</th>
+          <th class="border px-3 py-2 whitespace-nowrap min-w-[120px]" [ngClass]="isDarkMode ? 'border-gray-700' : 'border-gray-300'">Opsi 5</th>
+          <th class="border px-3 py-2 whitespace-nowrap" [ngClass]="isDarkMode ? 'border-gray-700' : 'border-gray-300'">Jawaban Benar</th>
+          <th class="border px-3 py-2 whitespace-nowrap" [ngClass]="isDarkMode ? 'border-gray-700' : 'border-gray-300'">Kategori</th>
+          <th class="border px-3 py-2 whitespace-nowrap" [ngClass]="isDarkMode ? 'border-gray-700' : 'border-gray-300'">Paket Soal</th>
+          <th class="border px-3 py-2 whitespace-nowrap" [ngClass]="isDarkMode ? 'border-gray-700' : 'border-gray-300'">ID Kategori</th>
+          <th class="border px-3 py-2 whitespace-nowrap" [ngClass]="isDarkMode ? 'border-gray-700' : 'border-gray-300'">ID Paket Soal</th>
+          <th class="border px-3 py-2 whitespace-nowrap min-w-[200px]" [ngClass]="isDarkMode ? 'border-gray-700' : 'border-gray-300'">Solusi</th>
         </tr>
       </thead>
       <tbody>
         <tr *ngFor="let soal of soalList" [ngClass]="isDarkMode ? 'hover:bg-gray-800' : 'hover:bg-gray-50'">
-          <td class="border px-4 py-2" [ngClass]="isDarkMode ? 'border-gray-700' : 'border-gray-300'">{{ soal.id }}</td>
-          <td class="border px-4 py-2" [ngClass]="isDarkMode ? 'border-gray-700' : 'border-gray-300'">{{ soal.soal }}</td>
-          <td class="border px-4 py-2" [ngClass]="isDarkMode ? 'border-gray-700' : 'border-gray-300'">{{ soal.opt1 }}</td>
-          <td class="border px-4 py-2" [ngClass]="isDarkMode ? 'border-gray-700' : 'border-gray-300'">{{ soal.opt2 }}</td>
-          <td class="border px-4 py-2" [ngClass]="isDarkMode ? 'border-gray-700' : 'border-gray-300'">{{ soal.opt3 }}</td>
-          <td class="border px-4 py-2" [ngClass]="isDarkMode ? 'border-gray-700' : 'border-gray-300'">{{ soal.opt4 }}</td>
-          <td class="border px-4 py-2" [ngClass]="isDarkMode ? 'border-gray-700' : 'border-gray-300'">{{ soal.opt5 }}</td>
-          <td class="border px-4 py-2" [ngClass]="isDarkMode ? 'border-gray-700' : 'border-gray-300'">
+          <td class="border px-3 py-2 whitespace-nowrap" [ngClass]="isDarkMode ? 'border-gray-700' : 'border-gray-300'">{{ soal.id }}</td>
+          <td class="border px-3 py-2 max-w-xs truncate" [ngClass]="isDarkMode ? 'border-gray-700' : 'border-gray-300'" [title]="soal.soal">{{ soal.soal }}</td>
+          <td class="border px-3 py-2 max-w-[120px] truncate" [ngClass]="isDarkMode ? 'border-gray-700' : 'border-gray-300'">{{ soal.opt1 }}</td>
+          <td class="border px-3 py-2 max-w-[120px] truncate" [ngClass]="isDarkMode ? 'border-gray-700' : 'border-gray-300'">{{ soal.opt2 }}</td>
+          <td class="border px-3 py-2 max-w-[120px] truncate" [ngClass]="isDarkMode ? 'border-gray-700' : 'border-gray-300'">{{ soal.opt3 }}</td>
+          <td class="border px-3 py-2 max-w-[120px] truncate" [ngClass]="isDarkMode ? 'border-gray-700' : 'border-gray-300'">{{ soal.opt4 }}</td>
+          <td class="border px-3 py-2 max-w-[120px] truncate" [ngClass]="isDarkMode ? 'border-gray-700' : 'border-gray-300'">{{ soal.opt5 }}</td>
+          <td class="border px-3 py-2 whitespace-nowrap font-semibold" [ngClass]="isDarkMode ? 'border-gray-700' : 'border-gray-300'">
             {{ soal.correct_answer }}
           </td>
-          <td class="border px-4 py-2" [ngClass]="isDarkMode ? 'border-gray-700' : 'border-gray-300'">
+          <td class="border px-3 py-2 whitespace-nowrap" [ngClass]="isDarkMode ? 'border-gray-700' : 'border-gray-300'">
             {{ soal.deskripsi_kategori }}
           </td>
           <td class="border px-4 py-2" [ngClass]="isDarkMode ? 'border-gray-700' : 'border-gray-300'">

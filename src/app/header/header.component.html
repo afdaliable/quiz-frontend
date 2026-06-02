@@ -68,7 +68,7 @@
 
           <!-- Dropdown menu -->
           <div *ngIf="showUserMenu"
-            class="absolute right-0 mt-2 w-56 rounded-xl shadow-lg border py-1 z-50"
+            class="absolute right-0 mt-2 w-56 max-w-[calc(100vw-2rem)] rounded-xl shadow-lg border py-1 z-50"
             [ngClass]="isDarkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-100'">
 
             <a routerLink="/account" (click)="showUserMenu = false"
