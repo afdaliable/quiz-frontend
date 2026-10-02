@@ -13,6 +13,30 @@ export interface PremiumPlan {
   duration_days?: number;
   is_lifetime?: boolean;
   features: string[];
+  /** harga sebelum dicoret */
+  original_price?: number | null;
+  period?: 'monthly' | 'yearly' | null;
+}
+
+/** Promo yang sedang berlaku untuk user ini. Waktu dalam detik epoch. */
+export interface PromoOffer {
+  kode: string;
+  nama: string;
+  jenis: 'event' | 'akhir_trial';
+  persen: number;
+  berlaku_untuk: 'bulanan' | 'tahunan' | 'semua';
+  berakhir: number | null;
+  teks_banner: string | null;
+  harga: { plan_id: number; harga: number; harga_akhir: number }[];
+}
+
+export interface PremiumOffer {
+  server_time: number;
+  akses_premium: boolean;
+  trial: { mulai: number; berakhir: number; aktif: boolean } | null;
+  langganan: { plan_id: number; nama: string; berakhir: number | null } | null;
+  plans: PremiumPlan[];
+  promos: PromoOffer[];
 }
 
 export interface Subscription {
@@ -101,6 +125,8 @@ export interface PhoneUpdateResponse {
 export interface QrisPayment {
   order_id: string;
   plan: string;
+  base_amount?: number;
+  discount_amount?: number;
   amount: number;
   total_amount: number;
   qris_image: string | null;
@@ -215,14 +241,24 @@ export class PremiumService {
 
   // --- KlikQRIS: QRIS dinamis, pelunasan dideteksi webhook di backend ---
 
-  createQrisPayment(planId: number): Observable<QrisPayment> {
+  /** Trial, langganan, plan aktif, dan promo yang berlaku. Memulai trial bila belum. */
+  getOffer(): Observable<PremiumOffer> {
+    const url = environment.production ? `${this.apiUrl}/premium/offer` : `/api/premium/offer`;
+    return this.http.get<PremiumOffer>(url, { headers: this.createHeaders() });
+  }
+
+  createQrisPayment(planId: number, promoCode?: string): Observable<QrisPayment> {
     const url = environment.production
       ? `${this.apiUrl}/payment/klikqris/create`
       : `/api/payment/klikqris/create`;
-    return this.http.post<QrisPayment>(url, { plan_id: planId }, { headers: this.createHeaders() }).pipe(
+    const body = promoCode?.trim() ? { plan_id: planId, promo_code: promoCode.trim() } : { plan_id: planId };
+    return this.http.post<QrisPayment>(url, body, { headers: this.createHeaders() }).pipe(
       catchError((error: HttpErrorResponse) => {
         if (error.status === 401) {
           return throwError(() => new Error('Authentication failed. Please log in again.'));
+        }
+        if (error.status === 422 && error.error?.message) {
+          return throwError(() => new Error(error.error.message));
         }
         if (error.status === 503) {
           return throwError(() => new Error('Pembayaran sedang tidak tersedia. Coba beberapa saat lagi.'));

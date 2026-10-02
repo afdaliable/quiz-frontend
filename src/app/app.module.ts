@@ -6,6 +6,7 @@ import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
+import { PremiumBannerComponent } from './premium/premium-banner.component';
 import { WelcomeComponent } from './welcome/welcome.component';
 import { QuestionComponent } from './question/question.component';
 import { HeaderComponent } from './header/header.component';
@@ -99,6 +100,7 @@ import { SimulasiReviewComponent } from './simulasi-review/simulasi-review.compo
     BrowserModule,
     HttpClientModule,
     PremiumPlansComponent,
+    PremiumBannerComponent,
     LicenseActivationComponent,
     PremiumAccessModalComponent,
     EmptyStateComponent,

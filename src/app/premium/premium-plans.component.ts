@@ -1,5 +1,7 @@
 import { Component, OnInit, OnDestroy, HostBinding } from '@angular/core';
-import { PremiumService, QrisPayment } from '../services/premium.service';
+import { PremiumService, QrisPayment, PremiumOffer, PromoOffer } from '../services/premium.service';
+import { formatSisa } from './premium-banner.component';
+import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { ThemeService } from '../services/theme.service';
 import { finalize } from 'rxjs/operators';
@@ -22,6 +24,8 @@ const FEATURE_TRANSLATIONS: Array<[string, string]> = [
 ];
 
 const PLAN_BADGES: Record<string, { label: string; color: string }> = {
+  bulanan:  { label: 'Fleksibel',        color: 'bg-gray-500 text-white' },
+  tahunan:  { label: 'Hemat 20%',        color: 'bg-emerald-600 text-white' },
   silver:   { label: 'Mulai dari sini',  color: 'bg-gray-500 text-white' },
   gold:     { label: '⭐ Paling Populer', color: 'bg-amber-500 text-white' },
   platinum: { label: '🔥 Best Value',     color: 'bg-indigo-600 text-white' },
@@ -29,6 +33,8 @@ const PLAN_BADGES: Record<string, { label: string; color: string }> = {
 };
 
 const PLAN_TAGLINES: Record<string, string> = {
+  bulanan:  'Akses semua paket premium, bayar per bulan',
+  tahunan:  'Akses semua paket premium setahun, 20% lebih murah dari bulanan',
   silver:   'Cocok untuk pemula yang baru mulai belajar',
   gold:     'Pilihan terpopuler untuk hasil optimal',
   platinum: 'Untuk belajar intensif tanpa batas',
@@ -40,7 +46,7 @@ const PLAN_TAGLINES: Record<string, string> = {
   templateUrl: './premium-plans.component.html',
   styleUrls: ['./premium-plans.component.css'],
   standalone: true,
-  imports: [CommonModule]
+  imports: [CommonModule, FormsModule]
 })
 export class PremiumPlansComponent implements OnInit, OnDestroy {
 
@@ -52,6 +58,13 @@ export class PremiumPlansComponent implements OnInit, OnDestroy {
   isDarkMode = false;
   loadingSubscription = false;
   processingPayment = false;
+
+  // Trial, promo, dan kode yang akan dipakai saat membuat tagihan.
+  offer: PremiumOffer | null = null;
+  promoCode = '';
+  private selisihJam = 0;            // detik: jam server - jam perangkat
+  sekarang = Date.now() / 1000;
+  private jamTimer: ReturnType<typeof setInterval> | null = null;
 
   // Tagihan QRIS yang sedang ditampilkan. Pelunasan dideteksi webhook di
   // backend; halaman ini cukup menanyakan statusnya berkala.
@@ -111,12 +124,30 @@ export class PremiumPlansComponent implements OnInit, OnDestroy {
     });
     this.loadPlans();
     this.checkActiveSubscription();
+    this.jamTimer = setInterval(() => (this.sekarang = Date.now() / 1000 + this.selisihJam), 1000);
   }
 
   loadPlans(): void {
     this.loading = true;
     this.error = '';
 
+    this.premiumService.getOffer().subscribe({
+      next: (o) => {
+        this.loading = false;
+        this.offer = o;
+        this.plans = o.plans;
+        this.selisihJam = o.server_time - Date.now() / 1000;
+        this.sekarang = o.server_time;
+        // Penawaran otomatis (akhir trial / event) langsung terisi.
+        if (!this.promoCode && o.promos.length) this.promoCode = o.promos[0].kode;
+      },
+      error: () => this.loadPlansSaja(),
+    });
+  }
+
+  /** Cadangan bila /premium/offer gagal: daftar plan tanpa trial/promo. */
+  private loadPlansSaja(): void {
+    this.loading = true;
     this.premiumService.getPremiumPlans().pipe(
       finalize(() => { this.loading = false; })
     ).subscribe({
@@ -146,7 +177,7 @@ export class PremiumPlansComponent implements OnInit, OnDestroy {
     this.processingPayment = true;
     this.error = '';
 
-    this.premiumService.createQrisPayment(planId).pipe(
+    this.premiumService.createQrisPayment(planId, this.promoCode).pipe(
       finalize(() => (this.processingPayment = false))
     ).subscribe({
       next: (tagihan) => {
@@ -227,11 +258,33 @@ export class PremiumPlansComponent implements OnInit, OnDestroy {
   ngOnDestroy(): void {
     this.hentiPolling();
     this.hentiHitungMundur();
+    if (this.jamTimer) clearInterval(this.jamTimer);
   }
 
+  /** Semua plan memberi akses yang sama; yang dikunci hanya plan yang sedang aktif. */
   hasAccess(planId: number): boolean {
-    if (!this.activeSubscription) return false;
-    return this.activeSubscription.plan_id >= planId;
+    return !!this.activeSubscription && this.activeSubscription.plan_id === planId;
+  }
+
+  /** Promo dari penawaran yang cocok dengan kode yang diketik, bila masih berlaku. */
+  get promoTerpilih(): PromoOffer | null {
+    const kode = this.promoCode.trim().toUpperCase();
+    if (!kode || !this.offer) return null;
+    return this.offer.promos.find(p => p.kode === kode && (!p.berakhir || p.berakhir > this.sekarang)) ?? null;
+  }
+
+  /** Harga setelah promo untuk plan ini, atau null bila promo tidak berlaku untuknya. */
+  hargaPromo(planId: number): number | null {
+    return this.promoTerpilih?.harga.find(h => h.plan_id === planId)?.harga_akhir ?? null;
+  }
+
+  sisa(batas: number): string {
+    return formatSisa(batas - this.sekarang);
+  }
+
+  getPricePerMonth(plan: any): string {
+    if (plan.period !== 'yearly') return '';
+    return `≈ Rp ${Math.round(plan.price / 12).toLocaleString('id-ID')}/bulan`;
   }
 
   retryLoading(): void {
@@ -254,7 +307,7 @@ export class PremiumPlansComponent implements OnInit, OnDestroy {
   }
 
   isPopularPlan(planName: string): boolean {
-    return planName?.toLowerCase() === 'gold';
+    return ['gold', 'tahunan'].includes(planName?.toLowerCase());
   }
 
   getPricePerDay(plan: any): string {
