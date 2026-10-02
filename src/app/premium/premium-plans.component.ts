@@ -1,5 +1,5 @@
-import { Component, OnInit, HostBinding } from '@angular/core';
-import { PremiumService } from '../services/premium.service';
+import { Component, OnInit, OnDestroy, HostBinding } from '@angular/core';
+import { PremiumService, QrisPayment } from '../services/premium.service';
 import { Router } from '@angular/router';
 import { ThemeService } from '../services/theme.service';
 import { finalize } from 'rxjs/operators';
@@ -42,7 +42,7 @@ const PLAN_TAGLINES: Record<string, string> = {
   standalone: true,
   imports: [CommonModule]
 })
-export class PremiumPlansComponent implements OnInit {
+export class PremiumPlansComponent implements OnInit, OnDestroy {
 
   @HostBinding('class') hostClasses = 'block bg-white dark:bg-gray-900';
   plans: any[] = [];
@@ -52,6 +52,14 @@ export class PremiumPlansComponent implements OnInit {
   isDarkMode = false;
   loadingSubscription = false;
   processingPayment = false;
+
+  // Tagihan QRIS yang sedang ditampilkan. Pelunasan dideteksi webhook di
+  // backend; halaman ini cukup menanyakan statusnya berkala.
+  qris: QrisPayment | null = null;
+  qrisStatus: 'PENDING' | 'PAID' | 'EXPIRED' = 'PENDING';
+  sisaDetik = 0;
+  private pollTimer: ReturnType<typeof setInterval> | null = null;
+  private countdownTimer: ReturnType<typeof setInterval> | null = null;
 
   readonly paymentMethods = [
     { icon: '📱', name: 'QRIS' },
@@ -138,30 +146,87 @@ export class PremiumPlansComponent implements OnInit {
     this.processingPayment = true;
     this.error = '';
 
-    this.premiumService.generatePaymentLink(planId).subscribe({
-      next: (response) => {
-        if (response.payment_link) {
-          localStorage.setItem('selected_plan_id', planId.toString());
-          window.location.href = response.payment_link;
-        } else {
-          this.processingPayment = false;
-          this.error = 'Link pembayaran tidak valid. Silakan coba lagi.';
-        }
+    this.premiumService.createQrisPayment(planId).pipe(
+      finalize(() => (this.processingPayment = false))
+    ).subscribe({
+      next: (tagihan) => {
+        this.qris = tagihan;
+        this.qrisStatus = 'PENDING';
+        this.mulaiHitungMundur(tagihan.expired_at);
+        this.mulaiPolling(tagihan.order_id);
       },
       error: (error) => {
-        this.processingPayment = false;
-        if (error.status === 401 || error.message?.includes('Authentication failed')) {
+        if (error.message?.includes('Authentication failed')) {
           this.error = 'Sesi berakhir. Silakan login kembali.';
           setTimeout(() => {
-            this.router.navigate(['/login'], {
-              queryParams: { returnUrl: '/premium-plans' }
-            });
+            this.router.navigate(['/login'], { queryParams: { returnUrl: '/premium-plans' } });
           }, 3000);
         } else {
-          this.error = 'Gagal membuat link pembayaran. Silakan coba lagi.';
+          this.error = error.message || 'Gagal membuat tagihan QRIS. Silakan coba lagi.';
         }
       }
     });
+  }
+
+  /** expired_at dari KlikQRIS berupa "YYYY-MM-DD HH:mm:ss" waktu WIB tanpa zona. */
+  private mulaiHitungMundur(expiredAt: string | null): void {
+    this.hentiHitungMundur();
+    const batas = expiredAt ? new Date(expiredAt.replace(' ', 'T') + '+07:00').getTime() : NaN;
+    const hitung = () => {
+      this.sisaDetik = Number.isNaN(batas) ? 0 : Math.max(0, Math.floor((batas - Date.now()) / 1000));
+      if (this.sisaDetik === 0 && !Number.isNaN(batas) && this.qrisStatus === 'PENDING') {
+        this.qrisStatus = 'EXPIRED';
+        this.hentiPolling();
+      }
+    };
+    hitung();
+    this.countdownTimer = setInterval(hitung, 1000);
+  }
+
+  private mulaiPolling(orderId: string): void {
+    this.hentiPolling();
+    this.pollTimer = setInterval(() => {
+      this.premiumService.getQrisStatus(orderId).subscribe({
+        next: (st) => {
+          if (st.status === 'PAID') {
+            this.qrisStatus = 'PAID';
+            this.hentiPolling();
+            this.hentiHitungMundur();
+            this.checkActiveSubscription();   // akses premium langsung terlihat
+          } else if (st.status === 'EXPIRED') {
+            this.qrisStatus = 'EXPIRED';
+            this.hentiPolling();
+            this.hentiHitungMundur();
+          }
+        },
+        error: () => { /* coba lagi di putaran berikutnya */ }
+      });
+    }, 4000);
+  }
+
+  get sisaWaktu(): string {
+    const m = Math.floor(this.sisaDetik / 60);
+    const d = this.sisaDetik % 60;
+    return `${m}:${d.toString().padStart(2, '0')}`;
+  }
+
+  tutupQris(): void {
+    this.hentiPolling();
+    this.hentiHitungMundur();
+    this.qris = null;
+  }
+
+  private hentiPolling(): void {
+    if (this.pollTimer) { clearInterval(this.pollTimer); this.pollTimer = null; }
+  }
+
+  private hentiHitungMundur(): void {
+    if (this.countdownTimer) { clearInterval(this.countdownTimer); this.countdownTimer = null; }
+  }
+
+  ngOnDestroy(): void {
+    this.hentiPolling();
+    this.hentiHitungMundur();
   }
 
   hasAccess(planId: number): boolean {

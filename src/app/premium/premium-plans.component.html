@@ -261,11 +261,85 @@
         Memproses Pembayaran
       </h2>
       <p class="text-sm mb-2" [ngClass]="isDarkMode ? 'text-gray-300' : 'text-gray-600'">
-        Mengarahkan ke halaman pembayaran...
+        Menyiapkan kode QRIS...
       </p>
       <p class="text-xs" [ngClass]="isDarkMode ? 'text-gray-500' : 'text-gray-400'">
         Jangan tutup jendela ini.
       </p>
+    </div>
+  </div>
+
+  <!-- Tagihan QRIS (KlikQRIS). Pelunasan terdeteksi otomatis lewat webhook. -->
+  <div *ngIf="qris" class="fixed inset-0 bg-black/60 flex items-center justify-center z-50 backdrop-blur-sm p-4"
+    role="dialog" aria-modal="true" aria-labelledby="judul-qris">
+    <div class="w-full max-w-sm rounded-2xl shadow-2xl p-6 text-center"
+      [ngClass]="isDarkMode ? 'bg-gray-800' : 'bg-white'">
+
+      <!-- Menunggu pembayaran -->
+      <ng-container *ngIf="qrisStatus === 'PENDING'">
+        <h2 id="judul-qris" class="text-lg font-bold mb-1" [ngClass]="isDarkMode ? 'text-white' : 'text-gray-900'">
+          Scan untuk membayar
+        </h2>
+        <p class="text-xs mb-4" [ngClass]="isDarkMode ? 'text-gray-400' : 'text-gray-500'">
+          {{ qris.plan }} · bisa dengan semua e-wallet dan m-banking
+        </p>
+        <img *ngIf="qris.qris_image || qris.qris_url" [src]="qris.qris_image || qris.qris_url"
+          alt="Kode QRIS pembayaran" class="w-60 h-60 mx-auto rounded-lg bg-white p-2" />
+        <p class="mt-4 text-xs uppercase tracking-wide" [ngClass]="isDarkMode ? 'text-gray-400' : 'text-gray-500'">
+          Total bayar
+        </p>
+        <p class="text-2xl font-extrabold" [ngClass]="isDarkMode ? 'text-white' : 'text-gray-900'">
+          Rp{{ formatPrice(qris.total_amount) }}
+        </p>
+        <p class="text-xs mt-1 mb-4" [ngClass]="isDarkMode ? 'text-amber-300' : 'text-amber-700'">
+          Bayar tepat sejumlah ini, termasuk 3 digit terakhir.
+        </p>
+        <div class="flex items-center justify-center gap-2 text-sm mb-4"
+          [ngClass]="isDarkMode ? 'text-gray-300' : 'text-gray-600'" aria-live="polite">
+          <span class="animate-pulse inline-block w-2 h-2 rounded-full bg-indigo-500"></span>
+          Menunggu pembayaran · berlaku {{ sisaWaktu }}
+        </div>
+        <a *ngIf="qris.report_url" [href]="qris.report_url" target="_blank" rel="noopener"
+          class="block text-xs underline mb-3" [ngClass]="isDarkMode ? 'text-gray-400' : 'text-gray-500'">
+          Sudah bayar tapi belum terdeteksi? Laporkan di sini
+        </a>
+        <button (click)="tutupQris()" class="w-full py-2.5 rounded-xl text-sm font-semibold"
+          [ngClass]="isDarkMode ? 'bg-gray-700 text-gray-200 hover:bg-gray-600' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'">
+          Tutup
+        </button>
+      </ng-container>
+
+      <!-- Lunas -->
+      <ng-container *ngIf="qrisStatus === 'PAID'">
+        <div class="w-14 h-14 rounded-full bg-green-500 text-white flex items-center justify-center mx-auto mb-4 text-3xl">✓</div>
+        <h2 id="judul-qris" class="text-lg font-bold mb-2" [ngClass]="isDarkMode ? 'text-white' : 'text-gray-900'">
+          Pembayaran berhasil
+        </h2>
+        <p class="text-sm mb-5" [ngClass]="isDarkMode ? 'text-gray-300' : 'text-gray-600'">
+          {{ qris.plan }} sudah aktif. Selamat belajar!
+        </p>
+        <button (click)="tutupQris()" class="w-full py-2.5 rounded-xl text-sm font-bold bg-indigo-600 hover:bg-indigo-700 text-white">
+          Mulai belajar
+        </button>
+      </ng-container>
+
+      <!-- Kedaluwarsa -->
+      <ng-container *ngIf="qrisStatus === 'EXPIRED'">
+        <h2 id="judul-qris" class="text-lg font-bold mb-2" [ngClass]="isDarkMode ? 'text-white' : 'text-gray-900'">
+          Kode QRIS kedaluwarsa
+        </h2>
+        <p class="text-sm mb-5" [ngClass]="isDarkMode ? 'text-gray-300' : 'text-gray-600'">
+          Buat kode baru untuk melanjutkan. Kalau sudah terlanjur bayar, laporkan agar dicek.
+        </p>
+        <a *ngIf="qris.report_url" [href]="qris.report_url" target="_blank" rel="noopener"
+          class="block text-sm underline mb-3" [ngClass]="isDarkMode ? 'text-gray-300' : 'text-gray-600'">
+          Laporkan pembayaran
+        </a>
+        <button (click)="tutupQris()" class="w-full py-2.5 rounded-xl text-sm font-semibold"
+          [ngClass]="isDarkMode ? 'bg-gray-700 text-gray-200' : 'bg-gray-100 text-gray-700'">
+          Tutup
+        </button>
+      </ng-container>
     </div>
   </div>
 </div>

@@ -98,6 +98,25 @@ export interface PhoneUpdateResponse {
   message?: string;
 }
 
+export interface QrisPayment {
+  order_id: string;
+  plan: string;
+  amount: number;
+  total_amount: number;
+  qris_image: string | null;
+  qris_url: string | null;
+  expired_at: string | null;
+  report_url: string | null;
+  signature: string;
+  status: 'PENDING' | 'PAID' | 'EXPIRED';
+}
+
+export interface QrisStatus {
+  order_id: string;
+  status: 'PENDING' | 'PAID' | 'EXPIRED';
+  total_amount: number;
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -192,6 +211,32 @@ export class PremiumService {
         return throwError(() => new Error('Failed to check quiz access. Please try again later.'));
       })
     );
+  }
+
+  // --- KlikQRIS: QRIS dinamis, pelunasan dideteksi webhook di backend ---
+
+  createQrisPayment(planId: number): Observable<QrisPayment> {
+    const url = environment.production
+      ? `${this.apiUrl}/payment/klikqris/create`
+      : `/api/payment/klikqris/create`;
+    return this.http.post<QrisPayment>(url, { plan_id: planId }, { headers: this.createHeaders() }).pipe(
+      catchError((error: HttpErrorResponse) => {
+        if (error.status === 401) {
+          return throwError(() => new Error('Authentication failed. Please log in again.'));
+        }
+        if (error.status === 503) {
+          return throwError(() => new Error('Pembayaran sedang tidak tersedia. Coba beberapa saat lagi.'));
+        }
+        return throwError(() => new Error('Gagal membuat tagihan QRIS. Silakan coba lagi.'));
+      })
+    );
+  }
+
+  getQrisStatus(orderId: string): Observable<QrisStatus> {
+    const url = environment.production
+      ? `${this.apiUrl}/payment/klikqris/${encodeURIComponent(orderId)}`
+      : `/api/payment/klikqris/${encodeURIComponent(orderId)}`;
+    return this.http.get<QrisStatus>(url, { headers: this.createHeaders() });
   }
 
   // NEW METHODS FOR MAYAR LICENSE PAYMENT FLOW
